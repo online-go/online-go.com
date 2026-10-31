@@ -10,7 +10,6 @@
 import * as React from "react";
 import { useGobanViewLayout } from "@/components/GobanView";
 import { CompactPlayerHeader } from "@/views/Game/CompactPlayerHeader";
-import { pgettext } from "@/lib/translate";
 import type { GobanController } from "@/lib/GobanController";
 import { KibitzThinPlayer } from "./KibitzThinPlayer";
 import { useKibitzThinHeader } from "./kibitzThinHeader";
@@ -25,27 +24,6 @@ export function KibitzStackedPlayerHeader({
 }): React.ReactElement | null {
     const { mode } = useGobanViewLayout();
     const thin = useKibitzThinHeader();
-    const [expanded, setExpanded] = React.useState(false);
-    const detailsId = React.useId();
-    const toggleRef = React.useRef<HTMLButtonElement>(null);
-
-    React.useEffect(() => setExpanded(false), [controller, thin, mode]);
-    React.useEffect(() => {
-        if (!expanded) {
-            return;
-        }
-        const onKey = (event: KeyboardEvent) => {
-            if (event.key === "Escape") {
-                event.preventDefault();
-                event.stopImmediatePropagation();
-                setExpanded(false);
-                toggleRef.current?.focus();
-            }
-        };
-        document.addEventListener("keydown", onKey, true);
-        return () => document.removeEventListener("keydown", onKey, true);
-    }, [expanded]);
-
     if (mode !== "stacked" || !controller) {
         return null;
     }
@@ -69,29 +47,11 @@ export function KibitzStackedPlayerHeader({
                     controller={controller}
                     color="black"
                 />
-                <button
-                    ref={toggleRef}
-                    type="button"
-                    className="KibitzStackedPlayerHeader-toggle"
-                    onClick={() => setExpanded((previous) => !previous)}
-                    aria-expanded={expanded}
-                    aria-controls={detailsId}
-                    aria-label={
-                        expanded
-                            ? pgettext("Kibitz player header", "Hide player details")
-                            : pgettext("Kibitz player header", "Show player details")
-                    }
-                >
-                    <i className={`fa fa-chevron-${expanded ? "up" : "down"}`} aria-hidden="true" />
-                </button>
                 <KibitzThinPlayer
                     key={`white-${controller.goban.game_id}`}
                     controller={controller}
                     color="white"
                 />
-            </div>
-            <div id={detailsId} hidden={!expanded}>
-                {expanded && fullHeader}
             </div>
         </div>
     );

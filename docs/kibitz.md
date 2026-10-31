@@ -118,19 +118,20 @@ At phone widths below 600 CSS pixels, the stacked header becomes a thin strip
 when the viewport is narrower than 390 CSS pixels or shorter than 844 CSS
 pixels. Exactly 390 by 844 retains the standard compact header. Opening the
 keyboard keeps the header mode from before it opened. The thin strip has a
-colour stone and linked player name above each clock and capture count. Its
+32-pixel avatar at each outer edge, with a colour stone and linked player
+name above each clock and capture count. Its
 turn underline follows the official branch; captures follow the displayed
 position. Clocks keep their overtime information and take priority over
-captures when the row is too narrow. Paused clocks have a static label.
+capture labels when the row is too narrow: a captured stone and count replace
+the full label. Paused clocks have a static label.
 
-The centre disclosure expands the standard cards inline, including captures
-that did not fit the strip. Escape closes the cards before it can leave a
-variation. Changing the player-information controller or leaving the thin
-layout also closes the cards. The room-title strip is shorter in this mode,
+The compact header has no disclosure or expanded player cards. Player names
+retain their usual player links. The room-title strip is shorter in this mode,
 and site navigation is 2.75rem high, except that the existing 2rem navigation
 on viewports at most 500 CSS pixels tall remains in use. The navigation size
 returns to normal when the thin Kibitz layout closes. Rules and komi stay out
-of the thin strip and remain in the expanded cards and Game information.
+of the thin strip and remain in Game information. Larger stacked viewports
+retain the existing compact player cards.
 
 The thin layout also reduces the vertical padding of the move-arrow strip
 to 0.15rem on each side. Its buttons keep their responsive widths, with a

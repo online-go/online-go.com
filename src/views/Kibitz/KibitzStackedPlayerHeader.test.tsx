@@ -10,7 +10,7 @@
 import * as data from "@/lib/data";
 import "@/lib/sockets";
 import * as React from "react";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { GobanController } from "@/lib/GobanController";
 import { GobanControllerContext } from "@/components/GobanView";
@@ -157,22 +157,47 @@ test("updates captures and live clocks without putting rules in the strip", () =
     expect(black.querySelector(".byo-yomi-periods")).toHaveTextContent("(3)");
 });
 
-test("expands details, consumes Escape, and closes on a controller change", () => {
+test("shows small avatars without a disclosure and follows controller changes", () => {
     setSize(375, 667);
     const game = controller();
     const { container, rerender } = render(header(game));
-    fireEvent.click(screen.getByRole("button", { name: "Show player details" }));
-    expect(container.querySelector(".CompactPlayerHeader")).toBeInTheDocument();
-    const bubbleKey = jest.fn();
-    document.addEventListener("keydown", bubbleKey);
-    fireEvent.keyDown(document, { key: "Escape" });
-    document.removeEventListener("keydown", bubbleKey);
-    expect(bubbleKey).not.toHaveBeenCalled();
+    expect(container.querySelectorAll(".KibitzThinPlayer-avatar .PlayerIcon-32")).toHaveLength(2);
+    expect(container.querySelector("button[aria-expanded]")).toBeNull();
+    const nextGame = controller(200);
+    nextGame.goban.engine.players.black.username = "Next black";
+    rerender(header(nextGame));
     expect(container.querySelector(".CompactPlayerHeader")).toBeNull();
-    expect(screen.getByRole("button", { name: "Show player details" })).toHaveFocus();
-    fireEvent.click(screen.getByRole("button", { name: "Show player details" }));
-    rerender(header(controller(200)));
-    expect(container.querySelector(".CompactPlayerHeader")).toBeNull();
+    expect(container.querySelector(".KibitzThinPlayer.black")).toHaveTextContent("Next black");
+    act(() => tick(nextGame));
+    expect(
+        container.querySelector(".KibitzThinPlayer.black .KibitzThinPlayer-time"),
+    ).toHaveTextContent("12:34");
+});
+
+test("keeps capture counts accessible when the full label does not fit", () => {
+    setSize(320, 568);
+    jest.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(100);
+    jest.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function (
+        this: HTMLElement,
+    ) {
+        return this.classList.contains("KibitzThinPlayer-capture-label") ? 70 : 60;
+    });
+    const { container } = render(header(controller()));
+    const captures = container.querySelector(".KibitzThinPlayer.black .KibitzThinPlayer-captures")!;
+    expect(captures).toHaveClass("is-overflowing");
+    expect(captures).toHaveAttribute("aria-hidden", "false");
+    expect(captures.querySelector(".KibitzThinPlayer-capture-short")).toHaveAttribute(
+        "aria-label",
+        "0 captures",
+    );
+    expect(captures.querySelector(".KibitzThinPlayer-capture-short")).toHaveAttribute(
+        "aria-hidden",
+        "false",
+    );
+    expect(captures.querySelector(".KibitzThinPlayer-capture-label")).toHaveAttribute(
+        "aria-hidden",
+        "true",
+    );
 });
 
 test("keeps Canadian overtime and pause state visible", () => {

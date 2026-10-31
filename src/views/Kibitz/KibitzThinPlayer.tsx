@@ -11,6 +11,7 @@ import * as React from "react";
 import type { JGOFClockWithTransmitting } from "goban";
 import { Clock, SGFClock } from "@/components/Clock";
 import { Player } from "@/components/Player";
+import { PlayerIcon } from "@/components/PlayerIcon";
 import { subscribeAllEvents } from "@/components/GobanView";
 import { usePhase, usePlayerToMoveOnOfficialBranch } from "@/views/Game/GameHooks";
 import { interpolate, npgettext, pgettext } from "@/lib/translate";
@@ -36,7 +37,7 @@ export function KibitzThinPlayer({
     );
     const [state, setState] = React.useState(readPlayer);
     const [paused, setPaused] = React.useState(false);
-    const [hideCaptures, setHideCaptures] = React.useState(false);
+    const [compactCaptures, setCompactCaptures] = React.useState(false);
     const summaryRef = React.useRef<HTMLDivElement>(null);
     const clockRef = React.useRef<HTMLSpanElement>(null);
     const capturesRef = React.useRef<HTMLSpanElement>(null);
@@ -67,7 +68,7 @@ export function KibitzThinPlayer({
             return;
         }
         const measure = () =>
-            setHideCaptures(clock.offsetWidth + captures.offsetWidth + 8 > summary.clientWidth);
+            setCompactCaptures(clock.offsetWidth + captures.offsetWidth + 8 > summary.clientWidth);
         measure();
         if (typeof ResizeObserver === "undefined") {
             return;
@@ -104,6 +105,9 @@ export function KibitzThinPlayer({
                       : pgettext("Kibitz player colour", "White")
             }
         >
+            <div className="KibitzThinPlayer-avatar" aria-hidden="true">
+                <PlayerIcon id={state.player.id} size={32} />
+            </div>
             <div className="KibitzThinPlayer-name">
                 <span className="KibitzThinPlayer-stone" aria-hidden="true" />
                 {state.player.id ? (
@@ -137,14 +141,29 @@ export function KibitzThinPlayer({
                     </span>
                 )}
                 <span
-                    ref={capturesRef}
                     className={
                         "KibitzThinPlayer-captures" +
-                        (hideCaptures || paused ? " is-overflowing" : "")
+                        (compactCaptures ? " is-overflowing" : "") +
+                        (paused ? " is-paused" : "")
                     }
-                    aria-hidden={hideCaptures || paused}
+                    aria-hidden={paused}
                 >
-                    {captureText}
+                    <span
+                        className="KibitzThinPlayer-capture-label"
+                        ref={capturesRef}
+                        aria-hidden={compactCaptures}
+                    >
+                        {captureText}
+                    </span>
+                    <span
+                        className="KibitzThinPlayer-capture-short"
+                        role="img"
+                        aria-label={captureText}
+                        aria-hidden={!compactCaptures}
+                    >
+                        <span className="KibitzThinPlayer-capture-stone" />
+                        {state.captures}
+                    </span>
                 </span>
             </div>
         </div>

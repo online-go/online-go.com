@@ -9,14 +9,13 @@ Desktop and landscape player cards do not change.
 
 The thin header puts Black and White side by side. Each player has a colour
 stone and linked name on the first row, with a clock and captures on the second.
+Black's 32-pixel avatar sits on the left edge; White's sits on the right edge.
 A fixed underline marks the player to move on the official branch. Rules,
-avatars, flags and komi are omitted from the thin strip. Clocks take priority;
-captures move to the expanded cards when there is too little room.
+flags and komi are omitted from the thin strip. Clocks take priority;
+captures use a small captured stone and count when the full label does not fit.
 
-A centre disclosure button opens the existing full player header below the
-strip. It is an inline expansion, so it has no backdrop or separate focus
-scope. Escape closes the expansion before it can leave a variation. Changing
-the selected game or leaving the thin layout closes the expansion.
+There is no centre disclosure or expansion of the original header. Names keep
+their standard player links; rules and komi remain in Game information.
 
 The room-title strip has less padding in this mode. The site navigation height
 is capped at 44 pixels at the default font size while this Kibitz view is open;
@@ -39,6 +38,6 @@ Do not change shared Game-page components or the board engine.
 ## Verification
 
 Check the reference boundary, resizing, selected-controller changes, captures,
-clock updates, overtime, turn changes and expansion keyboard behaviour. Inspect
+clock updates, overtime, turn changes, avatars and capture label fitting. Inspect
 320 by 568, 375 by 667, 390 by 844, large portrait and desktop layouts. Run the
 targeted tests, TypeScript, lint, modified-file formatting and one final build.

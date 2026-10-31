@@ -4,21 +4,8 @@
 
     .KibitzStackedPlayerHeader-strip {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         align-items: center;
         min-height: 2.75rem;
-    }
-
-    .KibitzStackedPlayerHeader-toggle {
-        width: 2.75rem;
-        min-height: 2.75rem;
-        margin: 0;
-        padding: 0;
-        border: 0;
-        border-radius: 0;
-        box-shadow: none;
-        background: transparent;
-        color: var(--text-dimmed);
-        font-size: 0.7rem;
     }
 }
