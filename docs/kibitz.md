@@ -29,11 +29,17 @@ and other system messages remain visible; stored chat history is unchanged.
 
 Portrait: GobanView's `portraitSplit` layout — a board stage, a drag handle,
 and one panel area below it. `KibitzLeftAside` is landscape only. Six panes
-share the panel area — Game chat (read-only, so it carries no composer),
-Kibitz chat, People, Variations, Rooms
+share the panel area — Game chat, Kibitz chat, People, Variations, Rooms
 (the room list alone, with no thumbnail) and Analysis, which holds the
-variation panel — and the action bar switches between them. Analysis comes
-forward on its own whenever the center stops showing the live game, and again
+variation panel — and the action bar switches between them.
+
+Both chat panes have separate composers. Game chat sends through the watched
+game's normal chat connection and requires a signed-in user with a validated
+email. It is disabled until the room's current game controller is ready.
+Room and game drafts are retained across desktop tab changes; a game switch
+clears the game draft so it cannot be sent to a different game.
+
+Analysis comes forward on its own whenever the center stops showing the live game, and again
 for each variation after that — a draft and a posted variation each get a
 controller of their own, so starting a second one while the first is open
 still brings it forward — and steps back to the pane the reader was on when

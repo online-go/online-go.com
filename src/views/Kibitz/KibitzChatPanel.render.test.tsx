@@ -20,6 +20,11 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import type { ChatMessage } from "@/lib/chat_manager";
 import type { KibitzRoomSummary, KibitzStreamItem, KibitzVariationSummary } from "@/models/kibitz";
 import { KibitzChatPanel } from "./KibitzChatPanel";
+import { sanitizeMessage } from "@/lib/misc";
+
+jest.mock("@/lib/misc", () => ({
+    sanitizeMessage: jest.fn((text: string) => text.trim()),
+}));
 
 let observedWidth = 600;
 beforeAll(() => {
@@ -48,6 +53,7 @@ const mockRoomProxy = {
     off: jest.fn(),
     part: jest.fn(),
 };
+const mockChatUser = { anonymous: false, email_validated: true };
 
 jest.mock("@/components/Chat", () => ({
     __esModule: true,
@@ -122,10 +128,7 @@ jest.mock("@/lib/data", () => {
 
 jest.mock("@/lib/hooks", () => ({
     __esModule: true,
-    useUser: () => ({
-        anonymous: false,
-        email_validated: true,
-    }),
+    useUser: () => mockChatUser,
 }));
 
 jest.mock("@/lib/translate", () => ({
@@ -485,6 +488,136 @@ describe("opening date separator", () => {
         expect(Number.isFinite(t)).toBe(true);
         expect(t).toBeGreaterThanOrEqual(before);
         expect(t).toBeLessThanOrEqual(after);
+    });
+});
+
+describe("Kibitz game chat composer", () => {
+    function gameProps() {
+        const sendChat = jest.fn();
+        return {
+            ...baseProps(),
+            room: { ...makeRoom(), current_game: { game_id: 42 } } as KibitzRoomSummary,
+            gameController: {
+                destroyed: false,
+                goban: {
+                    game_id: 42,
+                    chat_log: [],
+                    sendChat,
+                    engine: { last_official_move: { move_number: 17 } },
+                    on: jest.fn(),
+                    off: jest.fn(),
+                },
+            } as unknown as import("@/lib/GobanController").GobanController,
+        };
+    }
+
+    beforeEach(() => {
+        Object.assign(mockChatUser, { anonymous: false, email_validated: true });
+        mockRoomProxy.channel.send.mockClear();
+    });
+    afterEach(() => {
+        Object.assign(mockChatUser, { anonymous: false, email_validated: true });
+    });
+
+    test("sends through the watched game connection, not the Kibitz room", () => {
+        const props = gameProps();
+        render(<KibitzChatPanel {...props} mode="game" />);
+        const input = screen.getByLabelText("Game chat message");
+        expect(input).toBeEnabled();
+        fireEvent.change(input, { target: { value: "  Hello!  " } });
+        fireEvent.keyPress(input, { key: "Enter", charCode: 13 });
+        expect(sanitizeMessage).toHaveBeenCalledWith("  Hello!  ");
+        expect(props.gameController.goban.sendChat).toHaveBeenCalledWith("Hello!", "main");
+        expect(mockRoomProxy.channel.send).not.toHaveBeenCalled();
+        expect(input).toHaveValue("");
+    });
+
+    test.each([
+        { anonymous: true, email_validated: true },
+        { anonymous: false, email_validated: false },
+    ])("blocks sending for user permissions %j", (user) => {
+        Object.assign(mockChatUser, user);
+        const props = gameProps();
+        render(<KibitzChatPanel {...props} mode="game" />);
+        const input = screen.getByLabelText("Game chat message");
+        expect(input).toBeDisabled();
+        fireEvent.change(input, { target: { value: "Hello" } });
+        fireEvent.keyPress(input, { key: "Enter", charCode: 13 });
+        expect(props.gameController.goban.sendChat).not.toHaveBeenCalled();
+    });
+
+    test("does not send empty messages or send on Shift+Enter", () => {
+        const props = gameProps();
+        render(<KibitzChatPanel {...props} mode="game" />);
+        const input = screen.getByLabelText("Game chat message");
+        fireEvent.change(input, { target: { value: "   " } });
+        fireEvent.keyPress(input, { key: "Enter", charCode: 13 });
+        fireEvent.change(input, { target: { value: "Hello" } });
+        fireEvent.keyPress(input, { key: "Enter", charCode: 13, shiftKey: true });
+        expect(props.gameController.goban.sendChat).not.toHaveBeenCalled();
+        expect(input).toHaveValue("Hello");
+    });
+
+    test("preserves the draft if the controller is destroyed before Enter", () => {
+        const props = gameProps();
+        render(<KibitzChatPanel {...props} mode="game" />);
+        const input = screen.getByLabelText("Game chat message");
+        fireEvent.change(input, { target: { value: "Hello" } });
+        props.gameController.destroyed = true;
+        fireEvent.keyPress(input, { key: "Enter", charCode: 13 });
+        expect(props.gameController.goban.sendChat).not.toHaveBeenCalled();
+        expect(input).toHaveValue("Hello");
+    });
+
+    test("disables the composer until a matching controller is available", () => {
+        const props = gameProps();
+        const { rerender } = render(
+            <KibitzChatPanel {...props} mode="game" gameController={null} />,
+        );
+        expect(screen.getByLabelText("Game chat message")).toBeDisabled();
+        rerender(
+            <KibitzChatPanel
+                {...props}
+                mode="game"
+                room={{
+                    ...props.room,
+                    current_game: { game_id: 99 } as KibitzRoomSummary["current_game"],
+                }}
+            />,
+        );
+        const input = screen.getByLabelText("Game chat message");
+        expect(input).toBeDisabled();
+        fireEvent.change(input, { target: { value: "Do not send to the old game" } });
+        fireEvent.keyPress(input, { key: "Enter", charCode: 13 });
+        expect(props.gameController.goban.sendChat).not.toHaveBeenCalled();
+    });
+
+    test("keeps room and game drafts separate and clears the game draft on a switch", () => {
+        const props = gameProps();
+        const { rerender } = render(<KibitzChatPanel {...props} />);
+        fireEvent.click(screen.getByRole("tab", { name: /Kibitz chat/ }));
+        fireEvent.change(screen.getByPlaceholderText("Message kibitz"), {
+            target: { value: "Room draft" },
+        });
+        fireEvent.click(screen.getByRole("tab", { name: /Game chat/ }));
+        const gameInput = screen.getByLabelText("Game chat message");
+        expect(gameInput).toHaveValue("");
+        fireEvent.change(gameInput, { target: { value: "Game draft" } });
+        fireEvent.click(screen.getByRole("tab", { name: /Kibitz chat/ }));
+        expect(screen.getByPlaceholderText("Message kibitz")).toHaveValue("Room draft");
+        fireEvent.click(screen.getByRole("tab", { name: /Game chat/ }));
+        expect(gameInput).toHaveValue("Game draft");
+        rerender(
+            <KibitzChatPanel
+                {...props}
+                room={{
+                    ...props.room,
+                    current_game: { game_id: 99 } as KibitzRoomSummary["current_game"],
+                }}
+            />,
+        );
+        expect(screen.getByLabelText("Game chat message")).toHaveValue("");
+        expect(screen.getByPlaceholderText("Message kibitz")).toHaveValue("Room draft");
     });
 });
 

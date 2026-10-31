@@ -282,6 +282,9 @@
 }
 
 .KibitzChatPanel-composer {
+    &[hidden] {
+        display: none;
+    }
     background: var(--card-background-color);
     box-sizing: border-box;
     width: 100%;
