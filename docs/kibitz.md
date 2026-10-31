@@ -67,8 +67,10 @@ is laid out the same way, so its link lines up with the chat around it.
 
 The left aside has two collapsible sections, Rooms and Variations, laid out
 like the chat page's channel list, each with a quiet "+ Room" / "+ Variation"
-row at the bottom (Variations also has "Clear all"). These are kept per
-browser through `data.ts`: the collapsed sections
+row at the bottom (Variations also has "Clear all"). The room list shows
+preset rooms first, in the order they are defined (`high-ranked-live`,
+`mid-ranked-live`, `english-chat-live`), then every other room by viewer
+count. These are kept per browser through `data.ts`: the collapsed sections
 (`kibitz.left_aside.collapsed`), the landscape chat tab (`kibitz.chat_tab`),
 the portrait pane (`kibitz.portrait_pane`, seeded once from the chat tab)
 and the people column (`kibitz.people_column`). The height the handle gives
