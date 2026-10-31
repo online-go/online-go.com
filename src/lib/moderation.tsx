@@ -37,6 +37,7 @@ export enum MODERATOR_POWERS {
     AI_DETECTOR = 0b1000000,
     HANDLE_SANDBAGGING = 0b10000000,
     HANDLE_MALICIOUS_REPORT = 0b100000000,
+    MODERATE_PEER_REVIEW = 0b1000000000,
 }
 
 export const MOD_POWER_NAMES: { [key in MODERATOR_POWERS]: string } = {
@@ -70,6 +71,10 @@ export const MOD_POWER_NAMES: { [key in MODERATOR_POWERS]: string } = {
     [MODERATOR_POWERS.HANDLE_MALICIOUS_REPORT]: pgettext(
         "A label for a moderator power",
         "Handle Malicious Reports",
+    ),
+    [MODERATOR_POWERS.MODERATE_PEER_REVIEW]: pgettext(
+        "A label for a moderator power",
+        "Moderate Peer Review System",
     ),
 };
 

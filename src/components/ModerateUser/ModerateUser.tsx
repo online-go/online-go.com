@@ -492,6 +492,19 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                                 onRetractOffer={this.retractOffer}
                                 onRemovePower={this.removePower}
                             />
+                            <ModerationOfferControl
+                                ability={pgettext(
+                                    "Label for a button granting power to moderate the peer review system",
+                                    "Moderate Peer Review System",
+                                )}
+                                ability_mask={MODERATOR_POWERS.MODERATE_PEER_REVIEW}
+                                currently_offered={this.state.offered_moderator_powers}
+                                moderator_powers={this.state.moderator_powers}
+                                previously_rejected={this.state.mod_powers_rejected}
+                                onMakeOffer={this.makeOffer}
+                                onRetractOffer={this.retractOffer}
+                                onRemovePower={this.removePower}
+                            />
                         </div>
                     </div>
                 )}
