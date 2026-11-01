@@ -24,6 +24,7 @@ import { useUser } from "@/lib/hooks";
 
 import { ApiClient } from "./push_types";
 import { PushAppPanel } from "./PushAppPanel";
+import "./PushNotificationsSection.css";
 
 /** Lets the owners of OAuth applications set up push notifications and webhooks for them. */
 export function PushNotificationsSection(): React.ReactElement {
@@ -41,7 +42,7 @@ export function PushNotificationsSection(): React.ReactElement {
 
     return (
         <div className="PushNotificationsSection">
-            <h1>{pgettext("Developer page section heading", "Push notifications")}</h1>
+            <h2>{pgettext("Developer page section heading", "Push notifications")}</h2>
             <p>
                 {pgettext(
                     "Developer page: explains push notification support for third party apps",
@@ -69,12 +70,17 @@ export function PushNotificationsSection(): React.ReactElement {
                 </p>
             )}
             {apps?.length === 0 && (
-                <p>
-                    {pgettext(
-                        "Developer page",
-                        "You have no applications. Create one in the OAuth2 Application Manager first.",
-                    )}
-                </p>
+                <>
+                    <p>
+                        {pgettext(
+                            "Developer page",
+                            "You have no applications. Create one in the OAuth2 Application Manager first.",
+                        )}
+                    </p>
+                    <a className="btn" href="/oauth2/applications/">
+                        {pgettext("Developer page link", "OAuth2 Application Manager")}
+                    </a>
+                </>
             )}
             {apps?.map((app) => (
                 <PushAppPanel key={app.id} app={app} />

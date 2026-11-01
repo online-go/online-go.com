@@ -52,6 +52,7 @@ export function PushProviderPanel(props: {
         Object.fromEntries(form.text.map(({ name }) => [name, current?.[name] ?? ""])),
     );
     const [saving, setSaving] = React.useState(false);
+    const [open, setOpen] = React.useState(!!current?.paused_at);
     const complete = (!form.file || !!file) && form.text.every(({ name }) => text[name]);
 
     async function run(request: () => Promise<PushStatus>, confirm?: string) {
@@ -122,108 +123,141 @@ export function PushProviderPanel(props: {
         void run(() => del(url), confirm);
     }
 
+    function submit(ev: React.FormEvent) {
+        ev.preventDefault();
+        save(false);
+    }
+
     let state = pgettext("Push credentials state", "Not configured");
+    let state_class = "not-configured";
     if (current?.paused_at) {
+        state_class = "paused";
         state = interpolate(pgettext("Push credentials state", "Paused: %s"), [
             current.pause_reason,
         ]);
     } else if (current) {
+        state_class = "active";
         state = pgettext("Push credentials state", "Active");
     }
 
     return (
-        <div className="PushProviderPanel">
-            <h3>{form.title}</h3>
-            <div className="push-state">
-                <span className={current?.paused_at ? "paused" : ""}>{state}</span>
+        <details
+            className="PushProviderPanel"
+            open={open}
+            onToggle={(ev) => setOpen(ev.currentTarget.open)}
+        >
+            <summary>
+                <span className="push-summary">
+                    <span className="push-title">{form.title}</span>
+                    <span className={"push-state " + state_class}>{state}</span>
+                    {(current || devices > 0) && (
+                        <span className="push-usage">
+                            {interpolate(
+                                provider === "webhook"
+                                    ? npgettext(
+                                          "Count of players whose notifications are sent to the webhook",
+                                          "%s player subscribed",
+                                          "%s players subscribed",
+                                          devices,
+                                      )
+                                    : npgettext(
+                                          "Count of registered devices",
+                                          "%s device",
+                                          "%s devices",
+                                          devices,
+                                      ),
+                                [devices],
+                            )}
+                            {", "}
+                            {interpolate(
+                                pgettext("Push delivery counts", "last 7 days: %s sent, %s failed"),
+                                [status.stats[provider].sent, status.stats[provider].failed],
+                            )}
+                        </span>
+                    )}
+                </span>
+            </summary>
+            <div className="push-body">
                 {current?.paused_at && (
                     <button
-                        className="xs"
+                        className="primary push-resume"
                         disabled={saving}
                         onClick={() => void run(() => post(`${url}/resume`, {}))}
                     >
                         {pgettext("Restart sending push notifications", "Resume")}
                     </button>
                 )}
-                {current && (
-                    <button className="xs reject" disabled={saving} onClick={remove}>
-                        {pgettext("Developer page button", "Remove")}
-                    </button>
+                {provider === "apns" && current && (
+                    <div className="push-details">
+                        {interpolate(
+                            pgettext(
+                                "APNs environments (production and/or sandbox) the key works in",
+                                "Environments: %s",
+                            ),
+                            [(current.environments ?? []).join(", ")],
+                        )}
+                    </div>
                 )}
-            </div>
-            {provider === "apns" && current && (
-                <div>
-                    {interpolate(
-                        pgettext(
-                            "APNs environments (production and/or sandbox) the key works in",
-                            "Environments: %s",
-                        ),
-                        [(current.environments ?? []).join(", ")],
-                    )}
-                </div>
-            )}
-            {provider === "fcm" && current && (
-                <div>
-                    {interpolate(pgettext("FCM credentials", "Project %s, service account %s"), [
-                        current.project_id,
-                        current.client_email,
-                    ])}
-                </div>
-            )}
-            <div>
-                {interpolate(
-                    provider === "webhook"
-                        ? npgettext(
-                              "Count of players whose notifications are sent to the webhook",
-                              "%s player subscribed",
-                              "%s players subscribed",
-                              devices,
-                          )
-                        : npgettext(
-                              "Count of registered devices",
-                              "%s device",
-                              "%s devices",
-                              devices,
-                          ),
-                    [devices],
+                {provider === "fcm" && current && (
+                    <div className="push-details">
+                        {interpolate(
+                            pgettext("FCM credentials", "Project %s, service account %s"),
+                            [current.project_id, current.client_email],
+                        )}
+                    </div>
                 )}
-                {", "}
-                {interpolate(pgettext("Push delivery counts", "last 7 days: %s sent, %s failed"), [
-                    status.stats[provider].sent,
-                    status.stats[provider].failed,
-                ])}
-            </div>
 
-            {form.file && (
-                <label>
-                    {form.file.label}
-                    <input type="file" accept={form.file.accept} onChange={chooseFile} />
-                </label>
-            )}
-            {form.text.map(({ name, label }) => (
-                <label key={name}>
-                    {label}
-                    <input
-                        value={text[name]}
-                        onChange={(ev) => setText({ ...text, [name]: ev.target.value.trim() })}
-                    />
-                </label>
-            ))}
-            <div className="push-save">
-                <button
-                    className="primary"
-                    disabled={saving || !complete}
-                    onClick={() => save(false)}
-                >
-                    {pgettext("Developer page button", "Save")}
-                </button>
-                {provider === "webhook" && current && (
-                    <button disabled={saving || !complete} onClick={() => save(true)}>
-                        {pgettext("Developer page button", "Generate a new signing secret")}
-                    </button>
-                )}
+                <form onSubmit={submit}>
+                    <div className="push-fields">
+                        {form.file && (
+                            <label className="push-file">
+                                {form.file.label}
+                                <input
+                                    type="file"
+                                    accept={form.file.accept}
+                                    onChange={chooseFile}
+                                />
+                            </label>
+                        )}
+                        {form.text.map(({ name, label }) => (
+                            <label key={name}>
+                                {label}
+                                <input
+                                    value={text[name]}
+                                    onChange={(ev) =>
+                                        setText({ ...text, [name]: ev.target.value.trim() })
+                                    }
+                                />
+                            </label>
+                        ))}
+                    </div>
+                    <div className="push-actions">
+                        <button type="submit" className="primary" disabled={saving || !complete}>
+                            {pgettext("Developer page button", "Save")}
+                        </button>
+                        {provider === "webhook" && current && (
+                            <button
+                                type="button"
+                                disabled={saving || !complete}
+                                onClick={() => save(true)}
+                            >
+                                {pgettext("Developer page button", "Generate a new signing secret")}
+                            </button>
+                        )}
+                        {current && (
+                            <button
+                                type="button"
+                                className="reject push-remove"
+                                disabled={saving}
+                                onClick={remove}
+                            >
+                                {pgettext("Developer page button", "Remove")}
+                            </button>
+                        )}
+                    </div>
+                </form>
             </div>
-        </div>
+        </details>
     );
 }
 

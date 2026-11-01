@@ -57,12 +57,19 @@ export function PushAppPanel({ app }: { app: ApiClient }): React.ReactElement {
             .catch(errorAlerter);
     }
 
+    const errors_label = interpolate(
+        pgettext("Developer page: toggles the list of delivery errors", "Recent errors (%s)"),
+        [status?.recent_errors.length ?? 0],
+    );
+
     return (
         <div className="PushAppPanel">
-            <h2>{app.name}</h2>
-            <div>
-                {pgettext("OAuth application identifier", "Client ID")}:{" "}
-                <code>{app.client_id}</code>
+            <div className="push-app-header">
+                <h3>{app.name}</h3>
+                <div className="push-client-id">
+                    {pgettext("OAuth application identifier", "Client ID")}:{" "}
+                    <code>{app.client_id}</code>
+                </div>
             </div>
             {status && (
                 <>
@@ -89,41 +96,44 @@ export function PushAppPanel({ app }: { app: ApiClient }): React.ReactElement {
                     <div className="push-test">
                         <button onClick={sendTest}>
                             {pgettext("Developer page button", "Send test push")}
-                        </button>{" "}
-                        {test_devices === 0 &&
-                            pgettext(
-                                "Developer page: test push found no devices",
-                                "You have no devices or webhook subscription registered with this application. Sign in to your app on your own phone, or subscribe your own account to the webhook, then try again.",
-                            )}
-                        {!!test_devices &&
-                            interpolate(
-                                npgettext(
-                                    "Developer page: test push was sent",
-                                    "Sent to %s of your devices. Any problem shows under Recent errors.",
-                                    "Sent to %s of your devices. Any problems show under Recent errors.",
-                                    test_devices,
-                                ),
-                                [test_devices],
-                            )}
+                        </button>
+                        <span role="status">
+                            {test_devices === 0 &&
+                                pgettext(
+                                    "Developer page: test push found no devices",
+                                    "You have no devices or webhook subscription registered with this application. Sign in to your app on your own phone, or subscribe your own account to the webhook, then try again.",
+                                )}
+                            {!!test_devices &&
+                                interpolate(
+                                    npgettext(
+                                        "Developer page: test push was sent",
+                                        "Sent to %s of your devices. Any problem shows under Recent errors.",
+                                        "Sent to %s of your devices. Any problems show under Recent errors.",
+                                        test_devices,
+                                    ),
+                                    [test_devices],
+                                )}
+                        </span>
                     </div>
 
-                    <details>
-                        <summary>
-                            {interpolate(
-                                pgettext(
-                                    "Developer page: toggles the list of delivery errors",
-                                    "Recent errors (%s)",
-                                ),
-                                [status.recent_errors.length],
-                            )}
-                        </summary>
-                        {status.recent_errors.map((e, idx) => (
-                            <div key={idx}>
-                                {new Date(e.time).toLocaleString()} {e.provider} {e.outcome}:{" "}
-                                {e.detail}
-                            </div>
-                        ))}
-                    </details>
+                    {status.recent_errors.length === 0 ? (
+                        <div className="push-no-errors">{errors_label}</div>
+                    ) : (
+                        <details className="push-errors">
+                            <summary>{errors_label}</summary>
+                            <ul>
+                                {status.recent_errors.map((e, idx) => (
+                                    <li key={idx}>
+                                        <span className="push-error-source">
+                                            {new Date(e.time).toLocaleString()} {e.provider}{" "}
+                                            {e.outcome}
+                                        </span>
+                                        <span>{e.detail}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </details>
+                    )}
                 </>
             )}
         </div>
