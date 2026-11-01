@@ -16,37 +16,106 @@
  */
 
 .PushProviderPanel {
-    margin-top: 1rem;
+    .push-summary {
+        display: flex;
+        flex: 1;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.25rem 0.75rem;
+        min-width: 0;
+    }
 
-    h3 {
-        margin-bottom: 0.3rem;
+    .push-title {
+        font-weight: 600;
     }
 
     .push-state {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 0.5rem;
+        &.active {
+            color: var(--success);
+        }
+
+        &.not-configured {
+            color: var(--shade0);
+        }
+
+        &.paused {
+            padding: 0 0.5rem;
+            border-radius: 0.3rem;
+            background-color: var(--reject);
+            color: var(--colored-background-fg);
+        }
     }
 
-    .paused {
-        color: var(--reject);
-        font-weight: bold;
+    .push-usage {
+        margin-left: auto;
+        color: var(--shade0);
+        font-size: var(--font-size-small);
+    }
+
+    .push-body {
+        padding: 0.25rem 1rem 1rem 2.4rem;
+    }
+
+    .push-resume {
+        display: block;
+        margin: 0 0 0.75rem;
+    }
+
+    .push-details {
+        margin-bottom: 0.75rem;
+        overflow-wrap: anywhere;
+    }
+
+    .push-fields {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+        gap: 0.75rem 1rem;
     }
 
     label {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        margin-top: 0.4rem;
+        gap: 0.2rem;
+        min-width: 0;
+    }
+
+    .push-file {
+        grid-column: 1 / -1;
     }
 
     input:not([type="file"]) {
-        width: 22rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    input[type="file"] {
         max-width: 100%;
     }
 
-    .push-save {
-        margin-top: 0.5rem;
+    .push-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+
+        button {
+            margin: 0;
+        }
+
+        .push-remove {
+            margin-left: auto;
+        }
+    }
+
+    @media (max-width: 30rem) {
+        .push-usage {
+            flex-basis: 100%;
+            margin-left: 0;
+        }
+
+        .push-body {
+            padding-left: 1rem;
+        }
     }
 }
