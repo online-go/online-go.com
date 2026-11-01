@@ -249,3 +249,7 @@ move and does not recolour the official position. Selecting another post
 rebuilds the secondary board, so annotations from posts at the same position
 stay separate and do not change the live board. Draft discard detection includes
 annotation edits to existing positions and pen drawings.
+
+## Continue a posted variation
+
+A legal stone placement on a posted variation starts a separate draft from the selected position and includes the placed move. Move navigation does not start a draft. The original post stays unchanged. The board engine emits `analysis-move` after a successful analysis placement; Kibitz uses this event to open the draft.

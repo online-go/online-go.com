@@ -271,7 +271,7 @@ describe("useKibitzGobans", () => {
         expect(instances).toHaveLength(2);
         expect(instances[1].config).toMatchObject({
             game_id: undefined,
-            interactive: false,
+            interactive: true,
             move_tree: { x: 1 },
         });
         expect(latest!.centerMode).toBe("variation");
