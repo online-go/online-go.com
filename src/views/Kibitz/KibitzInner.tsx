@@ -961,7 +961,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
             if (variation.game_id === currentGameId && !snapshot) {
                 showCurrentGameBaseNotReadyToast();
-                return false;
+                return;
             }
 
             controller.startVariationFromPostedVariation(
@@ -971,7 +971,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 moveTreeIdAsNumber(snapshot?.moveTreeId ?? null),
                 fromPath,
             );
-            return true;
         },
         [
             controller,
@@ -998,41 +997,6 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         gobans.secondary,
         onCreateVariationFromPostedVariation,
         secondaryPane.variation_id,
-    ]);
-
-    React.useEffect(() => {
-        const board = gobans.secondary?.goban;
-        if (centerMode !== "variation" || !board) {
-            return;
-        }
-        let started = false;
-        const onAnalysisMove = () => {
-            if (started) {
-                return;
-            }
-            const variation = displayedVariations.find(
-                (candidate) => candidate.id === secondaryPane.variation_id,
-            );
-            if (variation) {
-                started = onCreateVariationFromPostedVariation(
-                    variation,
-                    board.engine.cur_move.getMoveStringToThisPoint(),
-                );
-                if (started) {
-                    board.disableStonePlacement();
-                }
-            }
-        };
-        board.on("analysis-move", onAnalysisMove);
-        return () => {
-            board.off("analysis-move", onAnalysisMove);
-        };
-    }, [
-        centerMode,
-        gobans.secondary,
-        displayedVariations,
-        secondaryPane.variation_id,
-        onCreateVariationFromPostedVariation,
     ]);
 
     const onOpenCreateRoom = React.useCallback(() => {

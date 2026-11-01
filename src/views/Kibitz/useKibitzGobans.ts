@@ -414,7 +414,7 @@ export function useKibitzGobans({
                 ? { phase: "play" as const, removed: undefined, score: undefined }
                 : {}),
             board_div: document.createElement("div"),
-            interactive: true,
+            interactive: mode === "draft",
             connect_to_chat: false,
             game_id: useMainTrunk ? undefined : (targetGameId ?? undefined),
             move_tree:
@@ -437,7 +437,6 @@ export function useKibitzGobans({
         const compose = () => {
             refreshLastOfficialMoveFromTrunk(controller);
             const focus = mode === "variation" ? selectedVariation : draftBase;
-            let baselineNodeCount = countBranchNodes(controller.goban.engine.move_tree);
             if (focus) {
                 // Compose in the order the variations appear in the list, whatever is
                 // selected, so the order nodes enter parent.branches â€” and with it the
@@ -463,7 +462,6 @@ export function useKibitzGobans({
                 // A draft branched from a posted variation opens where the
                 // reader was standing in it, which is only the end of the
                 // line when they never stepped back.
-                baselineNodeCount = countBranchNodes(controller.goban.engine.move_tree);
                 if (mode === "draft" && pane.variation_draft_base_path) {
                     controller.goban.engine.followPath(0, pane.variation_draft_base_path);
                 } else if (focusEndpoint) {
@@ -472,8 +470,8 @@ export function useKibitzGobans({
             } else if (mode === "draft" && pane.variation_source_move_path) {
                 controller.goban.engine.followPath(0, pane.variation_source_move_path);
             }
-            controller.setAnalyzeTool("stone", "alternate");
             if (mode === "draft") {
+                controller.setAnalyzeTool("stone", "alternate");
                 const annotations = captureDraftAnnotations(controller.goban.engine.move_tree);
                 const penMarks = new Map(
                     [...annotations.keys()].map((node) => [node, JSON.stringify(node.pen_marks)]),
@@ -484,7 +482,7 @@ export function useKibitzGobans({
                 );
                 draftBaselineRef.current = {
                     controller,
-                    nodeCount: baselineNodeCount,
+                    nodeCount: countBranchNodes(controller.goban.engine.move_tree),
                     annotations,
                     penMarks,
                 };
