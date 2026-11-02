@@ -71,7 +71,7 @@ export function KibitzVariationComposer({
                 {showSubmitButton ? (
                     <button
                         type="button"
-                        className="sm"
+                        className="primary sm"
                         onClick={() => onSubmit(controller)}
                         disabled={isAnonymous}
                     >
