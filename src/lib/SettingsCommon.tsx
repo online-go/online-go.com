@@ -35,6 +35,8 @@ export interface SettingGroupPageProps {
 export interface SettingsState {
     profile?: any;
     notifications?: any;
+    /** The email, mobile and desktop switches over every kind of notification */
+    notifications_enabled?: { email: boolean; mobile: boolean; desktop: boolean };
     vacation_left?: string;
     hide_ui_class?: boolean;
     self_reported_account_linkages?: any;

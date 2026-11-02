@@ -288,8 +288,7 @@
         }
     }
 
-    .PreferenceToggle,
-    .EmailNotificationToggle {
+    .PreferenceToggle {
         margin-top: 0.2rem;
         margin-bottom: 0.2rem;
         display: flex;
@@ -309,29 +308,6 @@
         .Toggle {
             margin-right: 0.5rem;
             margin-left: 0.5rem;
-        }
-    }
-
-    .EmailNotificationToggle {
-        margin-top: 1rem;
-        margin-left: 1rem;
-        max-width: calc(100% - 1rem);
-
-        label {
-            flex: 1;
-            min-width: 0;
-
-            .preference-toggle-name {
-                width: auto;
-                max-width: 20rem;
-                flex: 1 1 auto;
-                flex-basis: auto;
-                min-width: 0;
-            }
-        }
-
-        .Toggle {
-            flex-shrink: 0;
         }
     }
 
@@ -485,15 +461,6 @@
 
     #SettingsContainer {
         align-items: stretch;
-    }
-
-    .Settings .EmailNotificationToggle {
-        margin-left: 0;
-        max-width: 100%;
-
-        label .preference-toggle-name {
-            max-width: none;
-        }
     }
 }
 
