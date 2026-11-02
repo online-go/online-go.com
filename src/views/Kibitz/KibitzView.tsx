@@ -47,6 +47,7 @@ import { useKibitzThinHeader } from "./kibitzThinHeader";
 import { KibitzMoreActionsRoomActions, openKibitzMoreActions } from "./KibitzMoreActionsPopover";
 import { KibitzScoreEstimate } from "./KibitzScoreEstimate";
 import { useKibitzScoreEstimation } from "./useKibitzScoreEstimation";
+import { useKibitzHelp } from "./useKibitzHelp";
 import "./KibitzView.css";
 import "@/views/Game/Players.css";
 
@@ -157,6 +158,7 @@ const useBehindLive = generateGobanHook(
  */
 export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const { room, gobans, isPortrait } = props;
+    const help = useKibitzHelp(gobans.centerMode === "variation");
     const thinHeader = useKibitzThinHeader();
     React.useEffect(() => {
         document.documentElement.classList.toggle("kibitz-thin-header", thinHeader);
@@ -554,8 +556,10 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 // game that is the room and its result; showing a variation,
                 // the variation alone, since the room is what the reader
                 // closes back to rather than what they are looking at.
-                <div className="Kibitz-header">
-                    {variationChip ?? (
+                <div className="Kibitz-header" ref={help.roomRef}>
+                    {variationChip ? (
+                        <div ref={help.variationRef}>{variationChip}</div>
+                    ) : (
                         <div className="Kibitz-header-titleRow">
                             <span
                                 className="Kibitz-room-title"
