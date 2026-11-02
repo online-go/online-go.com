@@ -106,7 +106,7 @@ export interface KibitzViewProps {
         onSaveRoomDetails: (title: string, description: string) => Promise<boolean>;
         onDeleteRoom: () => Promise<boolean>;
     };
-    /** Rendered above the sidebar panels, e.g. the preset change banner. */
+    /** Room status shown in the header. */
     banner?: React.ReactNode;
 }
 
@@ -568,6 +568,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                             ) : null}
                         </div>
                     )}
+                    {props.banner}
                 </div>
             }
             leftAside={leftAside}
@@ -608,7 +609,6 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 {!isPortrait && scoreEstimation.estimating && gobans.center && (
                     <KibitzScoreEstimate controller={gobans.center} />
                 )}
-                {props.banner}
                 <KibitzProposalPanel {...props.proposals} />
                 {!isPortrait && variationPanel}
                 {isPortrait ? (

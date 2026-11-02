@@ -247,6 +247,20 @@ function variationLeftAside(
 // jsdom reports a 1024x768 window, which GobanView resolves as a horizontal
 // desktop layout unless a test sets a compact viewport explicitly.
 describe("KibitzView", () => {
+    test.each([false, true])("keeps room status in the header (portrait: %s)", (isPortrait) => {
+        const props = baseProps({ isPortrait, banner: <span>Next game in 0:30</span> });
+        const { rerender } = render(<KibitzView {...props} />);
+        expect(screen.getByText("Next game in 0:30").closest(".Kibitz-header")).not.toBeNull();
+        const secondary = fakeController();
+        rerender(
+            <KibitzView
+                {...props}
+                gobans={{ ...props.gobans, center: secondary, secondary, centerMode: "variation" }}
+            />,
+        );
+        expect(screen.getByText("Next game in 0:30").closest(".Kibitz-header")).not.toBeNull();
+    });
+
     test("horizontal mode shows sidebar cards before Kibitz content and no board bars", () => {
         const props = baseProps({ banner: <div data-testid="banner" /> });
         const { container } = render(<KibitzView {...props} />);
@@ -258,9 +272,7 @@ describe("KibitzView", () => {
             ".GobanView-sidebar-content .GobanView-tab-panel.always",
         )!;
         expect(panel.firstElementChild).toHaveClass("Kibitz-sidebar-player-cards");
-        expect(panel.children[0].compareDocumentPosition(screen.getByTestId("banner"))).toBe(
-            Node.DOCUMENT_POSITION_FOLLOWING,
-        );
+        expect(screen.getByTestId("banner").closest(".Kibitz-header")).not.toBeNull();
         expect(panel.children[0].compareDocumentPosition(screen.getByTestId("proposals"))).toBe(
             Node.DOCUMENT_POSITION_FOLLOWING,
         );
