@@ -41,7 +41,7 @@ describe("emitNotification", () => {
     });
 
     test("a type turned off for desktop shows no pop-up", () => {
-        data.set("config.desktop_notifications", { challenge: false });
+        data.set("config.desktop_notifications", { challenge: false, yourMove: true });
         emitNotification("off", "body", undefined, "challenge");
         jest.advanceTimersByTime(1000);
         expect(NotificationStub).not.toHaveBeenCalled();
@@ -49,5 +49,32 @@ describe("emitNotification", () => {
         emitNotification("unlisted", "body", undefined, "friendRequest");
         jest.advanceTimersByTime(1000);
         expect(NotificationStub).toHaveBeenCalledTimes(1);
+    });
+
+    test("a pop-up with no settings row shows while any desktop setting is on", () => {
+        data.set("config.desktop_notifications", { challenge: false, yourMove: true });
+        emitNotification("Private Message", "body");
+        jest.advanceTimersByTime(1000);
+        expect(NotificationStub).toHaveBeenCalledTimes(1);
+    });
+
+    test("with every desktop setting off, no pop-up shows, typed or not", () => {
+        data.set("config.desktop_notifications", { challenge: false, yourMove: false });
+        emitNotification("Private Message", "body");
+        jest.advanceTimersByTime(1000);
+        emitNotification("Game Started", "body", undefined, "gameStarted");
+        jest.advanceTimersByTime(1000);
+        expect(NotificationStub).not.toHaveBeenCalled();
+    });
+
+    test("a pop-up shows when the server sent no desktop settings", () => {
+        emitNotification("Private Message", "body");
+        jest.advanceTimersByTime(1000);
+        expect(NotificationStub).toHaveBeenCalledTimes(1);
+
+        data.set("config.desktop_notifications", {});
+        emitNotification("Another message", "body");
+        jest.advanceTimersByTime(1000);
+        expect(NotificationStub).toHaveBeenCalledTimes(2);
     });
 });

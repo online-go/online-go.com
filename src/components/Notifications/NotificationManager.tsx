@@ -68,6 +68,20 @@ window.addEventListener("storage", (event) => {
     }
 });
 
+/* A type follows its own setting. With every setting off, as the All notifications
+ * switch leaves them, nothing shows, including pop-ups that have no setting of their own. */
+function desktopSettingsAllow(notification_type?: string): boolean {
+    const settings = data.get("config.desktop_notifications");
+    if (!settings) {
+        return true;
+    }
+    if (notification_type && settings[notification_type] === false) {
+        return false;
+    }
+    const values = Object.values(settings);
+    return values.length === 0 || values.includes(true);
+}
+
 export function emitNotification(
     title: string,
     body: string,
@@ -79,10 +93,7 @@ export function emitNotification(
             return;
         }
 
-        if (
-            notification_type &&
-            data.get("config.desktop_notifications")?.[notification_type] === false
-        ) {
+        if (!desktopSettingsAllow(notification_type)) {
             return;
         }
 
@@ -558,6 +569,7 @@ export class NotificationManager {
                                 browserHistory.push("/game/" + notification.game_id);
                             }
                         },
+                        "lateChatReceivedInGame",
                     );
                 }
             }
