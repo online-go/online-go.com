@@ -619,6 +619,86 @@ describe("KibitzController telemetry", () => {
         controller.destroy();
     });
 
+    it("announces a successful manual game change once in the room chat", async () => {
+        const sendTypedBody = jest.fn();
+        jest.mocked(analysisPolicy.getCurrentKibitzUser).mockReturnValue({
+            id: 12,
+            username: "Alice",
+            anonymous: false,
+        });
+        jest.mocked(chatManager.chat_manager.join).mockReturnValueOnce({
+            on: jest.fn(),
+            off: jest.fn(),
+            part: jest.fn(),
+            channel: { chat_log: [], users_by_join: [], sendTypedBody },
+        } as unknown as ChatChannelProxy);
+        mockedGet.mockResolvedValueOnce([]);
+        const controller = new KibitzController();
+        try {
+            await flushPromises();
+            mockedGet.mockResolvedValueOnce(roomPayload("user-3"));
+            await controller.selectRoom("user-3");
+            mockedPost.mockResolvedValueOnce(roomPayload("user-3").room);
+            expect(await controller.changeBoard("user-3", game)).toBe(true);
+            expect(sendTypedBody).toHaveBeenCalledTimes(1);
+            expect(sendTypedBody).toHaveBeenCalledWith({
+                type: "system",
+                text: "Alice changed the watched game to g",
+                game_id: 5,
+                links: [{ text: "g", href: "/game/5" }],
+            });
+
+            mockedPost.mockRejectedValueOnce(new Error("failed"));
+            expect(await controller.changeBoard("user-3", game)).toBe(false);
+            expect(sendTypedBody).toHaveBeenCalledTimes(1);
+        } finally {
+            controller.destroy();
+            jest.mocked(analysisPolicy.getCurrentKibitzUser).mockReturnValue(null);
+        }
+    });
+
+    it("does not announce a completed change in a different room", async () => {
+        const sendFirst = jest.fn();
+        const sendSecond = jest.fn();
+        const proxy = (sendTypedBody: jest.Mock) => ({
+            on: jest.fn(),
+            off: jest.fn(),
+            part: jest.fn(),
+            channel: { chat_log: [], users_by_join: [], sendTypedBody },
+        });
+        jest.mocked(analysisPolicy.getCurrentKibitzUser).mockReturnValue({
+            id: 12,
+            username: "Alice",
+            anonymous: false,
+        });
+        jest.mocked(chatManager.chat_manager.join)
+            .mockReturnValueOnce(proxy(sendFirst) as unknown as ChatChannelProxy)
+            .mockReturnValueOnce(proxy(sendSecond) as unknown as ChatChannelProxy);
+        mockedGet.mockResolvedValueOnce([]);
+        const controller = new KibitzController();
+        try {
+            await flushPromises();
+            mockedGet.mockResolvedValueOnce(roomPayload("user-3"));
+            await controller.selectRoom("user-3");
+            let finishChange: (value: unknown) => void = () => undefined;
+            mockedPost.mockReturnValueOnce(
+                new Promise((resolve) => {
+                    finishChange = resolve;
+                }),
+            );
+            const pending = controller.changeBoard("user-3", game);
+            mockedGet.mockResolvedValueOnce(roomPayload("user-4"));
+            await controller.selectRoom("user-4");
+            finishChange(roomPayload("user-3").room);
+            expect(await pending).toBe(true);
+            expect(sendFirst).not.toHaveBeenCalled();
+            expect(sendSecond).not.toHaveBeenCalled();
+        } finally {
+            controller.destroy();
+            jest.mocked(analysisPolicy.getCurrentKibitzUser).mockReturnValue(null);
+        }
+    });
+
     it("records post_variation ok when sent and malformed_payload when refused", async () => {
         mockedGet.mockResolvedValueOnce([]);
         const controller = new KibitzController();
