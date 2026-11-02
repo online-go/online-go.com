@@ -14,7 +14,7 @@ jest.mock("@/lib/chat_manager", () => ({
         join: jest.fn(() => ({
             on: jest.fn(),
             part: jest.fn(),
-            channel: { users_by_name: [], users_by_rank: [] },
+            channel: { users_by_name: [{ id: 1 }, { id: 2 }], users_by_rank: [] },
         })),
     },
 }));
@@ -52,5 +52,30 @@ describe("ChatUserCount", () => {
             "title",
             "Kibitz rooms are watching this game",
         );
+    });
+
+    it("shows the chat count alone without kibitz", () => {
+        render(
+            <ChatUserCount
+                channel="game-1"
+                onClick={jest.fn()}
+                active={false}
+                kibitz_viewers={5}
+            />,
+        );
+        expect(screen.getByRole("button")).toHaveTextContent(/^2$/);
+    });
+
+    it("adds the kibitz viewers to the count with has_kibitz", () => {
+        render(
+            <ChatUserCount
+                channel="game-1"
+                onClick={jest.fn()}
+                active={false}
+                has_kibitz
+                kibitz_viewers={5}
+            />,
+        );
+        expect(screen.getByRole("button")).toHaveTextContent(/^7$/);
     });
 });

@@ -109,8 +109,19 @@ jest.mock("@/components/ChatUserList", () => ({
     ChatUserList: ({ footer }: { footer?: React.ReactNode }) => (
         <div data-testid="user-list">{footer}</div>
     ),
-    ChatUserCount: ({ has_kibitz }: { has_kibitz?: boolean }) => (
-        <button type="button" data-testid="user-toggle" data-has-kibitz={String(!!has_kibitz)} />
+    ChatUserCount: ({
+        has_kibitz,
+        kibitz_viewers,
+    }: {
+        has_kibitz?: boolean;
+        kibitz_viewers?: number;
+    }) => (
+        <button
+            type="button"
+            data-testid="user-toggle"
+            data-has-kibitz={String(!!has_kibitz)}
+            data-kibitz-viewers={String(kibitz_viewers)}
+        />
     ),
 }));
 
@@ -171,6 +182,12 @@ describe("GameChat kibitz rooms", () => {
         mock_phase.mockReturnValue("finished");
         render(<GameChat channel="game-5" game_id={5} show_kibitz_rooms />);
         expect(mock_rooms).toHaveBeenCalledWith(5, false);
+    });
+
+    it("passes the summed kibitz viewer count to the toggle", () => {
+        mock_rooms.mockReturnValue([room_a, { ...room_a, id: "user-bbbb", viewer_count: 5 }]);
+        const { getByTestId } = render(<GameChat channel="game-5" game_id={5} show_kibitz_rooms />);
+        expect(getByTestId("user-toggle")).toHaveAttribute("data-kibitz-viewers", "7");
     });
 
     it("marks the toggle when rooms exist", () => {

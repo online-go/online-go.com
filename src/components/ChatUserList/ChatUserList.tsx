@@ -34,6 +34,10 @@ interface ChatUserCountProperties extends ChatUserListProperties {
     active: boolean;
     /** Kibitz rooms are watching this game: show the kibitz icon instead of `fa-users`. */
     has_kibitz?: boolean;
+    /** Viewers across those kibitz rooms, added to the chat count while
+     *  `has_kibitz` is set so the number reads "people watching this game
+     *  anywhere". */
+    kibitz_viewers?: number;
 }
 
 export function ChatUserList(props: ChatUserListProperties): React.ReactElement {
@@ -121,7 +125,10 @@ export function ChatUserCount(props: ChatUserCountProperties): React.ReactElemen
             }
         >
             {props.has_kibitz ? <KibitzUsersIcon /> : <i className="fa fa-users" />}{" "}
-            {proxy.current ? proxy.current.channel.users_by_name.length : ""}
+            {proxy.current
+                ? proxy.current.channel.users_by_name.length +
+                  (props.has_kibitz ? (props.kibitz_viewers ?? 0) : 0)
+                : ""}
         </button>
     );
 }

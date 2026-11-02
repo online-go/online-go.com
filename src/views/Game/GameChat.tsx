@@ -368,6 +368,10 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
                     active={show_player_list}
                     channel={channel}
                     has_kibitz={kibitz_rooms.length > 0}
+                    kibitz_viewers={kibitz_rooms.reduce(
+                        (total, room) => total + (room.viewer_count ?? 0),
+                        0,
+                    )}
                 />
             </div>
         </div>
