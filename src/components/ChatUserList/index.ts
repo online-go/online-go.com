@@ -16,3 +16,4 @@
  */
 
 export * from "./ChatUserList";
+export * from "./KibitzUsersIcon";

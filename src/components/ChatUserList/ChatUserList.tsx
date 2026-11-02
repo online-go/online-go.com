@@ -16,10 +16,11 @@
  */
 
 import * as React from "react";
-import { _, interpolate } from "@/lib/translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
 import { chat_manager, ChatChannelProxy } from "@/lib/chat_manager";
 import * as preferences from "@/lib/preferences";
 import { Player } from "@/components/Player";
+import { KibitzUsersIcon } from "./KibitzUsersIcon";
 import "./ChatUserList.css";
 
 interface ChatUserListProperties {
@@ -29,6 +30,8 @@ interface ChatUserListProperties {
 interface ChatUserCountProperties extends ChatUserListProperties {
     onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
     active: boolean;
+    /** Kibitz rooms are watching this game: show the kibitz icon instead of `fa-users`. */
+    has_kibitz?: boolean;
 }
 
 export function ChatUserList(props: ChatUserListProperties): React.ReactElement {
@@ -105,8 +108,16 @@ export function ChatUserCount(props: ChatUserCountProperties): React.ReactElemen
         <button
             onClick={props.onClick}
             className={"chat-input-player-list-toggle sm" + (props.active ? " active" : "")}
+            title={
+                props.has_kibitz
+                    ? pgettext(
+                          "Tooltip on the game chat user-list toggle when kibitz rooms are showing this game",
+                          "Kibitz rooms are watching this game",
+                      )
+                    : undefined
+            }
         >
-            <i className="fa fa-users" />{" "}
+            {props.has_kibitz ? <KibitzUsersIcon /> : <i className="fa fa-users" />}{" "}
             {proxy.current ? proxy.current.channel.users_by_name.length : ""}
         </button>
     );
