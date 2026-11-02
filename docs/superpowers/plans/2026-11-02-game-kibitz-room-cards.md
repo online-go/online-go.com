@@ -185,7 +185,7 @@ Expected: FAIL, module not found.
 
 - [ ] **Step 4: Implement `useGameKibitzRooms` in `useGameKibitzRooms.ts`**
 
-Signature as in Interfaces. State is `KibitzRoomSummary[]`. One `useEffect` keyed on `[game_id, hidden]` that returns early (and resets state to `[]`) when `game_id === undefined || hidden`; otherwise registers the five push handlers, subscribes, fetches, listens to socket `connect`, and cleans all of it up. The membership test for `room-created`/`room-updated` is `payload.current_game_id === game_id`: matching payloads replace-or-append by `id`; non-matching payloads remove by `id`. A `sortRoomsByViewers(rooms)` helper (module-private) applies `viewer_count` descending with a stable sort, and every state write goes through it. Document the hook with a doc comment in the style of `ChatKibitzRoom`'s.
+Signature as in Interfaces. The hook builds a memoized source, null when `game_id === undefined || hidden`, and passes it to the shared `useKibitzDirectoryRooms` (`src/lib/`), which `ChatKibitzRoom` also uses. The shared hook registers the five push handlers, subscribes, fetches, listens to socket `connect`, and cleans all of it up. Matching payloads replace-or-append by `id`; non-matching payloads remove by `id`. Every state write sorts by `viewer_count` descending with a stable sort.
 
 - [ ] **Step 5: Run the tests to verify they pass**
 
@@ -261,7 +261,6 @@ git -C /Users/mgregory/src/OGS/ogs-ui commit -m "feat(chat): kibitz state for th
 
 **Files:**
 - Create: `ogs-ui/src/views/Game/GameKibitzRooms.tsx`
-- Create: `ogs-ui/src/views/Game/GameKibitzRooms.css`
 - Modify: `ogs-ui/src/components/ChatUserList/ChatUserList.tsx:25-27,67-86` (`ChatUserListProperties`, `ChatUserList`)
 - Modify: `ogs-ui/src/components/ChatUserList/ChatUserList.css`
 - Test: `ogs-ui/src/views/Game/GameKibitzRooms.test.tsx`
@@ -288,7 +287,7 @@ Expected: FAIL, module not found.
 
 - [ ] **Step 3: Implement `GameKibitzRooms` and its CSS**
 
-Component per Interfaces. `GameKibitzRooms.css` takes the `.ChatKibitzRoom` rules from `src/components/Chat/ChatKibitzRoom.css` that apply (top border, header, `.kibitz-room-card` button reset and hover, `.room-title`, `.room-info-row`, `.room-live-line`, `.room-viewer-count`, `.room-viewer-icon`, `.room-viewer-number`) under `.GameKibitzRooms`, and drops the `.room-matchup` block. The Chat page card is not changed (spec non-goal); the duplication is deliberate and noted in a one-line comment at the top of the new CSS.
+Component per Interfaces, built from the shared `KibitzRoomCards` and `KibitzRoomCard` components (`src/components/KibitzRoomCard/`), which `ChatKibitzRoom` also uses. The styles live with those components; `ChatKibitzRoom.css` keeps only the `.room-matchup` block.
 
 - [ ] **Step 4: Add the `footer` prop to `ChatUserList`**
 
@@ -301,12 +300,12 @@ Expected: PASS.
 
 - [ ] **Step 6: Checks and commit**
 
-Run: `yarn --cwd /Users/mgregory/src/OGS/ogs-ui prettier:file src/views/Game/GameKibitzRooms.tsx src/views/Game/GameKibitzRooms.css src/views/Game/GameKibitzRooms.test.tsx src/components/ChatUserList/ChatUserList.tsx src/components/ChatUserList/ChatUserList.css`
+Run: `yarn --cwd /Users/mgregory/src/OGS/ogs-ui prettier:file src/views/Game/GameKibitzRooms.tsx src/views/Game/GameKibitzRooms.test.tsx src/components/ChatUserList/ChatUserList.tsx src/components/ChatUserList/ChatUserList.css`
 Run: `yarn --cwd /Users/mgregory/src/OGS/ogs-ui type-check`
 Run: `yarn --cwd /Users/mgregory/src/OGS/ogs-ui lint`
 
 ```bash
-git -C /Users/mgregory/src/OGS/ogs-ui add src/views/Game/GameKibitzRooms.tsx src/views/Game/GameKibitzRooms.css src/views/Game/GameKibitzRooms.test.tsx src/components/ChatUserList/ChatUserList.tsx src/components/ChatUserList/ChatUserList.css
+git -C /Users/mgregory/src/OGS/ogs-ui add src/views/Game/GameKibitzRooms.tsx src/views/Game/GameKibitzRooms.test.tsx src/components/ChatUserList/ChatUserList.tsx src/components/ChatUserList/ChatUserList.css
 git -C /Users/mgregory/src/OGS/ogs-ui commit -m "feat(game): kibitz room card stack for the chat user list"
 ```
 

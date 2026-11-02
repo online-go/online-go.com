@@ -206,9 +206,7 @@ Anti-goals (this would be a failure even if it works):
 - Cards that stay after the room has moved to another game.
 - A toggle that changes size or shifts the chat input when the icon swaps.
 - A second copy of the directory-following logic that drifts from
-  `ChatKibitzRoom`. If the two can share the push handling cleanly, share
-  it; if sharing would mean contorting one of them, keep them separate but
-  keep them structurally parallel.
+  `ChatKibitzRoom`. Both use `useKibitzDirectoryRooms`.
 
 ## Constraints
 
@@ -254,5 +252,3 @@ Anti-goals (this would be a failure even if it works):
   `.log-player-container`. Either is fine as long as the cards scroll with
   the user list column and sit at its bottom.
 - The exact SVG path for the icon.
-- Whether to extract the shared push-handling from `ChatKibitzRoom`, per the
-  anti-goal above.

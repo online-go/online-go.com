@@ -200,8 +200,9 @@ description if it has one, and the viewer count. Clicking a card opens
 
 `useGameKibitzRooms` (`src/views/Game/useGameKibitzRooms.ts`) seeds the
 list from `GET /api/v1/kibitz/rooms?game=<id>` — every room on the game,
-empty ones included — and then follows the `kibitz-rooms` directory
-pushes: `room-created` and `room-updated` add or drop a room by its
+empty ones included. `useKibitzDirectoryRooms`
+(`src/lib/useKibitzDirectoryRooms.ts`) then follows the `kibitz-rooms`
+directory pushes: `room-created` and `room-updated` add or drop a room by its
 `current_game_id`, `viewer-count-changed` re-sorts by viewers,
 `room-removed` drops, and `rooms-refresh` or a socket reconnect fetch again.
 A push that arrives during a fetch is replayed on the result, only the newest
@@ -218,7 +219,9 @@ for the difference from the names in the list. A viewer with both the
 game page and a room open counts twice. Only `Game.tsx` switches this on, through `show_kibitz_rooms`; the
 review page and the annul queue, which also mount `GameChat`, do not.
 `ChatKibitzRoom` on the Chat page is the sibling card, keyed by chat
-channel instead of game.
+channel instead of game. It uses the same hook and the same
+`KibitzRoomCard` and `KibitzRoomCards` components
+(`src/components/KibitzRoomCard/`), and adds a player matchup line.
 
 ## Game picker
 
