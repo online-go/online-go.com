@@ -25,6 +25,8 @@ import "./ChatUserList.css";
 
 interface ChatUserListProperties {
     channel: string;
+    /** Rendered under the user entries, at the bottom of the column. */
+    footer?: React.ReactNode;
 }
 
 interface ChatUserCountProperties extends ChatUserListProperties {
@@ -85,6 +87,7 @@ export function ChatUserList(props: ChatUserListProperties): React.ReactElement 
                     <Player user={user} flag rank />
                 </div>
             ))}
+            {props.footer && <div className="user-list-footer">{props.footer}</div>}
         </div>
     );
 }
