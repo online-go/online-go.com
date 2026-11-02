@@ -25,6 +25,8 @@ import type { KibitzRoomSummary } from "@/models/kibitz";
  * counts). Matches DIRECTORY_BROADCAST_CHANNEL on the server. */
 const KIBITZ_DIRECTORY_CHANNEL = "kibitz-rooms";
 
+type RoomsUpdate = (rooms: KibitzRoomSummary[]) => KibitzRoomSummary[];
+
 /** Most-watched room first; ties keep their existing order. */
 function sortRoomsByViewers(rooms: KibitzRoomSummary[]): KibitzRoomSummary[] {
     return [...rooms].sort((a, b) => (b.viewer_count ?? 0) - (a.viewer_count ?? 0));
@@ -40,8 +42,10 @@ function sortRoomsByViewers(rooms: KibitzRoomSummary[]): KibitzRoomSummary[] {
  * it, so a room that moves away disappears and a room that moves onto this
  * game appears. `viewer-count-changed` updates a count by channel,
  * `room-removed` drops by id, and `rooms-refresh` or a socket reconnect
- * fetch again. The channel is subscribed before the first fetch so no event
- * between the two is lost.
+ * fetch again. The channel is subscribed before the first fetch, and a push
+ * that arrives during a fetch is replayed on its result, because that result
+ * can be older than the push. Only the newest fetch is applied. A failed fetch
+ * keeps the current list.
  *
  * While `hidden` is true, or without a game id, the hook does nothing and
  * returns an empty list; the Game page passes `hidden` for a player whose
@@ -59,23 +63,34 @@ export function useGameKibitzRooms(
             return;
         }
         let cancelled = false;
+        let latest_fetch = 0;
+        let updates_during_fetch: RoomsUpdate[] | null = null;
+
+        const applyPush = (update: RoomsUpdate) => {
+            updates_during_fetch?.push(update);
+            setRooms(update);
+        };
 
         const refresh = () => {
+            const this_fetch = ++latest_fetch;
+            updates_during_fetch = [];
             get("kibitz/rooms", { game: game_id })
                 .then((fetched: KibitzRoomSummary[]) => {
-                    if (!cancelled) {
-                        // A server without the `game` filter returns every
-                        // room, so apply the membership test here too.
-                        setRooms(
-                            sortRoomsByViewers(
-                                (fetched ?? []).filter((r) => r.current_game_id === game_id),
-                            ),
-                        );
+                    if (cancelled || this_fetch !== latest_fetch) {
+                        return;
                     }
+                    // A server without the `game` filter returns every
+                    // room, so apply the membership test here too.
+                    const seed = sortRoomsByViewers(
+                        (fetched ?? []).filter((r) => r.current_game_id === game_id),
+                    );
+                    const updates = updates_during_fetch ?? [];
+                    updates_during_fetch = null;
+                    setRooms(updates.reduce((rooms, update) => update(rooms), seed));
                 })
                 .catch(() => {
-                    if (!cancelled) {
-                        setRooms([]);
+                    if (this_fetch === latest_fetch) {
+                        updates_during_fetch = null;
                     }
                 });
         };
@@ -84,7 +99,7 @@ export function useGameKibitzRooms(
             if (!payload?.id) {
                 return;
             }
-            setRooms((prev) => {
+            applyPush((prev) => {
                 const others = prev.filter((r) => r.id !== payload.id);
                 if (payload.current_game_id !== game_id) {
                     return others.length === prev.length ? prev : others;
@@ -102,7 +117,7 @@ export function useGameKibitzRooms(
                 return;
             }
             const viewer_count = payload.viewer_count;
-            setRooms((prev) =>
+            applyPush((prev) =>
                 prev.some((r) => r.channel === payload.channel)
                     ? sortRoomsByViewers(
                           prev.map((r) =>
@@ -114,7 +129,7 @@ export function useGameKibitzRooms(
         };
 
         const onRoomRemoved = (payload: { id?: string } | undefined) => {
-            setRooms((prev) => prev.filter((r) => r.id !== payload?.id));
+            applyPush((prev) => prev.filter((r) => r.id !== payload?.id));
         };
 
         const handlers = [

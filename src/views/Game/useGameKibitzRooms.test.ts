@@ -210,6 +210,137 @@ describe("useGameKibitzRooms", () => {
         await waitFor(() => expect(result.current).toHaveLength(2));
     });
 
+    describe("while a fetch is in flight", () => {
+        interface PendingFetch {
+            resolve: (rooms: KibitzRoomSummary[]) => void;
+            reject: (error: Error) => void;
+        }
+
+        /** Sends the next fetches to the returned list, for the test to settle. */
+        function holdFetches(): PendingFetch[] {
+            const pending: PendingFetch[] = [];
+            mock_get.mockImplementation(
+                () =>
+                    new Promise((resolve, reject) => {
+                        pending.push({ resolve, reject });
+                    }),
+            );
+            return pending;
+        }
+
+        function refetch(): void {
+            act(() => {
+                mock_push_manager.fire("rooms-refresh", undefined);
+            });
+        }
+
+        async function settle(fn: () => void): Promise<void> {
+            await act(async () => {
+                fn();
+            });
+        }
+
+        it("keeps a room dropped by a room-updated push out of the fetched list", async () => {
+            const { result } = await renderWithRooms([room_a]);
+            const pending = holdFetches();
+            refetch();
+            act(() => {
+                mock_push_manager.fire("room-updated", { ...room_a, current_game_id: 7 });
+            });
+            await settle(() => pending[0].resolve([room_a]));
+            expect(result.current).toEqual([]);
+        });
+
+        it("keeps a room dropped by a room-removed push out of the fetched list", async () => {
+            const { result } = await renderWithRooms([room_a]);
+            const pending = holdFetches();
+            refetch();
+            act(() => {
+                mock_push_manager.fire("room-removed", { id: "user-aaaa" });
+            });
+            await settle(() => pending[0].resolve([room_a]));
+            expect(result.current).toEqual([]);
+        });
+
+        it("keeps a viewer count pushed after the fetch began", async () => {
+            const { result } = await renderWithRooms([room_a]);
+            const pending = holdFetches();
+            refetch();
+            act(() => {
+                mock_push_manager.fire("viewer-count-changed", {
+                    channel: "kibitz-user-aaaa",
+                    viewer_count: 9,
+                });
+            });
+            await settle(() => pending[0].resolve([room_a]));
+            expect(result.current[0].viewer_count).toBe(9);
+        });
+
+        it("protects the first fetch from pushes too", async () => {
+            const pending = holdFetches();
+            const { result } = renderHook(() => useGameKibitzRooms(42, false));
+            act(() => {
+                mock_push_manager.fire("room-updated", { ...room_a, current_game_id: 7 });
+            });
+            await settle(() => pending[0].resolve([room_a, room_b]));
+            expect(ids(result.current)).toEqual(["user-bbbb"]);
+        });
+
+        it("ignores an older fetch that resolves after a newer one", async () => {
+            const { result } = await renderWithRooms([room_a]);
+            const pending = holdFetches();
+            refetch();
+            refetch();
+            await settle(() => pending[1].resolve([room_b]));
+            await settle(() => pending[0].resolve([room_a]));
+            expect(ids(result.current)).toEqual(["user-bbbb"]);
+        });
+
+        it("does not replay a push onto a fetch that began after it", async () => {
+            const { result } = await renderWithRooms([room_a]);
+            const pending = holdFetches();
+            refetch();
+            act(() => {
+                mock_push_manager.fire("room-updated", { ...room_a, current_game_id: 7 });
+            });
+            refetch();
+            await settle(() => pending[1].resolve([room_a]));
+            expect(ids(result.current)).toEqual(["user-aaaa"]);
+        });
+
+        it("does not replay a push from a finished fetch onto the next one", async () => {
+            const { result } = await renderWithRooms([room_a]);
+            const pending = holdFetches();
+            refetch();
+            act(() => {
+                mock_push_manager.fire("room-updated", { ...room_a, current_game_id: 7 });
+            });
+            await settle(() => pending[0].resolve([room_a]));
+            refetch();
+            await settle(() => pending[1].resolve([room_a]));
+            expect(ids(result.current)).toEqual(["user-aaaa"]);
+        });
+
+        it("keeps the list when a refetch fails", async () => {
+            const { result } = await renderWithRooms([room_a]);
+            const pending = holdFetches();
+            refetch();
+            await settle(() => pending[0].reject(new Error("502")));
+            expect(ids(result.current)).toEqual(["user-aaaa"]);
+        });
+
+        it("still applies pushes after a refetch fails", async () => {
+            const { result } = await renderWithRooms([room_a]);
+            const pending = holdFetches();
+            refetch();
+            await settle(() => pending[0].reject(new Error("502")));
+            act(() => {
+                mock_push_manager.fire("room-removed", { id: "user-aaaa" });
+            });
+            expect(result.current).toEqual([]);
+        });
+    });
+
     it("unsubscribes on unmount", async () => {
         const { unmount } = await renderWithRooms([room_a]);
         unmount();
