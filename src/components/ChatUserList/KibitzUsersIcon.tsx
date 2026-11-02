@@ -22,7 +22,7 @@ import "./KibitzUsersIcon.css";
  * The `fa-users` heads with a speech bubble above them: the chat user-list
  * toggle shows this in place of `fa-users` when kibitz rooms are watching
  * the game. Inline SVG because the OGS icon font has no generator in the
- * repository; sized by CSS to the `fa-users` glyph box.
+ * repository; CSS gives it the layout width of the `fa-users` glyph.
  */
 export function KibitzUsersIcon(): React.ReactElement {
     return (

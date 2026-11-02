@@ -216,7 +216,7 @@ git -C /Users/mgregory/src/OGS/ogs-ui commit -m "feat(game): hook listing the ki
 - Test: `ogs-ui/src/components/ChatUserList/ChatUserCount.test.tsx`
 
 **Interfaces:**
-- Produces: `export function KibitzUsersIcon(): React.ReactElement` — an inline `<svg class="KibitzUsersIcon" aria-hidden="true" focusable="false">` drawing the Font Awesome 4 `fa-users` silhouette (three heads-and-shoulders, centre one forward) with a speech bubble (rounded rectangle with a small tail) above the centre head. Sized by CSS to `height: 1em; width: 1.5em` (the `fa-users` glyph box) with `vertical-align: -0.125em`, `fill: currentColor`.
+- Produces: `export function KibitzUsersIcon(): React.ReactElement` — an inline `<svg class="KibitzUsersIcon" aria-hidden="true" focusable="false">` drawing the Font Awesome 4 `fa-users` silhouette (three heads-and-shoulders, centre one forward) with a speech bubble (rounded rectangle with a small tail) above the centre head. Sized by CSS to `font-size: inherit; height: 1em; width: 1.5em` with `margin: 0 -0.2143em`, so it takes up the 1.0714em width of the `fa-users` glyph, and `vertical-align: -0.125em`, `fill: currentColor`.
 - Produces: `ChatUserCountProperties` gains `has_kibitz?: boolean`. When true, `ChatUserCount` renders `<KibitzUsersIcon />` in place of `<i className="fa fa-users" />` and sets `title` to `pgettext("Tooltip on the game chat user-list toggle when kibitz rooms are showing this game", "Kibitz rooms are watching this game")`. Everything else unchanged.
 
 - [ ] **Step 1: Write the failing test**

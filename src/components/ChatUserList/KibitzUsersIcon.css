@@ -15,12 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Same box as the `fa-users` glyph it stands in for, so the toggle button
-   keeps its size when the icon swaps. */
+/* The drawing is wider than the `fa-users` glyph it stands in for, which
+   advances 1.0714em. The negative margins let it take up the same width, so
+   the toggle button keeps its size when the icon swaps. The font size undoes
+   the global `svg` font size, which would otherwise set the size of the em. */
 .KibitzUsersIcon {
     display: inline-block;
+    font-size: inherit;
     height: 1em;
     width: 1.5em;
+    margin: 0 -0.2143em;
     vertical-align: -0.125em;
     fill: currentColor;
 }
