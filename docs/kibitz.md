@@ -210,7 +210,10 @@ when the server starts letting players into rooms on their own game.
 While the user list is closed, the list toggle shows `KibitzUsersIcon`
 (`src/components/ChatUserList/KibitzUsersIcon.tsx`, the `fa-users` heads
 with a speech bubble above) whenever at least one room is watching the
-game. Only `Game.tsx` switches this on, through `show_kibitz_rooms`; the
+game, and its number becomes the game chat users plus the viewers across
+those rooms: people watching the game anywhere, with the cards accounting
+for the difference from the names in the list. A viewer with both the
+game page and a room open counts twice. Only `Game.tsx` switches this on, through `show_kibitz_rooms`; the
 review page and the annul queue, which also mount `GameChat`, do not.
 `ChatKibitzRoom` on the Chat page is the sibling card, keyed by chat
 channel instead of game.
