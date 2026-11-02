@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import "@/lib/data";
+import * as data from "@/lib/data";
 import "@/lib/sockets";
 import { get, put } from "@/lib/requests";
 import cached from "@/lib/cached";
@@ -76,4 +76,25 @@ test("an anonymous visitor's language is not recorded", async () => {
     await loadConfig({ id: -1, anonymous: true });
 
     expect(put).not.toHaveBeenCalled();
+});
+
+test("a new config updates the desktop settings that pop-ups read, on the same page load", async () => {
+    data.set("config.desktop_notifications", { yourMove: true });
+    jest.mocked(get).mockResolvedValue({
+        user: { id: 1, anonymous: false },
+        desktop_notifications: { yourMove: false },
+    });
+
+    await new Promise<void>((resolve) => cached.refresh.config(resolve));
+
+    expect(data.get("config.desktop_notifications")).toEqual({ yourMove: false });
+});
+
+test("a config with no desktop settings clears those of the last player", async () => {
+    data.set("config.desktop_notifications", { yourMove: false });
+    jest.mocked(get).mockResolvedValue({ user: { id: 0, anonymous: true } });
+
+    await new Promise<void>((resolve) => cached.refresh.config(resolve));
+
+    expect(data.get("config.desktop_notifications")).toBeUndefined();
 });

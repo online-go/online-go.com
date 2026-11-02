@@ -94,6 +94,8 @@ export const cached = {
                         data.set("user", config.user);
                         data.set("config.user", config.user);
                         data.set("config", config);
+                        /* Pop-ups read this key, which main.tsx otherwise only sets at load, from the previous config */
+                        data.set("config.desktop_notifications", config.desktop_notifications);
                         if (cb) {
                             cb();
                         }
