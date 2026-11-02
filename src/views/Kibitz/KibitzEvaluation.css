@@ -1,0 +1,10 @@
+.KibitzEvaluation {
+    text-align: center;
+    font-size: 0.85rem;
+    padding: 0.25rem;
+}
+
+/* The renderer owns the board background; its positioning wrapper must stay clear. */
+.Kibitz .goban-container > .Goban {
+    background: transparent;
+}

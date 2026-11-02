@@ -23,6 +23,9 @@ import type { GobanController } from "@/lib/GobanController";
 import type { KibitzRoomUser, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 import { KibitzView, KibitzViewProps } from "./KibitzView";
 
+jest.mock("./KibitzEvaluation", () => ({
+    KibitzEvaluation: () => <div data-testid="evaluation" />,
+}));
 jest.mock("@/components/Player", () => ({
     __esModule: true,
     Player: ({ user }: { user?: { username?: string } }) => (
@@ -250,6 +253,9 @@ describe("KibitzView", () => {
     test("horizontal mode shows sidebar cards before Kibitz content and no board bars", () => {
         const props = baseProps({ banner: <div data-testid="banner" /> });
         const { container } = render(<KibitzView {...props} />);
+        expect(container.querySelector(".Kibitz-header")).toContainElement(
+            screen.getByTestId("evaluation"),
+        );
         expect(screen.getByTestId("goban-container")).toBeInTheDocument();
         expect(screen.getByTestId("player-cards")).toHaveAttribute("data-game-id", "100");
         expect(container.querySelectorAll(".player-container")).toHaveLength(2);

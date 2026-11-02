@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { KibitzEvaluation } from "./KibitzEvaluation";
 import * as React from "react";
 import { _, interpolate, pgettext } from "@/lib/translate";
 import * as data from "@/lib/data";
@@ -555,6 +556,25 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 // the variation alone, since the room is what the reader
                 // closes back to rather than what they are looking at.
                 <div className="Kibitz-header">
+                    {gobans.center && gobans.main && (
+                        <KibitzEvaluation
+                            controller={gobans.center}
+                            source={
+                                gobans.center.goban.engine.game_id &&
+                                gobans.center.goban.engine.game_id !==
+                                    gobans.main.goban.engine.game_id
+                                    ? gobans.center
+                                    : gobans.main
+                            }
+                            key={`${gobans.center.goban.engine.game_id || room.current_game?.game_id || 0}:${gobans.center.goban.engine.move_tree?.id}`}
+                            gameId={
+                                gobans.center.goban.engine.game_id ||
+                                room.current_game?.game_id ||
+                                0
+                            }
+                        />
+                    )}
+
                     {variationChip ?? (
                         <div className="Kibitz-header-titleRow">
                             <span
@@ -575,12 +595,14 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             leftAsideCollapsedWidth={leftAsideCollapsed ? 28 : undefined}
             centerPlaceholder={waitingMessage}
             aboveBoard={
-                <KibitzStackedPlayerHeader
-                    controller={playerInfoController}
-                    estimatingScore={
-                        scoreEstimation.estimating && playerInfoController === gobans.center
-                    }
-                />
+                <>
+                    <KibitzStackedPlayerHeader
+                        controller={playerInfoController}
+                        estimatingScore={
+                            scoreEstimation.estimating && playerInfoController === gobans.center
+                        }
+                    />
+                </>
             }
             belowBoard={
                 isPortrait && scoreEstimation.estimating && gobans.center ? (
