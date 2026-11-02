@@ -44,7 +44,11 @@ export function PushAppPanel({ app }: { app: ApiClient }): React.ReactElement {
 
     function update(res: PushStatus) {
         setStatus(res);
-        setSigningSecret(res.signing_secret ?? "");
+        if (res.signing_secret) {
+            setSigningSecret(res.signing_secret);
+        } else if (!res.webhook) {
+            setSigningSecret("");
+        }
     }
 
     function sendTest() {
