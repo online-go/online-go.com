@@ -192,8 +192,7 @@
         min-height: 6rem;
     }
 
-    /* The banner and the proposal panel are short and keep their height. */
-    .KibitzPresetChangePendingBanner,
+    /* The proposal panel keeps its height. */
     .KibitzProposalPanel {
         flex-shrink: 0;
     }
