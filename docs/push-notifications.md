@@ -118,6 +118,11 @@ for FCM is `message.data` and for APNs sits next to `aps`:
 | `game_id`         | for game related notifications                                           |
 | `notification`    | the full notification as a JSON string, when it is small enough          |
 
+A `privateMessage` notification has the sender's `id` and `username` in `from`,
+and never the message. It goes to a player's devices once per sender, until the
+player connects again, and is not sent while they have a connection open. It is
+not in the player's notification list.
+
 `yourMove` and `timecop` are sent at high priority. If an earlier one for the
 same game is still showing, the new one replaces it (`apns-collapse-id` on
 iOS, the notification `tag` on Android). They expire when the player's clock
@@ -217,8 +222,8 @@ Players see the subscription under Settings, and can remove it there.
 
 ### What's sent
 
-Every notification for a subscribed player, whatever their per-type Email,
-Mobile and Desktop settings, as described in
+Every notification for a subscribed player, except `privateMessage`, whatever
+their per-type Email, Mobile and Desktop settings, as described in
 [When notifications are sent](#when-notifications-are-sent). The settings only
 control what OGS itself sends, so each event includes the player's settings for
 that kind of notification, with any method the player turned off for every

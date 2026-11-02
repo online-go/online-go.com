@@ -264,7 +264,7 @@ function renderPrivateMessageRow(devices: ReturnType<typeof device>[]) {
                 notifications: {
                     privateMessage: {
                         description: "Someone sends me a private message",
-                        value: { desktop: true },
+                        value: { mobile: true, desktop: true },
                     },
                 },
             }}
@@ -275,68 +275,45 @@ function renderPrivateMessageRow(devices: ReturnType<typeof device>[]) {
     );
 }
 
-function allowPopUps(permission: string) {
-    Object.defineProperty(window, "Notification", {
-        configurable: true,
-        writable: true,
-        value: { permission },
-    });
-}
+test("the private message row has no email toggle, and saves its mobile and desktop ones", async () => {
+    const view = renderPrivateMessageRow([device("fcm", "mobile"), device("webpush", "desktop")]);
+    await view.findByText("Chrome on Linux");
 
-describe("the private message row", () => {
-    afterEach(() => {
-        delete (window as { Notification?: unknown }).Notification;
-    });
+    /* The three all notifications switches, then this row's two toggles */
+    const switches = view.getAllByRole("switch");
+    expect(switches).toHaveLength(5);
+    const [mobile, desktop] = switches.slice(3);
+    expect(mobile).toBeChecked();
+    expect(desktop).toBeChecked();
 
-    test("offers only a desktop toggle, which saves its own setting", async () => {
-        preferences.set("desktop-notifications", true);
-        allowPopUps("granted");
-        const view = renderPrivateMessageRow([]);
-        await view.findByText(/No devices/);
-
-        /* The three all notifications switches, then this row's one toggle */
-        const switches = view.getAllByRole("switch");
-        expect(switches).toHaveLength(4);
-        const desktop = switches[3];
-        expect(desktop).toBeChecked();
-        expect(desktop).not.toBeDisabled();
-
-        fireEvent.click(desktop);
-        expect(put).toHaveBeenLastCalledWith("me/settings", {
-            notifications: {
-                privateMessage: {
-                    description: "Someone sends me a private message",
-                    value: { desktop: false },
-                },
+    fireEvent.click(mobile);
+    expect(put).toHaveBeenLastCalledWith("me/settings", {
+        notifications: {
+            privateMessage: {
+                description: "Someone sends me a private message",
+                value: { mobile: false, desktop: true },
             },
-        });
-        expect(data.get("config.desktop_notifications")).toEqual({ privateMessage: false });
+        },
     });
 
-    test("is disabled without tab pop-ups, even with a desktop push device", async () => {
-        preferences.set("desktop-notifications", false);
-        allowPopUps("granted");
-        const view = renderPrivateMessageRow([device("webpush", "desktop")]);
-        await view.findByText("Chrome on Linux");
-
-        const [, , all_desktop, desktop] = view.getAllByRole("switch");
-        expect(desktop).toBeDisabled();
-        expect(desktop).not.toBeChecked();
-        /* The switch over all notifications still has the push device to control */
-        expect(all_desktop).not.toBeDisabled();
+    fireEvent.click(desktop);
+    expect(put).toHaveBeenLastCalledWith("me/settings", {
+        notifications: {
+            privateMessage: {
+                description: "Someone sends me a private message",
+                value: { mobile: false, desktop: false },
+            },
+        },
     });
+    expect(data.get("config.desktop_notifications")).toEqual({ privateMessage: false });
+});
 
-    test("follows the all notifications switch", async () => {
-        preferences.set("desktop-notifications", true);
-        allowPopUps("granted");
-        const view = renderPrivateMessageRow([]);
-        await view.findByText(/No devices/);
+test("the private message row's mobile toggle is disabled with no mobile device", async () => {
+    const view = renderPrivateMessageRow([device("webpush", "desktop")]);
+    await view.findByText("Chrome on Linux");
 
-        const [, , all_desktop, desktop] = view.getAllByRole("switch");
-        fireEvent.click(all_desktop);
-
-        expect(desktop).toBeDisabled();
-        expect(desktop).not.toBeChecked();
-        expect(data.get("config.desktop_notifications")).toEqual({ privateMessage: false });
-    });
+    const [mobile, desktop] = view.getAllByRole("switch").slice(3);
+    expect(mobile).toBeDisabled();
+    expect(mobile).not.toBeChecked();
+    expect(desktop).not.toBeDisabled();
 });
