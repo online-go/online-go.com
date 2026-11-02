@@ -77,6 +77,7 @@ export interface KibitzRoomSummary {
     viewer_count: number;
     description?: string;
     creator_id?: number | null;
+    current_game_id?: number | null;
     current_game?: KibitzWatchedGame;
     pinned?: boolean;
     proposals_enabled?: boolean;

@@ -30,8 +30,10 @@ import { TabCompleteInput } from "@/components/TabCompleteInput";
 import { chat_markup } from "@/components/Chat";
 import { inGameModChannel } from "@/lib/chat_manager";
 import { MoveTree } from "goban";
-import { useUserIsParticipant } from "./GameHooks";
+import { useGamePlayersLoaded, usePhase, useUserIsParticipant } from "./GameHooks";
 import { useGobanController } from "./goban_context";
+import { useGameKibitzRooms } from "./useGameKibitzRooms";
+import { GameKibitzRooms } from "./GameKibitzRooms";
 import "./GameChat.css";
 
 export type ChatMode = "main" | "malkovich" | "moderator" | "hidden" | "personal";
@@ -39,6 +41,9 @@ interface GameChatProperties {
     channel: string;
     game_id?: number;
     review_id?: number;
+    /** List the kibitz rooms showing this game under the user list. Only the
+     *  Game page sets this; the review page and the annul queue do not. */
+    show_kibitz_rooms?: boolean;
 }
 
 interface ChatLine {
@@ -81,6 +86,16 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
     const chat_lines = React.useRef<ChatLine[]>([]);
     const [, refresh] = React.useState<number>();
     const userIsPlayer = useUserIsParticipant(goban);
+    const phase = usePhase(goban);
+    const players_loaded = useGamePlayersLoaded(goban);
+    // Mirrors the server's room access rule: a player may not enter a kibitz
+    // room on their own game until it has finished. Until the players are
+    // known nobody counts as a player, so wait for them before fetching.
+    const kibitz_hidden = !players_loaded || (userIsPlayer && phase !== "finished");
+    const kibitz_rooms = useGameKibitzRooms(
+        props.show_kibitz_rooms ? props.game_id : undefined,
+        kibitz_hidden,
+    );
 
     React.useEffect(() => {
         goban_controller.on("selected_chat_log", setSelectedChatLog);
@@ -276,7 +291,12 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
                         </div>
                     </div>
                 </div>
-                {(show_player_list || null) && <ChatUserList channel={channel} />}
+                {(show_player_list || null) && (
+                    <ChatUserList
+                        channel={channel}
+                        footer={<GameKibitzRooms rooms={kibitz_rooms} />}
+                    />
+                )}
             </div>
             {(show_quick_chat || null) && (
                 <QuickChat
@@ -347,6 +367,11 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
                     onClick={togglePlayerList}
                     active={show_player_list}
                     channel={channel}
+                    has_kibitz={kibitz_rooms.length > 0}
+                    kibitz_viewers={kibitz_rooms.reduce(
+                        (total, room) => total + (room.viewer_count ?? 0),
+                        0,
+                    )}
                 />
             </div>
         </div>

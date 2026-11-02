@@ -197,6 +197,14 @@ export function useShowUndoRequested(
     return show_undo_requested;
 }
 
+/** React hook that returns true once the game's players are known. Until
+ *  the gamedata has loaded the engine carries placeholder players, so
+ *  `useUserIsParticipant` is false for everyone, including the players. */
+export const useGamePlayersLoaded = generateGobanHook((goban: Goban | null) => {
+    const players = goban?.engine.players;
+    return Boolean(players?.black?.id && players?.white?.id);
+});
+
 /** React hook that returns true if user is a participant in this game */
 export const useUserIsParticipant = generateGobanHook((goban: Goban | null) => {
     const user = data.get("user");

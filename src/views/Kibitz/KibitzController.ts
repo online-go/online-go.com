@@ -27,6 +27,7 @@ import {
 } from "@/lib/chat_manager";
 import { del, get, post, put } from "@/lib/requests";
 import { push_manager } from "@/components/UIPush/UIPush";
+import { KIBITZ_DIRECTORY_CHANNEL } from "@/lib/useKibitzDirectoryRooms";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { User } from "goban";
 import { getCurrentKibitzUser, isKibitzAccessBlockedForUser } from "./kibitzAnalysisPolicy";
@@ -138,8 +139,6 @@ interface KibitzAccessBlock {
     room_id: string;
     room_title: string;
 }
-
-const DIRECTORY_CHANNEL = "kibitz-rooms";
 
 function mapBackendCurrentGamePlayer(raw: BackendCurrentGamePlayerBlock | null): KibitzRoomUser {
     if (raw === null) {
@@ -576,7 +575,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             push_manager.on("rooms-refresh", this.onRoomsRefresh),
             push_manager.on("viewer-count-changed", this.onViewerCountChanged),
         );
-        push_manager.subscribe(DIRECTORY_CHANNEL);
+        push_manager.subscribe(KIBITZ_DIRECTORY_CHANNEL);
 
         void this.refreshRoomDirectory();
     }
@@ -591,7 +590,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             push_manager.off(handler);
         }
         this._directory_handlers = [];
-        push_manager.unsubscribe(DIRECTORY_CHANNEL);
+        push_manager.unsubscribe(KIBITZ_DIRECTORY_CHANNEL);
 
         this.unsubscribeActiveRoom();
     }
