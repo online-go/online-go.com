@@ -18,7 +18,14 @@
 import * as data from "@/lib/data";
 import { del, post } from "@/lib/requests";
 import { current_language } from "@/lib/translate";
-import { disableWebPush, formFactor, refreshWebPush, webPushState } from "./web_push";
+import {
+    disableWebPush,
+    enableWebPush,
+    formFactor,
+    pauseWebPush,
+    refreshWebPush,
+    webPushState,
+} from "./web_push";
 
 jest.mock("@/lib/requests", () => ({
     post: jest.fn(),
@@ -26,6 +33,7 @@ jest.mock("@/lib/requests", () => ({
 }));
 
 const ENDPOINT = "https://fcm.googleapis.com/fcm/send/abc123";
+const NEW_ENDPOINT = "https://fcm.googleapis.com/fcm/send/def456";
 const IPHONE_SAFARI =
     "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1";
 const IPADOS_SAFARI =
@@ -38,27 +46,42 @@ let subscription: {
     toJSON: () => { endpoint: string; keys: { p256dh: string; auth: string } };
 } | null;
 
+let subscribe: jest.Mock;
+
 function defineGlobal(target: object, name: string, value: unknown) {
     Object.defineProperty(target, name, { configurable: true, writable: true, value });
 }
 
-function installPushSupport() {
-    subscription = {
-        endpoint: ENDPOINT,
+function makeSubscription(endpoint: string) {
+    return {
+        endpoint,
         unsubscribe: jest.fn(async () => {
             subscription = null;
             return true;
         }),
-        toJSON: () => ({ endpoint: ENDPOINT, keys: { p256dh: "p256dh-key", auth: "auth-key" } }),
+        toJSON: () => ({ endpoint, keys: { p256dh: "p256dh-key", auth: "auth-key" } }),
     };
+}
+
+function installPushSupport() {
+    subscription = makeSubscription(ENDPOINT);
+    subscribe = jest.fn(async () => {
+        subscription = makeSubscription(NEW_ENDPOINT);
+        return subscription;
+    });
     const registration = {
-        pushManager: { getSubscription: jest.fn(async () => subscription) },
+        pushManager: { getSubscription: jest.fn(async () => subscription), subscribe },
     };
     defineGlobal(navigator, "serviceWorker", {
         getRegistration: jest.fn(async () => registration),
+        register: jest.fn(async () => registration),
+        ready: Promise.resolve(registration),
     });
     defineGlobal(window, "PushManager", function PushManager() {});
-    defineGlobal(window, "Notification", { permission: "granted" });
+    defineGlobal(window, "Notification", {
+        permission: "granted",
+        requestPermission: jest.fn(async () => "granted"),
+    });
 }
 
 function installMatchMedia(matches: boolean) {
@@ -84,6 +107,8 @@ function rememberPlayers(ids: number[], endpoint = ENDPOINT) {
 
 beforeEach(() => {
     jest.mocked(post).mockReset();
+    jest.mocked(del).mockReset();
+    jest.mocked(del).mockResolvedValue(undefined);
     localStorage.clear();
     data.set(
         "config.vapid_public_key",
@@ -132,7 +157,7 @@ test("another player on the same browser does not inherit push", async () => {
     expect(await webPushState()).toBe("off");
 });
 
-test("signing out unsubscribes this browser before the server has answered", async () => {
+test("turning push off unsubscribes this browser before the server has answered", async () => {
     signInAs(1);
     rememberPlayers([1]);
     const unsubscribe = subscription!.unsubscribe;
@@ -143,6 +168,193 @@ test("signing out unsubscribes this browser before the server has answered", asy
 
     expect(unsubscribe).toHaveBeenCalled();
     expect(del).toHaveBeenCalledWith(`me/push_devices?token=${encodeURIComponent(ENDPOINT)}`);
+});
+
+test("signing out stops the server pushing here, and signing back in starts it again without a click", async () => {
+    signInAs(1);
+    rememberPlayers([1]);
+    const unsubscribe = subscription!.unsubscribe;
+
+    await pauseWebPush();
+
+    expect(del).toHaveBeenCalledWith(`me/push_devices?token=${encodeURIComponent(ENDPOINT)}`);
+    expect(unsubscribe).not.toHaveBeenCalled();
+
+    await refreshWebPush();
+
+    expect(subscribe).not.toHaveBeenCalled();
+    expect(post).toHaveBeenCalledWith(
+        "me/push_devices",
+        expect.objectContaining({ token: ENDPOINT, opt_in: true }),
+    );
+    expect(await webPushState()).toBe("on");
+
+    /* The pause ended with that sign in, so later page loads only refresh */
+    await refreshWebPush();
+    expect(post).toHaveBeenLastCalledWith(
+        "me/push_devices",
+        expect.objectContaining({ opt_in: false }),
+    );
+});
+
+test("a sign out the server does not answer still stops pushes here, and signing in subscribes again", async () => {
+    signInAs(1);
+    rememberPlayers([1]);
+    const unsubscribe = subscription!.unsubscribe;
+    jest.mocked(del).mockRejectedValueOnce(new Error("offline"));
+
+    await pauseWebPush();
+
+    expect(unsubscribe).toHaveBeenCalled();
+
+    await refreshWebPush();
+
+    expect(subscribe).toHaveBeenCalled();
+    expect(post).toHaveBeenCalledWith(
+        "me/push_devices",
+        expect.objectContaining({ token: NEW_ENDPOINT, opt_in: true }),
+    );
+    expect(await webPushState()).toBe("on");
+});
+
+test("a sign out the server never answers still stops pushes here", async () => {
+    jest.useFakeTimers();
+    try {
+        signInAs(1);
+        rememberPlayers([1]);
+        const unsubscribe = subscription!.unsubscribe;
+        jest.mocked(del).mockReturnValueOnce(new Promise(() => {}));
+
+        const pause = pauseWebPush();
+        await jest.advanceTimersByTimeAsync(10000);
+        await pause;
+
+        expect(unsubscribe).toHaveBeenCalled();
+    } finally {
+        jest.useRealTimers();
+    }
+});
+
+test("a sign out that never finishes leaves the next player unable to inherit push", async () => {
+    signInAs(1);
+    rememberPlayers([1]);
+    const unsubscribe = subscription!.unsubscribe;
+    jest.mocked(del).mockReturnValueOnce(new Promise(() => {}));
+
+    void pauseWebPush();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    signInAs(2);
+    await refreshWebPush();
+
+    expect(unsubscribe).toHaveBeenCalled();
+});
+
+test("a player who never opted in has nothing to pause or resume", async () => {
+    signInAs(1);
+
+    await pauseWebPush();
+    await refreshWebPush();
+
+    expect(del).not.toHaveBeenCalled();
+    expect(post).not.toHaveBeenCalled();
+    expect(subscribe).not.toHaveBeenCalled();
+    expect(await webPushState()).toBe("off");
+});
+
+test("turning push off stays off after signing out and back in", async () => {
+    signInAs(1);
+    rememberPlayers([1]);
+    await pauseWebPush();
+    await refreshWebPush();
+
+    await disableWebPush();
+    await pauseWebPush();
+    await refreshWebPush();
+
+    expect(subscribe).not.toHaveBeenCalled();
+    expect(await webPushState()).toBe("off");
+});
+
+test("a player's push comes back after another player signed in on the same browser", async () => {
+    signInAs(1);
+    rememberPlayers([1]);
+    signInAs(2);
+    await refreshWebPush();
+    expect(await webPushState()).toBe("off");
+    expect(post).not.toHaveBeenCalled();
+
+    signInAs(1);
+    await refreshWebPush();
+
+    expect(subscribe).toHaveBeenCalled();
+    expect(post).toHaveBeenCalledWith(
+        "me/push_devices",
+        expect.objectContaining({ token: NEW_ENDPOINT, opt_in: true }),
+    );
+    expect(await webPushState()).toBe("on");
+});
+
+test("two players who both opted in get push on the browser while they are signed in", async () => {
+    signInAs(1);
+    rememberPlayers([1]);
+    await pauseWebPush();
+
+    signInAs(2);
+    await refreshWebPush();
+    expect(post).not.toHaveBeenCalled();
+    await enableWebPush();
+    expect(await webPushState()).toBe("on");
+    await pauseWebPush();
+
+    signInAs(1);
+    await refreshWebPush();
+    expect(post).toHaveBeenLastCalledWith(
+        "me/push_devices",
+        expect.objectContaining({ opt_in: true }),
+    );
+    expect(await webPushState()).toBe("on");
+
+    signInAs(2);
+    expect(await webPushState()).toBe("off");
+    await refreshWebPush();
+    expect(post).toHaveBeenLastCalledWith(
+        "me/push_devices",
+        expect.objectContaining({ opt_in: true }),
+    );
+    expect(await webPushState()).toBe("on");
+});
+
+test("push that cannot restart without a click waits for the player to turn it on", async () => {
+    signInAs(1);
+    rememberPlayers([1]);
+    jest.mocked(del).mockRejectedValueOnce(new Error("offline"));
+    await pauseWebPush();
+    subscribe.mockRejectedValueOnce(new DOMException("needs a gesture", "NotAllowedError"));
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+
+    await refreshWebPush();
+
+    expect(post).not.toHaveBeenCalled();
+    expect(await webPushState()).toBe("off");
+
+    await enableWebPush();
+
+    expect(await webPushState()).toBe("on");
+    warn.mockRestore();
+});
+
+test("a browser that has lost notification permission does not restart push", async () => {
+    signInAs(1);
+    rememberPlayers([1]);
+    jest.mocked(del).mockRejectedValueOnce(new Error("offline"));
+    await pauseWebPush();
+    defineGlobal(window, "Notification", { permission: "default" });
+
+    await refreshWebPush();
+
+    expect(subscribe).not.toHaveBeenCalled();
+    expect(post).not.toHaveBeenCalled();
 });
 
 test("a subscription the browser rotated is registered again as opted in", async () => {

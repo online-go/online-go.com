@@ -23,6 +23,11 @@
  * a different player signing in on the same browser does not take it over by
  * just loading a page. It also remembers the endpoint they opted in with, so
  * an endpoint the browser rotated can be told apart from one that was removed.
+ *
+ * A player who signs out, or who loses the browser to another player, stays
+ * opted in. localStorage remembers them as paused, and their push starts again
+ * when they next sign in here. Only turning push off, or removing this browser
+ * from the device list, ends it.
  */
 
 import * as data from "@/lib/data";
@@ -34,22 +39,36 @@ export type WebPushState = "on" | "off" | "blocked" | "unsupported" | "needs-hom
 
 const PLAYERS_KEY = "web-push-players";
 const ENDPOINT_KEY = "web-push-endpoint";
+const PAUSED_PLAYERS_KEY = "web-push-paused-players";
 const PUSH_NOTIFICATION_WORKER_URL = "/push-notification-worker.js";
 const SCOPE = "/";
+/* Signing out gives the server this long to stop pushing before unsubscribing */
+const SIGN_OUT_SERVER_WAIT_MS = 3000;
 
-function rememberedPlayers(): number[] {
+function storedPlayers(key: string): number[] {
     try {
-        const players = JSON.parse(localStorage.getItem(PLAYERS_KEY) || "[]");
+        const players = JSON.parse(localStorage.getItem(key) || "[]");
         return Array.isArray(players) ? players : [];
     } catch {
         return [];
     }
 }
 
+function rememberedPlayers(): number[] {
+    return storedPlayers(PLAYERS_KEY);
+}
+
+function pausedPlayers(): number[] {
+    return storedPlayers(PAUSED_PLAYERS_KEY);
+}
+
 /* The endpoint belongs to the last player who opted in, so that is the only
- * player remembered. */
+ * player remembered as holding it. Any earlier holder is paused. */
 function rememberPlayer(player_id: number, endpoint: string): void {
     try {
+        const paused = new Set([...pausedPlayers(), ...rememberedPlayers()]);
+        paused.delete(player_id);
+        localStorage.setItem(PAUSED_PLAYERS_KEY, JSON.stringify([...paused]));
         localStorage.setItem(PLAYERS_KEY, JSON.stringify([player_id]));
         localStorage.setItem(ENDPOINT_KEY, endpoint);
     } catch (e) {
@@ -69,6 +88,19 @@ function forgetPlayer(player_id: number): void {
     try {
         const players = rememberedPlayers().filter((id) => id !== player_id);
         localStorage.setItem(PLAYERS_KEY, JSON.stringify(players));
+        const paused = pausedPlayers().filter((id) => id !== player_id);
+        localStorage.setItem(PAUSED_PLAYERS_KEY, JSON.stringify(paused));
+    } catch (e) {
+        console.warn(e);
+    }
+}
+
+/* Moves every player remembered as holding the endpoint to the paused list */
+function pauseRememberedPlayers(): void {
+    try {
+        const paused = new Set([...pausedPlayers(), ...rememberedPlayers()]);
+        localStorage.setItem(PAUSED_PLAYERS_KEY, JSON.stringify([...paused]));
+        localStorage.setItem(PLAYERS_KEY, "[]");
     } catch (e) {
         console.warn(e);
     }
@@ -196,14 +228,19 @@ export async function enableWebPush(): Promise<void> {
         return;
     }
 
+    const subscription = await subscribeBrowser(vapid_public_key);
+    await post("me/push_devices", subscriptionBody(subscription, true));
+    rememberPlayer(player_id, subscription.endpoint);
+}
+
+async function subscribeBrowser(vapid_public_key: string): Promise<PushSubscription> {
     const registration = await navigator.serviceWorker.ready;
     const options = {
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapid_public_key),
     };
-    let subscription: PushSubscription;
     try {
-        subscription = await registration.pushManager.subscribe(options);
+        return await registration.pushManager.subscribe(options);
     } catch (e) {
         /* A subscription made with an older VAPID key has to go first */
         const stale = await registration.pushManager.getSubscription();
@@ -211,11 +248,8 @@ export async function enableWebPush(): Promise<void> {
             throw e;
         }
         await stale.unsubscribe();
-        subscription = await registration.pushManager.subscribe(options);
+        return registration.pushManager.subscribe(options);
     }
-
-    await post("me/push_devices", subscriptionBody(subscription, true));
-    rememberPlayer(player_id, subscription.endpoint);
 }
 
 /** Unsubscribes this browser and tells the server to stop pushing to it. */
@@ -228,7 +262,7 @@ export async function disableWebPush(): Promise<void> {
     if (!subscription) {
         return;
     }
-    /* Unsubscribe here first: signing out may leave the page before the server answers */
+    /* Unsubscribe here first: clearing local data may leave the page before the server answers */
     const endpoint = subscription.endpoint;
     try {
         await subscription.unsubscribe();
@@ -237,11 +271,65 @@ export async function disableWebPush(): Promise<void> {
     }
 }
 
-/** Keeps the server's copy of this browser's subscription fresh, and turns
- * push off here if the server no longer gives it to this player. */
+/** Stops pushes to this browser for a sign out, and remembers to start them
+ * again when the player next signs in here. The browser keeps its subscription
+ * when it can, because some browsers only subscribe in response to a click. */
+export async function pauseWebPush(): Promise<void> {
+    const player_id = signedInPlayerId();
+    if (player_id === null || !rememberedPlayers().includes(player_id)) {
+        return;
+    }
+    const subscription = await currentSubscription();
+    if (subscription) {
+        const server_stopped = await Promise.race([
+            del(`me/push_devices?token=${encodeURIComponent(subscription.endpoint)}`).then(
+                () => true,
+                () => false,
+            ),
+            new Promise<boolean>((resolve) =>
+                setTimeout(() => resolve(false), SIGN_OUT_SERVER_WAIT_MS),
+            ),
+        ]);
+        if (!server_stopped) {
+            await subscription.unsubscribe();
+        }
+    }
+    /* Only now: until pushes have stopped, the next player to sign in must unsubscribe */
+    pauseRememberedPlayers();
+}
+
+/* Gives the endpoint back to a paused player. If that can't happen yet the
+ * player stays paused, so a later page load or a click on the turn on button
+ * can still do it. */
+async function resumeWebPush(player_id: number): Promise<void> {
+    const vapid_public_key = data.get("config.vapid_public_key");
+    if (!vapid_public_key || Notification.permission !== "granted") {
+        return;
+    }
+    let subscription = await currentSubscription();
+    if (!subscription) {
+        await navigator.serviceWorker.register(PUSH_NOTIFICATION_WORKER_URL, { scope: SCOPE });
+        try {
+            subscription = await subscribeBrowser(vapid_public_key);
+        } catch (e) {
+            console.warn("Could not start web push again without a click: ", e);
+            return;
+        }
+    }
+    await post("me/push_devices", subscriptionBody(subscription, true));
+    rememberPlayer(player_id, subscription.endpoint);
+}
+
+/** Keeps the server's copy of this browser's subscription fresh, starts push
+ * again for a player who was paused here, and turns push off here if the server
+ * no longer gives it to this player. */
 export async function refreshWebPush(): Promise<void> {
     const player_id = signedInPlayerId();
     if (player_id === null || !pushSupported()) {
+        return;
+    }
+    if (pausedPlayers().includes(player_id)) {
+        await resumeWebPush(player_id);
         return;
     }
     const remembered = rememberedPlayers();
@@ -249,6 +337,7 @@ export async function refreshWebPush(): Promise<void> {
         /* Another player opted in here: stop showing their notifications to this one */
         if (remembered.length > 0) {
             await (await currentSubscription())?.unsubscribe();
+            pauseRememberedPlayers();
         }
         return;
     }

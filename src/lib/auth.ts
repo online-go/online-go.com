@@ -21,7 +21,7 @@ import { del, get } from "@/lib/requests";
 import { errorLogger } from "@/lib/misc";
 import ITC from "@/lib/ITC";
 import { alert } from "@/lib/swal_config";
-import { currentWebPushEndpoint, disableWebPush } from "@/lib/web_push";
+import { currentWebPushEndpoint, disableWebPush, pauseWebPush } from "@/lib/web_push";
 
 ITC.register("logout", (device_uuid: string) => {
     if (device_uuid !== data.get("device.uuid", "")) {
@@ -30,16 +30,16 @@ ITC.register("logout", (device_uuid: string) => {
 });
 
 /* Web push must never stop a player from signing out, even if it hangs */
-async function disableWebPushForSignOut() {
+async function stopWebPushForSignOut(stop: () => Promise<void>) {
     try {
-        await Promise.race([disableWebPush(), new Promise((resolve) => setTimeout(resolve, 5000))]);
+        await Promise.race([stop(), new Promise((resolve) => setTimeout(resolve, 5000))]);
     } catch (e) {
         console.warn(e);
     }
 }
 
 export async function logout() {
-    await disableWebPushForSignOut();
+    await stopWebPushForSignOut(pauseWebPush);
     get("/api/v0/logout")
         .then((config) => {
             data.set(cached.config, config);
@@ -70,7 +70,8 @@ export function logoutOtherDevices() {
 }
 
 export async function logoutAndClearLocalData() {
-    await disableWebPushForSignOut();
+    /* The record of who to start push for again is about to go with the local data */
+    await stopWebPushForSignOut(disableWebPush);
 
     try {
         get("/api/v0/logout")
