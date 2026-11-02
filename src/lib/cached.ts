@@ -17,7 +17,8 @@
 
 import { push_manager } from "@/components/UIPush";
 import * as data from "@/lib/data";
-import { get } from "@/lib/requests";
+import { get, put } from "@/lib/requests";
+import { current_language } from "@/lib/translate";
 import ITC from "@/lib/ITC";
 import * as player_cache from "@/lib/player_cache";
 import { get_browser_timezone } from "@/lib/browser_timezone";
@@ -73,12 +74,28 @@ export const cached = {
                         data.remove("appeals.ban-reason");
                     }
 
+                    /* The server writes emails and pushes in the language it has recorded.
+                     * A server too old to send that language doesn't get told on every load. */
+                    if (
+                        config.user &&
+                        !config.user.anonymous &&
+                        typeof config.user.language === "string" &&
+                        config.user.language !== current_language &&
+                        current_language !== "debug"
+                    ) {
+                        put("me/settings", {
+                            site_preferences: { language: current_language },
+                        }).catch((err) => console.error("Error recording language: ", err));
+                    }
+
                     disable_refresh_callback_on_user_change = true;
                     try {
                         data.set(cached.config, config);
                         data.set("user", config.user);
                         data.set("config.user", config.user);
                         data.set("config", config);
+                        /* Pop-ups read this key, which main.tsx otherwise only sets at load, from the previous config */
+                        data.set("config.desktop_notifications", config.desktop_notifications);
                         if (cb) {
                             cb();
                         }

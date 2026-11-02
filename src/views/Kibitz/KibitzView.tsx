@@ -18,6 +18,7 @@
 import * as React from "react";
 import { _, interpolate, pgettext } from "@/lib/translate";
 import * as data from "@/lib/data";
+import { usePreference } from "@/lib/preferences";
 import { GobanController } from "@/lib/GobanController";
 import { popover, PopOver } from "@/lib/popover";
 import { GobanView, generateGobanHook, useGobanViewLayout } from "@/components/GobanView";
@@ -47,6 +48,7 @@ import { useKibitzThinHeader } from "./kibitzThinHeader";
 import { KibitzMoreActionsRoomActions, openKibitzMoreActions } from "./KibitzMoreActionsPopover";
 import { KibitzScoreEstimate } from "./KibitzScoreEstimate";
 import { useKibitzScoreEstimation } from "./useKibitzScoreEstimation";
+import { useKibitzHelp } from "./useKibitzHelp";
 import "./KibitzView.css";
 import "@/views/Game/Players.css";
 
@@ -157,11 +159,26 @@ const useBehindLive = generateGobanHook(
  */
 export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const { room, gobans, isPortrait } = props;
+    const help = useKibitzHelp(gobans.centerMode === "variation");
     const thinHeader = useKibitzThinHeader();
     React.useEffect(() => {
         document.documentElement.classList.toggle("kibitz-thin-header", thinHeader);
         return () => document.documentElement.classList.remove("kibitz-thin-header");
     }, [thinHeader]);
+    const [scrollToNavigate] = usePreference("scroll-to-navigate");
+    const onWheel: React.WheelEventHandler<HTMLDivElement> = React.useCallback(
+        (event) => {
+            if (!scrollToNavigate) {
+                return;
+            }
+            if (event.deltaY > 0) {
+                gobans.center?.nextMove();
+            } else if (event.deltaY < 0) {
+                gobans.center?.previousMove();
+            }
+        },
+        [scrollToNavigate, gobans.center],
+    );
     const scoreSource = gobans.playerBars ?? gobans.center;
     const scoreEstimation = useKibitzScoreEstimation(gobans.center, scoreSource, room.channel);
     const stopEstimate = React.useCallback(() => {
@@ -548,14 +565,17 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     return (
         <GobanView
             controller={gobans.center}
+            onWheel={onWheel}
             className={`Kibitz${thinHeader ? " Kibitz-thin-header" : ""}`}
             header={
                 // The header says what the centre is showing. Watching the
                 // game that is the room and its result; showing a variation,
                 // the variation alone, since the room is what the reader
                 // closes back to rather than what they are looking at.
-                <div className="Kibitz-header">
-                    {variationChip ?? (
+                <div className="Kibitz-header" ref={help.roomRef}>
+                    {variationChip ? (
+                        <div ref={help.variationRef}>{variationChip}</div>
+                    ) : (
                         <div className="Kibitz-header-titleRow">
                             <span
                                 className="Kibitz-room-title"

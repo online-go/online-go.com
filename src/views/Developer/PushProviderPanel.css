@@ -1,0 +1,121 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.PushProviderPanel {
+    .push-summary {
+        display: flex;
+        flex: 1;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.25rem 0.75rem;
+        min-width: 0;
+    }
+
+    .push-title {
+        font-weight: 600;
+    }
+
+    .push-state {
+        &.active {
+            color: var(--success);
+        }
+
+        &.not-configured {
+            color: var(--shade0);
+        }
+
+        &.paused {
+            padding: 0 0.5rem;
+            border-radius: 0.3rem;
+            background-color: var(--reject);
+            color: var(--colored-background-fg);
+        }
+    }
+
+    .push-usage {
+        margin-left: auto;
+        color: var(--shade0);
+        font-size: var(--font-size-small);
+    }
+
+    .push-body {
+        padding: 0.25rem 1rem 1rem 2.4rem;
+    }
+
+    .push-resume {
+        display: block;
+        margin: 0 0 0.75rem;
+    }
+
+    .push-details {
+        margin-bottom: 0.75rem;
+        overflow-wrap: anywhere;
+    }
+
+    .push-fields {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+        gap: 0.75rem 1rem;
+    }
+
+    label {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.2rem;
+        min-width: 0;
+    }
+
+    .push-file {
+        grid-column: 1 / -1;
+    }
+
+    input:not([type="file"]) {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    input[type="file"] {
+        max-width: 100%;
+    }
+
+    .push-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+
+        button {
+            margin: 0;
+        }
+
+        .push-remove {
+            margin-left: auto;
+        }
+    }
+
+    @media (max-width: 30rem) {
+        .push-usage {
+            flex-basis: 100%;
+            margin-left: 0;
+        }
+
+        .push-body {
+            padding-left: 1rem;
+        }
+    }
+}

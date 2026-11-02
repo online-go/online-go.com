@@ -748,6 +748,7 @@ class PrivateChat {
                     "Private Message",
                     line.from.username + " sent you a message:\n" + line.message.m,
                     () => {},
+                    "privateMessage",
                 );
             } else {
                 console.log("Ignoring private chat from ", line.from.username);

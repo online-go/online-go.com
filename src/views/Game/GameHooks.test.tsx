@@ -339,6 +339,84 @@ describe("useCanRequestUndo", () => {
         expect(canRequestUndo()).toBe(false);
     });
 
+    test("false for white after only black has moved", () => {
+        renderProbe(
+            new GobanController({
+                moves: [[16, 3, 9136.12]], // B
+                players: { black: OPPONENT, white: ME },
+            }),
+        );
+
+        expect(canRequestUndo()).toBe(false);
+    });
+
+    test("true for black after black's first move", () => {
+        renderProbe(
+            new GobanController({
+                moves: [[16, 3, 9136.12]], // B
+                players: { black: ME, white: OPPONENT },
+            }),
+        );
+
+        expect(canRequestUndo()).toBe(true);
+    });
+
+    test("true for white after white's first move", () => {
+        renderProbe(
+            new GobanController({
+                moves: [
+                    [16, 3, 9136.12], // B
+                    [3, 2, 1897.853], // W
+                ],
+                players: { black: OPPONENT, white: ME },
+            }),
+        );
+
+        expect(canRequestUndo()).toBe(true);
+    });
+
+    test("false for black after white's first move in a fixed handicap game", () => {
+        renderProbe(
+            new GobanController({
+                handicap: 2,
+                free_handicap_placement: false,
+                moves: [[3, 2, 1897.853]], // W
+                players: { black: ME, white: OPPONENT },
+            }),
+        );
+
+        expect(canRequestUndo()).toBe(false);
+    });
+
+    test("true for black after a free handicap stone", () => {
+        renderProbe(
+            new GobanController({
+                handicap: 2,
+                free_handicap_placement: true,
+                moves: [[16, 3, 9136.12]], // B handicap stone
+                players: { black: ME, white: OPPONENT },
+            }),
+        );
+
+        expect(canRequestUndo()).toBe(true);
+    });
+
+    test("false for white during free handicap placement", () => {
+        renderProbe(
+            new GobanController({
+                handicap: 2,
+                free_handicap_placement: true,
+                moves: [
+                    [16, 3, 9136.12], // B handicap stone
+                    [3, 2, 1897.853], // B handicap stone
+                ],
+                players: { black: OPPONENT, white: ME },
+            }),
+        );
+
+        expect(canRequestUndo()).toBe(false);
+    });
+
     test("false in rengo", () => {
         renderProbe(
             new GobanController({

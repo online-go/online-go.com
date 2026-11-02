@@ -16,42 +16,63 @@
  */
 
 import * as React from "react";
-import { _ } from "@/lib/translate";
+import { _, pgettext } from "@/lib/translate";
+import { PushNotificationsSection } from "./PushNotificationsSection";
 import "./Developer.css";
 
-export class Developer extends React.PureComponent {
-    constructor(props: {}) {
-        super(props);
-        // TODO: remove this
-        this.state = {};
-    }
+const EXTERNAL = { target: "_blank", rel: "noopener noreferrer" };
 
-    render() {
-        return (
-            <div className="Developer container">
-                <h1>{_("Source Code")}</h1>
-                <h2>
-                    <a href="https://github.com/online-go/online-go.com/">Source Code on GitHub</a>
-                </h2>
-                <iframe src="https://ghbtns.com/github-btn.html?user=online-go&repo=online-go.com&type=star&count=true&size=large"></iframe>
-                <iframe src="https://ghbtns.com/github-btn.html?user=online-go&repo=online-go.com&type=fork&count=true&size=large"></iframe>
-                <h1>Design Documentation</h1>
-                <h2>
-                    <a href="https://deepwiki.com/online-go/online-go.com">Deep-wiki docs</a>
-                </h2>
-                <h1>{_("Application management")}</h1>
-                <h2>
-                    <a href="/oauth2/applications/">OAuth2 Application Manager</a>
-                </h2>
-                <hr></hr>
-                <h1>API Documentation</h1>
-                <h2>(out-dated)</h2>
-                <h2>
-                    <a href="https://docs.online-go.com" target="_blank">
-                        https://docs.online-go.com
-                    </a>
-                </h2>
+export function Developer(): React.ReactElement {
+    return (
+        <div className="Developer container">
+            <h1>{_("Developers")}</h1>
+            <div className="developer-layout">
+                <dl className="developer-resources">
+                    <dt>{pgettext("Developer page: resource label", "Source code")}</dt>
+                    <dd>
+                        <a href="https://github.com/online-go/online-go.com/" {...EXTERNAL}>
+                            github.com/online-go/online-go.com
+                        </a>
+                        <div className="github-buttons">
+                            <iframe
+                                title={pgettext("Developer page: GitHub button", "GitHub stars")}
+                                src="https://ghbtns.com/github-btn.html?user=online-go&repo=online-go.com&type=star&count=true"
+                            ></iframe>
+                            <iframe
+                                title={pgettext("Developer page: GitHub button", "GitHub forks")}
+                                src="https://ghbtns.com/github-btn.html?user=online-go&repo=online-go.com&type=fork&count=true"
+                            ></iframe>
+                        </div>
+                    </dd>
+
+                    <dt>{pgettext("Developer page: resource label", "Design documentation")}</dt>
+                    <dd>
+                        <a href="https://deepwiki.com/online-go/online-go.com" {...EXTERNAL}>
+                            deepwiki.com/online-go/online-go.com
+                        </a>
+                    </dd>
+
+                    <dt>
+                        {pgettext("Developer page: resource label", "API documentation")}{" "}
+                        <span className="out-of-date">
+                            {pgettext("Developer page: the API documentation", "(out of date)")}
+                        </span>
+                    </dt>
+                    <dd>
+                        <a href="https://docs.online-go.com" {...EXTERNAL}>
+                            docs.online-go.com
+                        </a>
+                    </dd>
+
+                    <dt>{_("Application management")}</dt>
+                    <dd>
+                        <a href="/oauth2/applications/">
+                            {pgettext("Developer page link", "OAuth2 Application Manager")}
+                        </a>
+                    </dd>
+                </dl>
+                <PushNotificationsSection />
             </div>
-        );
-    }
+        </div>
+    );
 }

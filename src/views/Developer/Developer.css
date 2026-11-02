@@ -15,34 +15,60 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@import "../../global_styl/mixins.css";
-
 .Developer {
-    /* here */
-    img {
-        max-width: 100%;
-    }
-
-    a {
-        @mixin monospace;
-    }
-
     h1 {
-        margin-top: 2rem;
+        margin-top: 1rem;
     }
 
-    .github-link {
-        position: absolute;
-        top: var(--navbar-height);
-        right: 0;
-        border: 0;
+    .developer-layout {
+        display: grid;
+        grid-template-columns: 20rem minmax(0, 50rem);
+        gap: 3rem;
+        align-items: start;
     }
 
+    .developer-resources {
+        margin: 0;
+    }
+
+    dt {
+        font-weight: 600;
+        margin-top: 1.25rem;
+
+        &:first-child {
+            margin-top: 0;
+        }
+    }
+
+    dd {
+        margin: 0.2rem 0 0;
+        overflow-wrap: anywhere;
+    }
+
+    .out-of-date {
+        color: var(--shade0);
+        font-weight: normal;
+    }
+
+    .github-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.4rem;
+    }
+
+    /* The buttons are light documents. A dark scheme here paints them an opaque background. */
     iframe {
-        border-width: 0;
-        height: 2em;
-        width: 12em;
-        frameborder: 0;
-        scrolling: 0;
+        color-scheme: light;
+        border: 0;
+        height: 1.25rem;
+        width: 6.5rem;
+    }
+
+    @media (max-width: 60rem) {
+        .developer-layout {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 2rem;
+        }
     }
 }

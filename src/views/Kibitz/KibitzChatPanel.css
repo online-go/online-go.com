@@ -84,6 +84,19 @@
     min-width: 0;
     overflow: hidden;
 
+    .chat-lines .routine-system .chat-line.system {
+        color: color-mix(in srgb, var(--fg) 75%, var(--bg));
+        font-size: var(--font-size-small);
+        border: 0;
+        padding: 0;
+        margin: 0;
+
+        a {
+            color: inherit;
+            text-decoration: underline;
+        }
+    }
+
     .chat-lines {
         box-sizing: border-box;
         display: flex;

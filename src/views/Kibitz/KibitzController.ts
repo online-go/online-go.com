@@ -1194,7 +1194,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             this.onBoardChanged(payload);
             // Per briefing § 2.8: the initiating client posts the resulting
             // system chat line so the room's stream has a record of the swap.
-            this.postChangeBoardSystemMessage(game);
+            this.postChangeBoardSystemMessage(roomId, game);
             kibitzTelemetry.record("change_board");
             return true;
         } catch (error) {
@@ -1246,7 +1246,10 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
     }
 
-    private postChangeBoardSystemMessage(game: KibitzWatchedGame): void {
+    private postChangeBoardSystemMessage(roomId: string, game: KibitzWatchedGame): void {
+        if (this._active_room?.id !== roomId) {
+            return;
+        }
         const user = getCurrentKibitzUser();
         if (!user || user.anonymous) {
             return;

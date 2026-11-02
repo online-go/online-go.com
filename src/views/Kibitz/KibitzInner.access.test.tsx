@@ -121,8 +121,8 @@ test("an actual own-game block leaves other rooms available", async () => {
     const controller = makeController(makeAccessRooms());
     renderPage(controller, "/kibitz/own");
     expect(screen.getByText(/You can't stay in "Own game"/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Own game 1" })).toBeDisabled();
-    fireEvent.click(screen.getByRole("button", { name: "Other room 1" }));
+    expect(screen.getByRole("button", { name: "Own game, 1 spectator" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Other room, 1 spectator" }));
     await waitFor(() => expect(controller.selectRoom).toHaveBeenCalledWith("other"));
     expect(screen.queryByText(/You can't stay in/)).toBeNull();
 });
@@ -148,7 +148,7 @@ test("opening Kibitz with only blocked rooms shows the directory without joining
     const controller = makeController(makeAccessRooms().slice(0, 1));
     renderPage(controller);
     expect(screen.getByText("No rooms are available to join right now.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Own game 1" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Own game, 1 spectator" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Room" })).toBeEnabled();
     expect(controller.selectRoom).not.toHaveBeenCalled();
     expect(controller.setAccessBlocked).not.toHaveBeenCalled();
