@@ -204,10 +204,12 @@ empty ones included — and then follows the `kibitz-rooms` directory
 pushes: `room-created` and `room-updated` add or drop a room by its
 `current_game_id`, `viewer-count-changed` re-sorts by viewers,
 `room-removed` drops, and `rooms-refresh` or a socket reconnect fetch again.
+A push that arrives during a fetch is replayed on the result, only the newest
+fetch is applied, and a failed fetch keeps the current list.
 The hook is inert for a player of the game until it has finished, which is
 when the server starts letting players into rooms on their own game.
 
-While the user list is closed, the list toggle shows `KibitzUsersIcon`
+The list toggle shows `KibitzUsersIcon`
 (`src/components/ChatUserList/KibitzUsersIcon.tsx`, the `fa-users` heads
 with a speech bubble above) whenever at least one room is watching the
 game, and its number becomes the game chat users plus the viewers across
