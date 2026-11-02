@@ -255,3 +255,88 @@ test("the all notifications switch is disabled and off with its column", async (
     expect(all_desktop).toBeDisabled();
     expect(all_desktop).not.toBeChecked();
 });
+
+function renderPrivateMessageRow(devices: ReturnType<typeof device>[]) {
+    mockedGet.mockImplementation(() => Promise.resolve({ results: devices }));
+    return render(
+        <NotificationPreferences
+            state={{
+                notifications: {
+                    privateMessage: {
+                        description: "Someone sends me a private message",
+                        value: { desktop: true },
+                    },
+                },
+            }}
+            vacation_base_time={0}
+            refresh={() => () => 0}
+            updateSelfReportedAccountLinkages={() => 0}
+        />,
+    );
+}
+
+function allowPopUps(permission: string) {
+    Object.defineProperty(window, "Notification", {
+        configurable: true,
+        writable: true,
+        value: { permission },
+    });
+}
+
+describe("the private message row", () => {
+    afterEach(() => {
+        delete (window as { Notification?: unknown }).Notification;
+    });
+
+    test("offers only a desktop toggle, which saves its own setting", async () => {
+        preferences.set("desktop-notifications", true);
+        allowPopUps("granted");
+        const view = renderPrivateMessageRow([]);
+        await view.findByText(/No devices/);
+
+        /* The three all notifications switches, then this row's one toggle */
+        const switches = view.getAllByRole("switch");
+        expect(switches).toHaveLength(4);
+        const desktop = switches[3];
+        expect(desktop).toBeChecked();
+        expect(desktop).not.toBeDisabled();
+
+        fireEvent.click(desktop);
+        expect(put).toHaveBeenLastCalledWith("me/settings", {
+            notifications: {
+                privateMessage: {
+                    description: "Someone sends me a private message",
+                    value: { desktop: false },
+                },
+            },
+        });
+        expect(data.get("config.desktop_notifications")).toEqual({ privateMessage: false });
+    });
+
+    test("is disabled without tab pop-ups, even with a desktop push device", async () => {
+        preferences.set("desktop-notifications", false);
+        allowPopUps("granted");
+        const view = renderPrivateMessageRow([device("webpush", "desktop")]);
+        await view.findByText("Chrome on Linux");
+
+        const [, , all_desktop, desktop] = view.getAllByRole("switch");
+        expect(desktop).toBeDisabled();
+        expect(desktop).not.toBeChecked();
+        /* The switch over all notifications still has the push device to control */
+        expect(all_desktop).not.toBeDisabled();
+    });
+
+    test("follows the all notifications switch", async () => {
+        preferences.set("desktop-notifications", true);
+        allowPopUps("granted");
+        const view = renderPrivateMessageRow([]);
+        await view.findByText(/No devices/);
+
+        const [, , all_desktop, desktop] = view.getAllByRole("switch");
+        fireEvent.click(all_desktop);
+
+        expect(desktop).toBeDisabled();
+        expect(desktop).not.toBeChecked();
+        expect(data.get("config.desktop_notifications")).toEqual({ privateMessage: false });
+    });
+});

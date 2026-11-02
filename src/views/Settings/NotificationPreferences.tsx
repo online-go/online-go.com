@@ -34,6 +34,9 @@ interface DeliveryMethods {
     desktop: boolean;
 }
 
+/* Notifications that only an open tab's pop-up delivers, so they have no email or mobile toggle */
+const POP_UP_ONLY_TYPES = ["privateMessage"];
+
 /** Which of the Mobile and Desktop settings a device follows, as the server picks it. */
 function deliveryMethod(device: PushDevice): "mobile" | "desktop" | null {
     if (device.provider === "webhook") {
@@ -53,7 +56,9 @@ function deliveryMethod(device: PushDevice): "mobile" | "desktop" | null {
  *
  * The Mobile and Desktop toggles are disabled, and show off, when nothing would
  * be sent that way. Desktop also controls the notifications this browser shows
- * while the site is open, so it stays enabled when those are on.
+ * while the site is open, so it stays enabled when those are on. A notification
+ * that only those pop-ups deliver has just a Desktop toggle, which depends on
+ * them and not on any device.
  */
 export function NotificationPreferences(props: SettingGroupPageProps): React.ReactElement {
     const [notifications, setNotifications] = React.useState(props.state.notifications);
@@ -73,12 +78,10 @@ export function NotificationPreferences(props: SettingGroupPageProps): React.Rea
         /* not all browsers support the Notification API */
     }
 
+    const pop_ups_on = in_page_notifications && in_page_permitted;
     const methods = devices?.map(deliveryMethod);
     const no_mobile = methods !== undefined && !methods.includes("mobile");
-    const no_desktop =
-        methods !== undefined &&
-        !methods.includes("desktop") &&
-        !(in_page_notifications && in_page_permitted);
+    const no_desktop = methods !== undefined && !methods.includes("desktop") && !pop_ups_on;
 
     const email_disabled = !enabled.email;
     const mobile_disabled = no_mobile || !enabled.mobile;
@@ -172,39 +175,54 @@ export function NotificationPreferences(props: SettingGroupPageProps): React.Rea
                 {types.map((type) => {
                     const name = _(notifications[type].description);
                     const { email, mobile, desktop } = notifications[type].value;
+                    const pop_up_only = POP_UP_ONLY_TYPES.includes(type);
+                    const this_desktop_disabled = pop_up_only
+                        ? !pop_ups_on || !enabled.desktop
+                        : desktop_disabled;
                     return (
                         <React.Fragment key={type}>
                             <span>{name}</span>
-                            <label
-                                aria-label={interpolate(pgettext("Toggle label", "Email: %s"), [
-                                    name,
-                                ])}
-                            >
-                                <Toggle
-                                    checked={!email_disabled && !!email}
-                                    disabled={email_disabled}
-                                    onChange={(on) => save(type, { email: on })}
-                                />
-                            </label>
-                            <label
-                                aria-label={interpolate(pgettext("Toggle label", "Mobile: %s"), [
-                                    name,
-                                ])}
-                            >
-                                <Toggle
-                                    checked={!mobile_disabled && !!mobile}
-                                    disabled={mobile_disabled}
-                                    onChange={(on) => save(type, { mobile: on })}
-                                />
-                            </label>
+                            {pop_up_only ? (
+                                <>
+                                    <span />
+                                    <span />
+                                </>
+                            ) : (
+                                <>
+                                    <label
+                                        aria-label={interpolate(
+                                            pgettext("Toggle label", "Email: %s"),
+                                            [name],
+                                        )}
+                                    >
+                                        <Toggle
+                                            checked={!email_disabled && !!email}
+                                            disabled={email_disabled}
+                                            onChange={(on) => save(type, { email: on })}
+                                        />
+                                    </label>
+                                    <label
+                                        aria-label={interpolate(
+                                            pgettext("Toggle label", "Mobile: %s"),
+                                            [name],
+                                        )}
+                                    >
+                                        <Toggle
+                                            checked={!mobile_disabled && !!mobile}
+                                            disabled={mobile_disabled}
+                                            onChange={(on) => save(type, { mobile: on })}
+                                        />
+                                    </label>
+                                </>
+                            )}
                             <label
                                 aria-label={interpolate(pgettext("Toggle label", "Desktop: %s"), [
                                     name,
                                 ])}
                             >
                                 <Toggle
-                                    checked={!desktop_disabled && desktop !== false}
-                                    disabled={desktop_disabled}
+                                    checked={!this_desktop_disabled && desktop !== false}
+                                    disabled={this_desktop_disabled}
                                     onChange={(on) => save(type, { desktop: on })}
                                 />
                             </label>
