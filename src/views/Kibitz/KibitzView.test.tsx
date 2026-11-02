@@ -16,9 +16,10 @@
  */
 
 import * as React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
 import type { GobanController } from "@/lib/GobanController";
 import type { KibitzRoomUser, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 import { KibitzView, KibitzViewProps } from "./KibitzView";
@@ -46,7 +47,9 @@ jest.mock("@/components/KBShortcut", () => ({
 }));
 jest.mock("@/components/GobanContainer", () => ({
     __esModule: true,
-    GobanContainer: () => <div data-testid="goban-container" />,
+    GobanContainer: ({ onWheel }: { onWheel?: React.WheelEventHandler<HTMLDivElement> }) => (
+        <div data-testid="goban-container" onWheel={onWheel} />
+    ),
 }));
 jest.mock("@/components/GobanView/PlayerBar", () => ({
     __esModule: true,
@@ -144,6 +147,8 @@ function fakeController(curMove = 5, lastOfficialMove = 5): GobanController {
         canEstimateScore: jest.fn(() => true),
         estimateScore: jest.fn(),
         stopEstimatingScore: jest.fn(),
+        nextMove: jest.fn(),
+        previousMove: jest.fn(),
         goban: {
             config: { game_id: 100 },
             engine: {
@@ -937,4 +942,58 @@ describe("Kibitz score estimation", () => {
             jest.mocked(controller.stopEstimatingScore).mock.invocationCallOrder[0],
         ).toBeLessThan(jest.mocked(props.onCreateVariation!).mock.invocationCallOrder[0]);
     });
+});
+
+test("wheel navigation follows the enabled preference and the center board", () => {
+    const savedPreference = preferences.get("scroll-to-navigate");
+    preferences.set("scroll-to-navigate", true);
+    const props = baseProps();
+    const main = props.gobans.main!;
+    const variation = fakeController();
+    const { container, rerender, unmount } = render(<KibitzView {...props} />);
+    try {
+        const board = screen.getByTestId("goban-container");
+        fireEvent.wheel(board, { deltaY: 1 });
+        fireEvent.wheel(board, { deltaY: -1 });
+        fireEvent.wheel(board, { deltaY: 0 });
+        expect(main.nextMove).toHaveBeenCalledTimes(1);
+        expect(main.previousMove).toHaveBeenCalledTimes(1);
+
+        fireEvent.wheel(screen.getByTestId("chat"), { deltaY: 1 });
+        expect(main.nextMove).toHaveBeenCalledTimes(1);
+
+        rerender(
+            <KibitzView
+                {...props}
+                gobans={{
+                    ...props.gobans,
+                    center: variation,
+                    secondary: variation,
+                    centerMode: "variation",
+                }}
+            />,
+        );
+        fireEvent.wheel(container.querySelector(".GobanView-center")!, { deltaY: 1 });
+        expect(variation.nextMove).toHaveBeenCalledTimes(1);
+        expect(main.nextMove).toHaveBeenCalledTimes(1);
+        rerender(
+            <KibitzView
+                {...props}
+                gobans={{
+                    ...props.gobans,
+                    center: variation,
+                    secondary: variation,
+                    centerMode: "draft",
+                }}
+            />,
+        );
+        fireEvent.wheel(container.querySelector(".GobanView-center")!, { deltaY: -1 });
+        expect(variation.previousMove).toHaveBeenCalledTimes(1);
+        act(() => preferences.set("scroll-to-navigate", false));
+        fireEvent.wheel(container.querySelector(".GobanView-center")!, { deltaY: -1 });
+        expect(variation.previousMove).toHaveBeenCalledTimes(1);
+    } finally {
+        unmount();
+        preferences.set("scroll-to-navigate", savedPreference);
+    }
 });

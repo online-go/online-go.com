@@ -18,6 +18,7 @@
 import * as React from "react";
 import { _, interpolate, pgettext } from "@/lib/translate";
 import * as data from "@/lib/data";
+import { usePreference } from "@/lib/preferences";
 import { GobanController } from "@/lib/GobanController";
 import { popover, PopOver } from "@/lib/popover";
 import { GobanView, generateGobanHook, useGobanViewLayout } from "@/components/GobanView";
@@ -164,6 +165,20 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         document.documentElement.classList.toggle("kibitz-thin-header", thinHeader);
         return () => document.documentElement.classList.remove("kibitz-thin-header");
     }, [thinHeader]);
+    const [scrollToNavigate] = usePreference("scroll-to-navigate");
+    const onWheel: React.WheelEventHandler<HTMLDivElement> = React.useCallback(
+        (event) => {
+            if (!scrollToNavigate) {
+                return;
+            }
+            if (event.deltaY > 0) {
+                gobans.center?.nextMove();
+            } else if (event.deltaY < 0) {
+                gobans.center?.previousMove();
+            }
+        },
+        [scrollToNavigate, gobans.center],
+    );
     const scoreSource = gobans.playerBars ?? gobans.center;
     const scoreEstimation = useKibitzScoreEstimation(gobans.center, scoreSource, room.channel);
     const stopEstimate = React.useCallback(() => {
@@ -550,6 +565,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     return (
         <GobanView
             controller={gobans.center}
+            onWheel={onWheel}
             className={`Kibitz${thinHeader ? " Kibitz-thin-header" : ""}`}
             header={
                 // The header says what the centre is showing. Watching the
