@@ -282,6 +282,43 @@ describe("ChatKibitzRoom", () => {
         expect(screen.getByText("12")).toBeInTheDocument();
     });
 
+    it("keeps the card when a refetch fails", async () => {
+        mockBackend();
+        render(<ChatKibitzRoom channel="global-english" />);
+        await screen.findByText("English chat game");
+        mock_get.mockRejectedValue(new Error("502"));
+        await act(async () => {
+            mock_push_manager.fire("rooms-refresh", undefined);
+        });
+        expect(screen.getByText("English chat game")).toBeInTheDocument();
+    });
+
+    it("keeps a viewer count pushed while a fetch is in flight", async () => {
+        mockBackend();
+        render(<ChatKibitzRoom channel="global-english" />);
+        await screen.findByText("English chat game");
+        let resolve_fetch: (rooms: unknown[]) => void = () => undefined;
+        mock_get.mockImplementation(
+            () =>
+                new Promise((resolve) => {
+                    resolve_fetch = resolve;
+                }),
+        );
+        act(() => {
+            mock_push_manager.fire("rooms-refresh", undefined);
+        });
+        act(() => {
+            mock_push_manager.fire("viewer-count-changed", {
+                channel: english_room.channel,
+                viewer_count: 42,
+            });
+        });
+        await act(async () => {
+            resolve_fetch([english_room]);
+        });
+        expect(document.querySelector(".room-viewer-number")).toHaveTextContent("42");
+    });
+
     it("unsubscribes from the directory push channel on unmount", async () => {
         mockBackend();
         const { unmount } = render(<ChatKibitzRoom channel="global-english" />);
