@@ -35,7 +35,7 @@ interface DeliveryMethods {
 }
 
 /* Notifications that only an open tab's pop-up delivers, so they have no email or mobile toggle */
-const POP_UP_ONLY_TYPES = ["privateMessage", "chatMention"];
+const POP_UP_ONLY_TYPES = ["privateMessage"];
 
 /** Which of the Mobile and Desktop settings a device follows, as the server picks it. */
 function deliveryMethod(device: PushDevice): "mobile" | "desktop" | null {
