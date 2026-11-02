@@ -23,11 +23,21 @@
     }
 
     .KibitzRoomList-groupHeading {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.5rem;
         margin: 0.5rem 0.5rem 0.25rem;
         color: var(--fg);
         font-size: 0.8rem;
         font-weight: normal;
         opacity: 0.75;
+    }
+
+    .KibitzRoomList-countHeading {
+        flex: 0 0 auto;
+        min-width: 2rem;
+        text-align: right;
     }
 
     /* One row per room, as in the chat page's channel list. */
@@ -85,8 +95,11 @@
 
         .room-viewer-count {
             flex: 0 0 auto;
+            min-width: 2rem;
             font-size: 0.8rem;
+            font-variant-numeric: tabular-nums;
             opacity: 0.8;
+            text-align: right;
         }
     }
 
