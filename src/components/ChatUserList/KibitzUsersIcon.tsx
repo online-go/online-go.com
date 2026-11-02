@@ -38,11 +38,12 @@ export function KibitzUsersIcon(): React.ReactElement {
             <path d="M1.2 13.6c0-2.3 1.9-3.9 4.3-3.9s4.3 1.6 4.3 3.9V15H1.2z" />
             <circle cx="18.5" cy="7.2" r="1.9" />
             <path d="M14.2 13.6c0-2.3 1.9-3.9 4.3-3.9s4.3 1.6 4.3 3.9V15h-8.6z" />
-            {/* centre figure, in front */}
-            <circle cx="12" cy="8.2" r="2.5" />
-            <path d="M6.6 16c0-3 2.4-5 5.4-5s5.4 2 5.4 5z" />
-            {/* speech bubble above the centre figure */}
-            <path d="M8.6 0h8.4a1.6 1.6 0 0 1 1.6 1.6v1.6a1.6 1.6 0 0 1-1.6 1.6h-4.2l-1.9 1.6V4.8H8.6A1.6 1.6 0 0 1 7 3.2V1.6A1.6 1.6 0 0 1 8.6 0z" />
+            {/* centre figure, in front; the head sits low enough to leave
+                the bubble's tail clear of it */}
+            <circle cx="12" cy="8.9" r="2.2" />
+            <path d="M6.8 16c0-2.9 2.3-4.8 5.2-4.8s5.2 1.9 5.2 4.8z" />
+            {/* speech bubble above the centre figure, tail pointing at it */}
+            <path d="M8.6 0h6.8a1.4 1.4 0 0 1 1.4 1.4v1.4a1.4 1.4 0 0 1-1.4 1.4h-3.6l-1.9 1.8V4.2H8.6A1.4 1.4 0 0 1 7.2 2.8V1.4A1.4 1.4 0 0 1 8.6 0z" />
         </svg>
     );
 }
