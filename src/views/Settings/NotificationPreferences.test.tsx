@@ -283,6 +283,37 @@ function allowPopUps(permission: string) {
     });
 }
 
+test("the chat mention row offers only a desktop toggle, which saves its own setting", async () => {
+    preferences.set("desktop-notifications", true);
+    allowPopUps("granted");
+    mockedGet.mockImplementation(() => Promise.resolve({ results: [] }));
+    try {
+        const view = render(
+            <NotificationPreferences
+                state={{
+                    notifications: {
+                        chatMention: {
+                            description: "Someone mentions my name in chat",
+                            value: { desktop: true },
+                        },
+                    },
+                }}
+                vacation_base_time={0}
+                refresh={() => () => 0}
+                updateSelfReportedAccountLinkages={() => 0}
+            />,
+        );
+        await view.findByText(/No devices/);
+
+        const switches = view.getAllByRole("switch");
+        expect(switches).toHaveLength(4);
+        fireEvent.click(switches[3]);
+        expect(data.get("config.desktop_notifications")).toEqual({ chatMention: false });
+    } finally {
+        delete (window as { Notification?: unknown }).Notification;
+    }
+});
+
 describe("the private message row", () => {
     afterEach(() => {
         delete (window as { Notification?: unknown }).Notification;

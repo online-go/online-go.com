@@ -493,6 +493,8 @@ class ChatChannel extends TypedEventEmitter<Events> {
                             emitNotification(
                                 "[" + this.name + "]: " + obj.username,
                                 "[" + this.name + "] " + obj.username + ": " + text,
+                                undefined,
+                                "chatMention",
                             );
                         } else {
                             //console.debug("Not sending name match notification since we just joined the channel ", obj.channel);

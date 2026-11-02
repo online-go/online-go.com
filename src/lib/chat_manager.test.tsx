@@ -127,6 +127,8 @@ test("received contextual text still triggers mentions and unread state", () => 
     expect(emitNotification).toHaveBeenCalledWith(
         expect.any(String),
         expect.stringContaining("Reader, look here"),
+        undefined,
+        "chatMention",
     );
 });
 
