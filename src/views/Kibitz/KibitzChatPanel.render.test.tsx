@@ -246,6 +246,38 @@ function baseProps() {
 }
 
 describe("KibitzChatPanel variation posts", () => {
+    test("styles room system messages separately from proposal results and conversation", () => {
+        const props = baseProps();
+        const now = Date.now();
+        const items: KibitzStreamItem[] = [
+            {
+                id: "system",
+                room_id: props.room.id,
+                type: "system",
+                created_at: now,
+                text: "Game changed",
+            },
+            {
+                id: "result",
+                room_id: props.room.id,
+                type: "proposal_result",
+                created_at: now + 1,
+                text: "Proposal result",
+            },
+            makeChatItem("person", "room-stream", "Hello room"),
+        ];
+        render(<KibitzChatPanel {...props} items={items} mode="room" />);
+        expect(screen.getByText("Game changed").closest(".kibitz-chat-entry")).toHaveClass(
+            "routine-system",
+        );
+        expect(screen.getByText("Proposal result").closest(".kibitz-chat-entry")).not.toHaveClass(
+            "routine-system",
+        );
+        expect(screen.getByText("Hello room").closest(".kibitz-chat-entry")).not.toHaveClass(
+            "routine-system",
+        );
+    });
+
     test("removes the pending warning on completion or cancellation without removing other history", () => {
         const props = baseProps();
         const warning: KibitzStreamItem = {
