@@ -23,6 +23,7 @@ import { GobanControllerContext } from "./goban_context";
 import { GobanController } from "../../lib/GobanController";
 import {
     useCanRequestUndo,
+    useGamePlayersLoaded,
     usePauseControl,
     usePlayerToMoveOnOfficialBranch,
     useResignMode,
@@ -206,6 +207,34 @@ describe("usePauseControl", () => {
 
         expect(pauseAction()).toBe("pause");
         expect(pauseDisabled()).toBe(false);
+    });
+});
+
+describe("useGamePlayersLoaded", () => {
+    function LoadedProbe({ controller }: { controller: GobanController }): React.ReactElement {
+        const loaded = useGamePlayersLoaded(controller.goban);
+        return <span data-testid="players-loaded">{loaded ? "yes" : "no"}</span>;
+    }
+    const playersLoaded = () => screen.getByTestId("players-loaded").textContent === "yes";
+
+    test("false for a goban that has only a game id", () => {
+        const controller = new GobanController({ game_id: 1 });
+        render(
+            <GobanControllerContext.Provider value={controller}>
+                <LoadedProbe controller={controller} />
+            </GobanControllerContext.Provider>,
+        );
+        expect(playersLoaded()).toBe(false);
+    });
+
+    test("true once the game config carries both players", () => {
+        const controller = new GobanController(GAME_IN_PROGRESS);
+        render(
+            <GobanControllerContext.Provider value={controller}>
+                <LoadedProbe controller={controller} />
+            </GobanControllerContext.Provider>,
+        );
+        expect(playersLoaded()).toBe(true);
     });
 });
 

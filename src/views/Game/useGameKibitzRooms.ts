@@ -64,7 +64,13 @@ export function useGameKibitzRooms(
             get("kibitz/rooms", { game: game_id })
                 .then((fetched: KibitzRoomSummary[]) => {
                     if (!cancelled) {
-                        setRooms(sortRoomsByViewers(fetched ?? []));
+                        // A server without the `game` filter returns every
+                        // room, so apply the membership test here too.
+                        setRooms(
+                            sortRoomsByViewers(
+                                (fetched ?? []).filter((r) => r.current_game_id === game_id),
+                            ),
+                        );
                     }
                 })
                 .catch(() => {

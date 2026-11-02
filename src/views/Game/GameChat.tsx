@@ -30,7 +30,7 @@ import { TabCompleteInput } from "@/components/TabCompleteInput";
 import { chat_markup } from "@/components/Chat";
 import { inGameModChannel } from "@/lib/chat_manager";
 import { MoveTree } from "goban";
-import { usePhase, useUserIsParticipant } from "./GameHooks";
+import { useGamePlayersLoaded, usePhase, useUserIsParticipant } from "./GameHooks";
 import { useGobanController } from "./goban_context";
 import { useGameKibitzRooms } from "./useGameKibitzRooms";
 import { GameKibitzRooms } from "./GameKibitzRooms";
@@ -87,9 +87,11 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
     const [, refresh] = React.useState<number>();
     const userIsPlayer = useUserIsParticipant(goban);
     const phase = usePhase(goban);
+    const players_loaded = useGamePlayersLoaded(goban);
     // Mirrors the server's room access rule: a player may not enter a kibitz
-    // room on their own game until it has finished.
-    const kibitz_hidden = userIsPlayer && phase !== "finished";
+    // room on their own game until it has finished. Until the players are
+    // known nobody counts as a player, so wait for them before fetching.
+    const kibitz_hidden = !players_loaded || (userIsPlayer && phase !== "finished");
     const kibitz_rooms = useGameKibitzRooms(
         props.show_kibitz_rooms ? props.game_id : undefined,
         kibitz_hidden,

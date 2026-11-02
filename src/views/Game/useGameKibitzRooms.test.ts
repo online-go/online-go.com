@@ -107,6 +107,13 @@ describe("useGameKibitzRooms", () => {
         expect(ids(result.current)).toEqual(["user-aaaa"]);
     });
 
+    it("drops rooms the server returns for other games", async () => {
+        mockBackend([room_a, { ...room_b, current_game_id: 7 }]);
+        const { result } = renderHook(() => useGameKibitzRooms(42, false));
+        await waitFor(() => expect(result.current).toHaveLength(1));
+        expect(ids(result.current)).toEqual(["user-aaaa"]);
+    });
+
     it("returns no rooms and makes no request while hidden", () => {
         mockBackend([room_a]);
         const { result } = renderHook(() => useGameKibitzRooms(42, true));

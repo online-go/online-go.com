@@ -8,7 +8,7 @@ import * as React from "react";
 import { render } from "@testing-library/react";
 import { GameChat } from "./GameChat";
 import { useGameKibitzRooms } from "./useGameKibitzRooms";
-import { usePhase, useUserIsParticipant } from "./GameHooks";
+import { useGamePlayersLoaded, usePhase, useUserIsParticipant } from "./GameHooks";
 import type { KibitzRoomSummary } from "@/models/kibitz";
 
 jest.mock("./useGameKibitzRooms", () => ({
@@ -20,6 +20,7 @@ jest.mock("./GameHooks", () => ({
     __esModule: true,
     useUserIsParticipant: jest.fn(() => false),
     usePhase: jest.fn(() => "play"),
+    useGamePlayersLoaded: jest.fn(() => true),
 }));
 
 jest.mock("./goban_context", () => ({
@@ -123,6 +124,7 @@ jest.mock("./GameKibitzRooms", () => ({
 const mock_rooms = useGameKibitzRooms as jest.Mock;
 const mock_participant = useUserIsParticipant as jest.Mock;
 const mock_phase = usePhase as jest.Mock;
+const mock_loaded = useGamePlayersLoaded as jest.Mock;
 
 const room_a: KibitzRoomSummary = {
     id: "user-aaaa",
@@ -139,6 +141,13 @@ describe("GameChat kibitz rooms", () => {
         mock_rooms.mockReturnValue([]);
         mock_participant.mockReturnValue(false);
         mock_phase.mockReturnValue("play");
+        mock_loaded.mockReturnValue(true);
+    });
+
+    it("hides the rooms until the game's players have loaded", () => {
+        mock_loaded.mockReturnValue(false);
+        render(<GameChat channel="game-5" game_id={5} show_kibitz_rooms />);
+        expect(mock_rooms).toHaveBeenCalledWith(5, true);
     });
 
     it("makes no kibitz request when show_kibitz_rooms is not set", () => {
