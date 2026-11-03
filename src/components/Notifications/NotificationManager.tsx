@@ -32,6 +32,7 @@ import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { GameListEntry } from "goban";
 import { player_is_ignored } from "@/components/BlockPlayer";
+import { formFactor } from "@/lib/web_push";
 
 //declare let Notification: any;
 
@@ -80,6 +81,21 @@ function desktopSettingsAllow(notification_type?: string): boolean {
     }
     const values = Object.values(settings);
     return values.length === 0 || values.includes(true);
+}
+
+/** Whether this tab, if it's running, shows the player their move on its own. */
+export function showsYourMoveNotifications(): boolean {
+    try {
+        return (
+            formFactor() === "desktop" &&
+            Notification.permission === "granted" &&
+            !!preferences.get("desktop-notifications") &&
+            desktopSettingsAllow("yourMove")
+        );
+    } catch {
+        /* not all browsers support the Notification API */
+        return false;
+    }
 }
 
 export function emitNotification(
@@ -369,6 +385,19 @@ export class NotificationManager {
         this.rebuildNotificationList();
     }
     connect() {
+        // The server asks so that it knows this tab is running, since a tab that's gone to
+        // sleep stays connected, and doesn't push this browser what the tab shows itself.
+        // These messages aren't in the goban protocol, like `net/connects`.
+        const loose_socket = socket as unknown as {
+            on: (command: string, cb: () => void) => void;
+            send: (command: string, data: unknown) => void;
+        };
+        loose_socket.on("your-move/tab-check", () => {
+            loose_socket.send("your-move/tab-answer", {
+                shows_notifications: showsYourMoveNotifications(),
+            });
+        });
+
         socket.on("active_game", (game: GameListEntry) => {
             delete this.boards_to_move_on[game.id];
             if (game.phase === "finished") {
