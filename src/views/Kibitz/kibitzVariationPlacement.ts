@@ -81,7 +81,10 @@ export function observeKibitzMainBoardPlacement(
             board.disableStonePlacement();
             return;
         }
-        board.setMode("analyze");
+        // This runs again whenever the room's snapshot moves on, i.e. on
+        // every live move; jumping to the official move here would pull a
+        // reader who stepped back up to the newest move.
+        board.setMode("analyze", true);
         board.setAnalyzeTool("stone", "alternate");
         board.enableStonePlacement();
     };

@@ -130,6 +130,31 @@ describe("main board placement", () => {
         expect(placed).toHaveBeenCalledTimes(1);
     });
 
+    test("re-enabling after a live move leaves a reader who stepped back in place", () => {
+        const { board, stop } = mainBoard();
+        for (const [x, y] of [
+            [2, 3],
+            [4, 4],
+            [6, 6],
+        ]) {
+            board.engine.place(x, y, false, false, false, false, true);
+            board.engine.setLastOfficialMove();
+        }
+        board.showPrevious();
+        board.showPrevious();
+        const browsed = board.engine.cur_move;
+        expect(browsed).not.toBe(board.engine.last_official_move);
+
+        // KibitzInner re-subscribes whenever the room's snapshot changes.
+        stop();
+        observeKibitzMainBoardPlacement(
+            board,
+            jest.fn(() => true),
+        );
+
+        expect(board.engine.cur_move).toBe(browsed);
+    });
+
     test("closing a draft allows another click to start a fresh draft", () => {
         const { board, placed, stop } = mainBoard();
         board.click(2, 3);
