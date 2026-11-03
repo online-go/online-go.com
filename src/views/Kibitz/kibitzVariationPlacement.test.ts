@@ -145,7 +145,9 @@ describe("main board placement", () => {
         const browsed = board.engine.cur_move;
         expect(browsed).not.toBe(board.engine.last_official_move);
 
-        // KibitzInner re-subscribes whenever the room's snapshot changes.
+        // Analysis input is re-enabled on `phase` and `load`, and again
+        // whenever KibitzInner re-subscribes.
+        board.emit("phase", "play");
         stop();
         observeKibitzMainBoardPlacement(
             board,
@@ -153,6 +155,20 @@ describe("main board placement", () => {
         );
 
         expect(board.engine.cur_move).toBe(browsed);
+    });
+
+    test("re-enabling leaves a running score estimate alone", () => {
+        const { board, stop } = mainBoard();
+        board.setMode("score estimation", true);
+
+        board.emit("phase", "play");
+        stop();
+        observeKibitzMainBoardPlacement(
+            board,
+            jest.fn(() => true),
+        );
+
+        expect(board.mode).toBe("score estimation");
     });
 
     test("closing a draft allows another click to start a fresh draft", () => {

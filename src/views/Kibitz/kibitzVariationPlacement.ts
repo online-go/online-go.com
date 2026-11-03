@@ -73,6 +73,7 @@ export function observeKibitzMainBoardPlacement(
         | "enableStonePlacement"
         | "setMode"
         | "setAnalyzeTool"
+        | "mode"
     >,
     onPlacement: (path: string) => boolean,
 ): () => void {
@@ -81,9 +82,12 @@ export function observeKibitzMainBoardPlacement(
             board.disableStonePlacement();
             return;
         }
-        // This runs again whenever the room's snapshot moves on, i.e. on
-        // every live move; jumping to the official move here would pull a
-        // reader who stepped back up to the newest move.
+        // A running score estimate owns the board's mode until it ends.
+        if (board.mode === "score estimation") {
+            return;
+        }
+        // This also runs on `load` and `phase`; jumping to the official move
+        // here would pull a reader who stepped back up to the newest move.
         board.setMode("analyze", true);
         board.setAnalyzeTool("stone", "alternate");
         board.enableStonePlacement();
