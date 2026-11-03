@@ -865,6 +865,7 @@ export function PriceBox({
                                 value={data.get("config.paypal_email")}
                             />
                             <input type="hidden" name="item_name" value="Supporter Account" />
+                            <input type="hidden" name="item_number" value={slug} />
                             <input type="hidden" name="a3" value={paypal_amount} />
                             <input type="hidden" name="p3" value="1" />
                             <input
