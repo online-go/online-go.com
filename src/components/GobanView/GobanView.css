@@ -711,10 +711,10 @@
                 border-top: 1px solid var(--shade3);
                 border-bottom: 1px solid var(--shade3);
 
-                /* A thin bar is easy to read and hard to hit. Reach out over
-                   its neighbours for the 24px a finger needs, without moving
-                   the boundary the user sees. Positioning it also puts the
-                   handle above the panels, which follow it in the document. */
+                /* A thin bar is easy to read and hard to hit. Position it so
+                   its hit area can reach over its neighbours without moving
+                   the boundary the user sees. This also puts the handle above
+                   the panels, which follow it in the document. */
                 position: relative;
 
                 &::after {
@@ -724,6 +724,16 @@
                     right: 0;
                     top: -0.5rem;
                     bottom: -0.5rem;
+                }
+
+                /* A finger needs about 44px. Most of it reaches down into the
+                   panels' padding: above is the board, whose bottom row of
+                   points must stay tappable when its labels are hidden. */
+                @media (pointer: coarse) {
+                    &::after {
+                        top: -0.75rem;
+                        bottom: -1.625rem;
+                    }
                 }
 
                 &.is-dragging {
