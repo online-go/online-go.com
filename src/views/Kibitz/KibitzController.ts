@@ -84,6 +84,9 @@ interface BackendCurrentGameBlock {
     move_number: number | null;
     live: boolean;
     analysis_disabled: boolean;
+    /** Optional rengo team player ids. Used by the Kibitz access policy. */
+    rengo_black_team?: number[] | null;
+    rengo_white_team?: number[] | null;
 }
 
 interface BackendKibitzRoom {
@@ -166,6 +169,8 @@ function mapBackendCurrentGameToWatched(backend: BackendCurrentGameBlock): Kibit
         move_number: backend.move_number ?? undefined,
         live: backend.live,
         analysis_disabled: backend.analysis_disabled,
+        ...(backend.rengo_black_team ? { rengo_black_team: backend.rengo_black_team } : {}),
+        ...(backend.rengo_white_team ? { rengo_white_team: backend.rengo_white_team } : {}),
     };
 }
 

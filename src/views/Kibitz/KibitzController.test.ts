@@ -344,6 +344,44 @@ describe("KibitzController room ordering", () => {
         expect(cacheChanged).toHaveBeenCalledTimes(1);
     });
 
+    it("maps rengo team ids from the directory current_game block", async () => {
+        mockedGet.mockResolvedValueOnce([
+            {
+                id: "room-rengo",
+                channel: "channel-rengo",
+                title: "Room Rengo",
+                kind: "preset",
+                description: null,
+                current_game_id: 456,
+                current_game: {
+                    game_id: 456,
+                    board_size: "19x19",
+                    title: "Rengo",
+                    black: null,
+                    white: null,
+                    tournament_name: null,
+                    move_number: null,
+                    live: false,
+                    analysis_disabled: false,
+                    rengo_black_team: [1, 2],
+                    rengo_white_team: [3, 4],
+                },
+                creator_id: null,
+                created_at: "2026-05-01T10:00:00Z",
+                last_activity_at: "2026-05-01T10:00:00Z",
+                viewer_count: 0,
+            },
+        ]);
+
+        const controller = new KibitzController();
+        await flushPromises();
+        await flushPromises();
+
+        expect(controller.rooms[0].current_game?.rengo_black_team).toEqual([1, 2]);
+        expect(controller.rooms[0].current_game?.rengo_white_team).toEqual([3, 4]);
+        controller.destroy();
+    });
+
     it("keeps cached current game when a partial room update omits it", async () => {
         mockedGet.mockResolvedValueOnce([
             {
