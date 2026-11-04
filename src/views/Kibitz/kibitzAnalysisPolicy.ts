@@ -36,13 +36,22 @@ export interface KibitzAnalysisGameLike {
     gamedata?: {
         analysis_disabled?: boolean | null;
         disable_analysis?: boolean | null;
+        rengo_teams?: KibitzRengoTeams | null;
     } | null;
+    rengo_black_team?: unknown[] | null;
+    rengo_white_team?: unknown[] | null;
+    rengo_teams?: KibitzRengoTeams | null;
     players?: {
         black?: unknown;
         white?: unknown;
     } | null;
     black?: unknown;
     white?: unknown;
+}
+
+export interface KibitzRengoTeams {
+    black?: unknown[] | null;
+    white?: unknown[] | null;
 }
 
 export type KibitzAccessPolicyResult =
@@ -96,6 +105,14 @@ export function isActiveGame(game: KibitzAnalysisGameLike | null | undefined): b
     return game.ended == null && game.live !== false;
 }
 
+/**
+ * Mirrors the server's `is_user_player_in_active_game`: any game that has not
+ * ended counts, live or correspondence.
+ */
+function isUnfinishedGame(game: KibitzAnalysisGameLike): boolean {
+    return game.ended == null;
+}
+
 export function isActiveAnalysisDisabledGame(
     game: KibitzAnalysisGameLike | null | undefined,
 ): boolean {
@@ -122,7 +139,21 @@ export function isCurrentUserGamePlayer(
     const blackId = getId(game.players?.black) ?? getId(game.black);
     const whiteId = getId(game.players?.white) ?? getId(game.white);
 
-    return userId === blackId || userId === whiteId;
+    if (userId === blackId || userId === whiteId) {
+        return true;
+    }
+
+    const rengoMembers = [
+        game.rengo_black_team,
+        game.rengo_white_team,
+        game.rengo_teams?.black,
+        game.rengo_teams?.white,
+        game.gamedata?.rengo_teams?.black,
+        game.gamedata?.rengo_teams?.white,
+    ];
+    return rengoMembers.some(
+        (team) => Array.isArray(team) && team.some((member) => getId(member) === userId),
+    );
 }
 
 export function getKibitzAccessPolicyForUser(
@@ -133,7 +164,7 @@ export function getKibitzAccessPolicyForUser(
         return { allowed: true };
     }
 
-    if (isActiveGame(game) && isCurrentUserGamePlayer(user, game)) {
+    if (isUnfinishedGame(game) && isCurrentUserGamePlayer(user, game)) {
         return {
             allowed: false,
             reason: "own-active-game",
