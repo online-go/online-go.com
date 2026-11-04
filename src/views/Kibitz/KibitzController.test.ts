@@ -22,6 +22,7 @@ import * as requests from "@/lib/requests";
 import * as chatManager from "@/lib/chat_manager";
 import { kibitzTelemetry } from "./kibitzTelemetry";
 import * as analysisPolicy from "./kibitzAnalysisPolicy";
+import type { KibitzWatchedGame } from "@/models/kibitz";
 
 const pushHandlers: Record<string, (payload: unknown) => void> = {};
 
@@ -74,11 +75,17 @@ jest.mock("@/lib/data", () => ({
 
 jest.mock("@/lib/translate", () => ({
     __esModule: true,
-    interpolate: jest.fn((text: string, values: Record<string, string | number>) =>
-        Object.entries(values).reduce(
-            (result, [key, value]) => result.replace(`{{${key}}}`, String(value)),
-            text,
-        ),
+    interpolate: jest.fn(
+        (text: string, values: Record<string, string | number> | Array<string | number>) =>
+            Array.isArray(values)
+                ? values.reduce<string>(
+                      (result, value) => result.replace(/%[sd]/, String(value)),
+                      text,
+                  )
+                : Object.entries(values).reduce(
+                      (result, [key, value]) => result.replace(`{{${key}}}`, String(value)),
+                      text,
+                  ),
     ),
     pgettext: jest.fn((_: string, text: string) => text),
 }));
@@ -584,15 +591,36 @@ describe("KibitzController telemetry", () => {
         controller.destroy();
     });
 
-    const game = { game_id: 5, title: "g" } as never;
+    const game: KibitzWatchedGame = {
+        game_id: 5,
+        board_size: "19x19",
+        title: "g",
+        black: { id: 1, username: "Black", ranking: 1, professional: false, ui_class: "" },
+        white: { id: 2, username: "White", ranking: 1, professional: false, ui_class: "" },
+    };
 
     it("records create_room ok on success and error on failure", async () => {
         mockedGet.mockResolvedValueOnce([]);
         const controller = new KibitzController();
         await flushPromises();
+        const callOrder: string[] = [];
+        mockedSetRoom.mockImplementation(() => {
+            callOrder.push("selected");
+        });
+        mockedPost.mockResolvedValueOnce(roomPayload("continuation-room").room);
+        mockedGet.mockResolvedValueOnce(roomPayload("continuation-room"));
+        await controller.createRoom(game, "continuation", "", {
+            beforeSelectRoom: () => callOrder.push("announcement"),
+            select: false,
+        });
+        await flushPromises();
+        expect(callOrder[0]).toBe("announcement");
+        expect(callOrder).not.toContain("selected");
         mockedPost.mockResolvedValueOnce(roomPayload("user-2").room);
         mockedGet.mockResolvedValueOnce(roomPayload("user-2"));
         await controller.createRoom(game, "name", "");
+        await flushPromises();
+        expect(callOrder).toContain("selected");
         expect(mockedRecord).toHaveBeenCalledWith("create_room");
         mockedPost.mockRejectedValueOnce(new Error("403"));
         await controller.createRoom(game, "name", "");
@@ -651,6 +679,67 @@ describe("KibitzController telemetry", () => {
             mockedPost.mockRejectedValueOnce(new Error("failed"));
             expect(await controller.changeBoard("user-3", game)).toBe(false);
             expect(sendTypedBody).toHaveBeenCalledTimes(1);
+        } finally {
+            controller.destroy();
+            jest.mocked(analysisPolicy.getCurrentKibitzUser).mockReturnValue(null);
+        }
+    });
+
+    it("posts a continuation invitation with a Kibitz room link only for the source game", async () => {
+        const sendTypedBody = jest.fn();
+        jest.mocked(analysisPolicy.getCurrentKibitzUser).mockReturnValue({
+            id: 12,
+            username: "Alice",
+            anonymous: false,
+        });
+        mockedGet.mockResolvedValueOnce([]);
+        const controller = new KibitzController();
+        try {
+            await flushPromises();
+            controller.setActiveRoom({
+                id: "preset-room",
+                channel: "kibitz-preset-room",
+                title: "Preset",
+                kind: "preset",
+                viewer_count: 4,
+                current_game: game,
+            } as never);
+            (
+                controller as unknown as {
+                    _active_chat_proxy: ChatChannelProxy;
+                }
+            )._active_chat_proxy = {
+                on: jest.fn(),
+                off: jest.fn(),
+                part: jest.fn(),
+                channel: { chat_log: [], users_by_join: [], sendTypedBody },
+            } as unknown as ChatChannelProxy;
+
+            controller.postContinuationRoomAnnouncement(
+                "preset-room",
+                game.game_id,
+                "continuation-room",
+                "Black vs White · #5",
+            );
+            controller.postContinuationRoomAnnouncement(
+                "preset-room",
+                game.game_id + 1,
+                "stale-room",
+                "Black vs White · #6",
+            );
+
+            expect(sendTypedBody).toHaveBeenCalledTimes(1);
+            expect(sendTypedBody).toHaveBeenCalledWith({
+                type: "system",
+                text: "Continue watching in a separate room: Black vs White · #5",
+                game_id: game.game_id,
+                links: [
+                    {
+                        text: "Black vs White · #5",
+                        href: "/kibitz/continuation-room",
+                    },
+                ],
+            });
         } finally {
             controller.destroy();
             jest.mocked(analysisPolicy.getCurrentKibitzUser).mockReturnValue(null);

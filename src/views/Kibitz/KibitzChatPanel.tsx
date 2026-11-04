@@ -92,6 +92,23 @@ export interface KibitzChatPanelProps {
     /** Reports the unread state of both chats so the tab bar can show a dot
      *  on the chat that is not on screen. */
     onUnreadChange?: (unread: { room: boolean; game: boolean }) => void;
+    continuationRoom?: KibitzRoomSummary | null;
+    onJoinContinuation?: () => void;
+}
+
+const MAX_DISMISSED_CONTINUATION_ROOMS = 20;
+
+function readDismissedContinuationRoomIds(): string[] {
+    const stored = data.get("kibitz.dismissed_continuation_rooms", []);
+    return Array.isArray(stored)
+        ? stored
+              .filter((id): id is string => typeof id === "string")
+              .slice(-MAX_DISMISSED_CONTINUATION_ROOMS)
+        : [];
+}
+
+function writeDismissedContinuationRoomIds(ids: string[]): void {
+    data.set("kibitz.dismissed_continuation_rooms", ids.slice(-MAX_DISMISSED_CONTINUATION_ROOMS));
 }
 
 /** Below this the log has no room to share, so the people list is not shown
@@ -272,8 +289,13 @@ export function KibitzChatPanel({
     mode,
     visible,
     onUnreadChange,
+    continuationRoom,
+    onJoinContinuation,
 }: KibitzChatPanelProps): React.ReactElement {
     const user = useUser();
+    const [dismissedContinuationRoomIds, setDismissedContinuationRoomIds] = React.useState(
+        readDismissedContinuationRoomIds,
+    );
     const chatDisabled = user.anonymous || !user.email_validated;
     // The watched-game's GobanController is passed in by KibitzInner. The
     // game tab reads chat off goban.chat_log (which is fed by game-server
@@ -297,6 +319,16 @@ export function KibitzChatPanel({
     const tab: ChatTab = mode ?? internalTab;
     const bodyRef = React.useRef<HTMLDivElement | null>(null);
     const [hasRoomForPeople, setHasRoomForPeople] = React.useState(false);
+    const dismissContinuationRoom = React.useCallback(() => {
+        if (!continuationRoom) {
+            return;
+        }
+        const updated = [...dismissedContinuationRoomIds, continuationRoom.id].slice(
+            -MAX_DISMISSED_CONTINUATION_ROOMS,
+        );
+        setDismissedContinuationRoomIds(updated);
+        writeDismissedContinuationRoomIds(updated);
+    }, [continuationRoom, dismissedContinuationRoomIds]);
     const [roomFollowLatest, setRoomFollowLatest] = React.useState(true);
     const [gameFollowLatest, setGameFollowLatest] = React.useState(true);
     const [roomUnread, setRoomUnread] = React.useState(false);
@@ -909,6 +941,31 @@ export function KibitzChatPanel({
 
     return (
         <div className="KibitzChatPanel">
+            {continuationRoom &&
+            onJoinContinuation &&
+            !dismissedContinuationRoomIds.includes(continuationRoom.id) ? (
+                <div className="KibitzChatPanel-continuation">
+                    <span>
+                        {pgettext(
+                            "Invitation above Kibitz chat to continue watching in another room",
+                            "Continue watching in a separate room",
+                        )}
+                    </span>
+                    <button type="button" onClick={onJoinContinuation}>
+                        {pgettext("Action in the Kibitz continuation room invitation", "Join")}
+                    </button>
+                    <button
+                        type="button"
+                        aria-label={pgettext(
+                            "Accessible label for dismissing a Kibitz room invitation",
+                            "Dismiss invitation",
+                        )}
+                        onClick={dismissContinuationRoom}
+                    >
+                        ×
+                    </button>
+                </div>
+            ) : null}
             {!mode && (
                 <div className="KibitzChatPanel-tabs" role="tablist">
                     <button

@@ -320,3 +320,27 @@
         }
     }
 }
+.KibitzChatPanel-continuation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.45rem 0.65rem;
+    border-bottom: 1px solid var(--shade3);
+    font-size: 0.9rem;
+
+    span {
+        min-width: 0;
+    }
+
+    button {
+        flex: 0 0 auto;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: var(--link-color);
+        cursor: pointer;
+        font: inherit;
+        font-weight: 600;
+    }
+}
