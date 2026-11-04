@@ -958,6 +958,17 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         },
         [confirmDiscardDraft, onOpenVariation],
     );
+    // The snapshot getter changes with every live move. Read it through a ref
+    // so the main board is not re-enabled per move, which would reset its
+    // mode and end a running score estimate.
+    const mainBoardPlacementDepsRef = React.useRef({
+        getCurrentGameBaseSnapshotForVariation,
+        showCurrentGameBaseNotReadyToast,
+    });
+    mainBoardPlacementDepsRef.current = {
+        getCurrentGameBaseSnapshotForVariation,
+        showCurrentGameBaseNotReadyToast,
+    };
     React.useEffect(() => {
         const main = gobans.main;
         if (!main) {
@@ -969,6 +980,8 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             return;
         }
         return observeKibitzMainBoardPlacement(board, (path) => {
+            const { getCurrentGameBaseSnapshotForVariation, showCurrentGameBaseNotReadyToast } =
+                mainBoardPlacementDepsRef.current;
             const snapshot = getCurrentGameBaseSnapshotForVariation();
             if (!snapshot) {
                 showCurrentGameBaseNotReadyToast();
@@ -982,13 +995,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 moveTreeIdAsNumber(snapshot.moveTreeId),
             );
         });
-    }, [
-        centerMode,
-        gobans.main,
-        controller,
-        getCurrentGameBaseSnapshotForVariation,
-        showCurrentGameBaseNotReadyToast,
-    ]);
+    }, [centerMode, gobans.main, controller]);
 
     const onCreateVariationFromPostedVariation = React.useCallback(
         (variation: KibitzVariationSummary, fromPath?: string) => {

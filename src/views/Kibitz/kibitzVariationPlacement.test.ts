@@ -130,6 +130,47 @@ describe("main board placement", () => {
         expect(placed).toHaveBeenCalledTimes(1);
     });
 
+    test("re-enabling after a live move leaves a reader who stepped back in place", () => {
+        const { board, stop } = mainBoard();
+        for (const [x, y] of [
+            [2, 3],
+            [4, 4],
+            [6, 6],
+        ]) {
+            board.engine.place(x, y, false, false, false, false, true);
+            board.engine.setLastOfficialMove();
+        }
+        board.showPrevious();
+        board.showPrevious();
+        const browsed = board.engine.cur_move;
+        expect(browsed).not.toBe(board.engine.last_official_move);
+
+        // Analysis input is re-enabled on `phase` and `load`, and again
+        // whenever KibitzInner re-subscribes.
+        board.emit("phase", "play");
+        stop();
+        observeKibitzMainBoardPlacement(
+            board,
+            jest.fn(() => true),
+        );
+
+        expect(board.engine.cur_move).toBe(browsed);
+    });
+
+    test("re-enabling leaves a running score estimate alone", () => {
+        const { board, stop } = mainBoard();
+        board.setMode("score estimation", true);
+
+        board.emit("phase", "play");
+        stop();
+        observeKibitzMainBoardPlacement(
+            board,
+            jest.fn(() => true),
+        );
+
+        expect(board.mode).toBe("score estimation");
+    });
+
     test("closing a draft allows another click to start a fresh draft", () => {
         const { board, placed, stop } = mainBoard();
         board.click(2, 3);
