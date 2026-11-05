@@ -196,6 +196,7 @@
         align-items: center;
         gap: 0.4rem;
         min-width: 0;
+        overflow: hidden;
         height: auto;
         margin: 0;
         padding: 0.25rem 0.5rem;
@@ -221,19 +222,22 @@
         display: flex;
         align-items: center;
         gap: 0.35rem;
+        flex: 0 1 auto;
+        min-width: 0;
         color: var(--fg);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
-    .variation-meta-row {
-        flex: 1 1 auto;
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 0.4rem;
+    .variation-name-label {
         min-width: 0;
+        flex: 0 1 auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .variation-ordinal {
+        flex: 0 0 auto;
+        white-space: nowrap;
     }
 
     .variation-meta-labels {
@@ -250,9 +254,11 @@
     }
 
     .variation-author-row {
+        margin-left: auto;
         flex: 0 1 auto;
         min-width: 0;
         overflow: hidden;
+        text-overflow: ellipsis;
         white-space: nowrap;
         font-size: 0.8rem;
     }

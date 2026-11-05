@@ -19,6 +19,7 @@ import * as React from "react";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 import { Player } from "@/components/Player";
+import { formatKibitzVariationDisplayNames } from "./kibitzVariationDisplayName";
 import { formatVariationBranchLabel, formatVariationLengthLabel } from "./kibitzVariationQuickList";
 import { KibitzVariationSwatch } from "./KibitzVariationSwatch";
 import "./KibitzVariationList.css";
@@ -59,6 +60,24 @@ export function KibitzVariationList({
 }: KibitzVariationListProps): React.ReactElement {
     const selectedVariationElementRef = React.useRef<HTMLDivElement | null>(null);
     const previousFocusRequestIdRef = React.useRef<number>(variationFocusRequestId);
+    const untitledVariationLabel = pgettext(
+        "Fallback title for an untitled variation in kibitz",
+        "Untitled variation",
+    );
+    const ordinalSuffix = (ordinal: number) =>
+        interpolate(
+            pgettext(
+                "Ordinal suffix beside a Kibitz variation that shares its title",
+                "({{ordinal}})",
+            ),
+            { ordinal },
+        );
+    const formatSharedTitle = (name: string, ordinal: number) =>
+        `${name} ${ordinalSuffix(ordinal)}`;
+    const variationDisplayNameById = formatKibitzVariationDisplayNames(variations, {
+        untitledLabel: untitledVariationLabel,
+        formatSharedTitle,
+    });
     const groupedVariations = React.useMemo(() => {
         const groups = new Map<number, KibitzVariationSummary[]>();
 
@@ -235,6 +254,24 @@ export function KibitzVariationList({
                                             blockedVariationFlashId === variation.id;
                                         const lengthLabel = formatVariationLengthLabel(variation);
                                         const branchLabel = formatVariationBranchLabel(variation);
+                                        const displayName = variationDisplayNameById.get(
+                                            variation.id,
+                                        );
+                                        const baseName =
+                                            displayName?.name ??
+                                            (variation.title || untitledVariationLabel);
+                                        const ordinal = displayName?.ordinal ?? null;
+                                        const fullName =
+                                            ordinal == null
+                                                ? baseName
+                                                : formatSharedTitle(baseName, ordinal);
+                                        const fullLabel = interpolate(
+                                            pgettext(
+                                                "Posted analysis variation label",
+                                                "Variation: {{name}}",
+                                            ),
+                                            { name: fullName },
+                                        );
 
                                         return (
                                             <div
@@ -259,45 +296,46 @@ export function KibitzVariationList({
                                                     onClick={() => onRecallVariation(variation.id)}
                                                 >
                                                     <span className="variation-main">
-                                                        <span className="variation-name">
+                                                        <span
+                                                            className="variation-name"
+                                                            title={fullLabel}
+                                                        >
                                                             <KibitzVariationSwatch
                                                                 colorIndex={
                                                                     colorIndexes[variation.id] ??
                                                                     null
                                                                 }
                                                             />
-                                                            {interpolate(
-                                                                pgettext(
-                                                                    "Posted analysis variation label",
-                                                                    "Variation: {{name}}",
-                                                                ),
-                                                                {
-                                                                    name:
-                                                                        variation.title ||
-                                                                        pgettext(
-                                                                            "Fallback title for an untitled variation in kibitz",
-                                                                            "Untitled variation",
-                                                                        ),
-                                                                },
-                                                            )}
-                                                        </span>
-                                                        <span className="variation-meta-row">
-                                                            <span className="variation-meta-labels">
-                                                                <span className="variation-branch">
-                                                                    {branchLabel}
+                                                            <span className="variation-name-label">
+                                                                {interpolate(
+                                                                    pgettext(
+                                                                        "Posted analysis variation label",
+                                                                        "Variation: {{name}}",
+                                                                    ),
+                                                                    { name: baseName },
+                                                                )}
+                                                            </span>
+                                                            {ordinal != null ? (
+                                                                <span className="variation-ordinal">
+                                                                    {ordinalSuffix(ordinal)}
                                                                 </span>
-                                                                {lengthLabel ? (
-                                                                    <span className="variation-length">
-                                                                        {lengthLabel}
-                                                                    </span>
-                                                                ) : null}
+                                                            ) : null}
+                                                        </span>
+                                                        <span className="variation-meta-labels">
+                                                            <span className="variation-branch">
+                                                                {branchLabel}
                                                             </span>
-                                                            <span className="variation-author-row">
-                                                                <Player
-                                                                    user={variation.creator}
-                                                                    disableCacheUpdate
-                                                                />
-                                                            </span>
+                                                            {lengthLabel ? (
+                                                                <span className="variation-length">
+                                                                    {lengthLabel}
+                                                                </span>
+                                                            ) : null}
+                                                        </span>
+                                                        <span className="variation-author-row">
+                                                            <Player
+                                                                user={variation.creator}
+                                                                disableCacheUpdate
+                                                            />
                                                         </span>
                                                     </span>
                                                 </button>
