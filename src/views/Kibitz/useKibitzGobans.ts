@@ -19,6 +19,8 @@ import * as React from "react";
 import type { GobanRendererConfig, LabelPosition, MoveTree } from "goban";
 import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
 import * as preferences from "@/lib/preferences";
+import { toast } from "@/lib/toast";
+import { pgettext } from "@/lib/translate";
 import type {
     KibitzSecondaryPaneState,
     KibitzVariationSummary,
@@ -31,6 +33,7 @@ import {
 } from "./kibitzCurrentGameBaseSnapshot";
 import {
     applyKibitzVariationToController,
+    isVariationOfficialAnchorReady,
     type AppliedKibitzVariation,
 } from "./kibitzVariationTree";
 
@@ -132,7 +135,11 @@ function computeSecondaryTargetGameId(
     variations: readonly KibitzVariationSummary[],
 ): number | null {
     if (mode === "variation") {
-        return variations.find((v) => v.id === pane.variation_id)?.game_id ?? null;
+        return (
+            pane.chat_variation?.game_id ??
+            variations.find((v) => v.id === pane.variation_id)?.game_id ??
+            null
+        );
     }
     if (mode === "draft") {
         return pane.variation_source_game_id ?? null;
@@ -372,11 +379,15 @@ export function useKibitzGobans({
 
         const selectedVariation =
             mode === "variation"
-                ? (variations.find((v) => v.id === pane.variation_id) ?? null)
+                ? (pane.chat_variation ??
+                  variations.find((v) => v.id === pane.variation_id) ??
+                  null)
                 : null;
         const draftBase =
             mode === "draft" && pane.variation_draft_base_id
-                ? (variations.find((v) => v.id === pane.variation_draft_base_id) ?? null)
+                ? (pane.chat_variation ??
+                  variations.find((v) => v.id === pane.variation_draft_base_id) ??
+                  null)
                 : null;
 
         const targetGameId = computeSecondaryTargetGameId(mode, pane, variations);
@@ -449,17 +460,38 @@ export function useKibitzGobans({
                 // have been standing anywhere in what was on screen, and a node that is
                 // not on this board is not navigated to but replayed as a fresh move.
                 let focusEndpoint: AppliedKibitzVariation["endpoint"] = null;
-                for (const v of variations) {
+                for (const v of pane.chat_variation ? [pane.chat_variation] : variations) {
                     if (v.game_id !== focus.game_id) {
                         continue;
                     }
                     if (v.id !== focus.id && !latest.current.visibleVariationIds.includes(v.id)) {
                         continue;
                     }
+                    if (pane.chat_variation && v.analysis_moves === "") {
+                        if (isVariationOfficialAnchorReady(controller, v)) {
+                            controller.goban.engine.followPath(v.analysis_from ?? 0, "");
+                            focusEndpoint = controller.goban.engine.cur_move;
+                        }
+                        continue;
+                    }
                     const applied = apply(v, v.id === focus.id);
                     if (v.id === focus.id) {
                         focusEndpoint = applied.endpoint;
                     }
+                }
+                if (pane.chat_variation && !focusEndpoint) {
+                    toast(
+                        React.createElement(
+                            "div",
+                            null,
+                            pgettext(
+                                "Kibitz chat viewing context",
+                                "This board position is unavailable.",
+                            ),
+                        ),
+                    );
+                    setSecondary(null);
+                    return;
                 }
                 // A draft branched from a posted variation opens where the
                 // reader was standing in it, which is only the end of the
@@ -494,6 +526,7 @@ export function useKibitzGobans({
         };
 
         const connected = !useMainTrunk && targetGameId != null;
+        setSecondary(controller);
         if (connected) {
             // Connected boards compose once the server has sent the game.
             controller.goban.on("load", compose);
@@ -501,8 +534,9 @@ export function useKibitzGobans({
             compose();
         }
 
-        restoreMainBoardToOfficialTail(main);
-        setSecondary(controller);
+        if (!pane.chat_variation) {
+            restoreMainBoardToOfficialTail(main);
+        }
         return () => {
             controller.goban.off("load", compose);
             if (draftBaselineRef.current?.controller === controller) {

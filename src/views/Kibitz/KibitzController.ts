@@ -461,7 +461,11 @@ function mapChatToStreamItem(msg: ChatMessage, roomId: string): KibitzStreamItem
             author,
             text: typed.text ?? "",
             ...(typed.type === "chat"
-                ? { game_id: typed.game_id, move_number: typed.move_number }
+                ? {
+                      game_id: typed.game_id,
+                      move_number: typed.move_number,
+                      viewing_position: typed.viewing_position,
+                  }
                 : {}),
         };
     }
@@ -1372,6 +1376,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
         this.setSecondaryPane({
             ...this._secondary_pane,
+            chat_variation: undefined,
             collapsed: false,
             variation_id: undefined,
             variation_source_game_id: currentGameId,
@@ -1407,6 +1412,8 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
 
         this.setSecondaryPane({
             ...this._secondary_pane,
+            chat_variation:
+                this._secondary_pane.chat_variation?.id === variation.id ? variation : undefined,
             collapsed: false,
             variation_id: undefined,
             variation_source_game_id: variation.game_id,
@@ -1420,9 +1427,19 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         });
     }
 
+    public openChatVariation(variation: KibitzVariationSummary): void {
+        this.setSecondaryPane({
+            collapsed: false,
+            variation_id: variation.id,
+            chat_variation: variation,
+            variation_draft_nonce: ++this._draft_nonce,
+        });
+    }
+
     public openVariation(variationId: string): void {
         this.setSecondaryPane({
             ...this._secondary_pane,
+            chat_variation: undefined,
             collapsed: false,
             variation_id: variationId,
             variation_source_game_id: undefined,

@@ -17,7 +17,7 @@
 
 /* cspell: words cooldown */
 
-import type { ChatSystemLink } from "@/lib/chat_manager";
+import type { ChatSystemLink, ChatViewingPosition } from "@/lib/chat_manager";
 
 export type KibitzRoomKind = "preset" | "user" | "broadcast";
 
@@ -138,6 +138,7 @@ export interface KibitzStreamItem {
     variation_id?: string;
     game_id?: number;
     move_number?: number;
+    viewing_position?: ChatViewingPosition;
     proposal_id?: string;
     source?: KibitzStreamItemSource;
     /** Spans of a system line's text to render as same-site links. */
@@ -146,6 +147,7 @@ export interface KibitzStreamItem {
 
 export interface KibitzSecondaryPaneState {
     collapsed: boolean;
+    chat_variation?: KibitzVariationSummary;
     variation_id?: string;
     variation_source_game_id?: number;
     variation_source_game?: KibitzWatchedGame;
