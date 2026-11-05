@@ -209,3 +209,27 @@ test("marks +10 and -10 on the bar alongside the scale ends", async () => {
     ]);
     await act(async () => {});
 });
+
+test("drops the signs and shrinks the labels on a narrow bar", async () => {
+    const { bar: container, asController } = setup();
+    Object.defineProperty(container, "clientWidth", { value: 11 });
+    const scrollWidth = jest
+        .spyOn(HTMLElement.prototype, "scrollWidth", "get")
+        .mockImplementation(function (this: HTMLElement) {
+            return (this.textContent?.length ?? 0) * parseInt(this.style.fontSize || "9") * 0.7;
+        });
+    renderBar(asController);
+    const spans = [...container.querySelectorAll("span")];
+    expect(spans.map((span) => span.textContent)).toEqual([
+        "60",
+        "30",
+        "10",
+        "0",
+        "10",
+        "30",
+        "60",
+    ]);
+    expect(spans.every((span) => span.scrollWidth <= 11)).toBe(true);
+    scrollWidth.mockRestore();
+    await act(async () => {});
+});

@@ -192,6 +192,7 @@ export function KibitzEvaluation({
         const marks = [...new Set([limit, limit / 2, 10, 0, -10, -limit / 2, -limit])];
         const labels = marks.map((points) => {
             const label = document.createElement("span");
+            label.dataset.points = `${points}`;
             label.textContent = points > 0 ? `+${points}` : `${points}`;
             label.title =
                 points === 0
@@ -224,7 +225,37 @@ export function KibitzEvaluation({
             bar.appendChild(label);
             return label;
         });
+        // A narrow bar (on phones) cannot hold "+60" at 9px. Drop the signs
+        // first, then shrink the font until every label fits.
+        const fitLabels = () => {
+            const width = bar.clientWidth;
+            if (!width) {
+                return;
+            }
+            const fits = () => labels.every((label) => label.scrollWidth <= width);
+            const attempts = [
+                { signed: true, font: 9 },
+                ...[9, 8, 7, 6].map((font) => ({ signed: false, font })),
+            ];
+            for (const { signed, font } of attempts) {
+                labels.forEach((label) => {
+                    const points = Number(label.dataset.points);
+                    label.textContent = signed
+                        ? `${points > 0 ? "+" : ""}${points}`
+                        : `${Math.abs(points)}`;
+                    label.style.fontSize = `${font}px`;
+                });
+                if (fits()) {
+                    return;
+                }
+            }
+        };
+        fitLabels();
+        const resizeObserver =
+            typeof ResizeObserver === "function" ? new ResizeObserver(fitLabels) : null;
+        resizeObserver?.observe(bar);
         return () => {
+            resizeObserver?.disconnect();
             labels.forEach((label) => label.remove());
             bar.style.transform = previousTransform;
             bar.style.boxSizing = previousBoxSizing;
