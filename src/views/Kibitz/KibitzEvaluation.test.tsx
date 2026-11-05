@@ -71,7 +71,7 @@ function setup({ allowed = true, estimating = false } = {}) {
 }
 
 const onLabel = jest.fn();
-const label = (): string | null => onLabel.mock.calls.at(-1)?.[0] ?? null;
+const label = (): string | null => onLabel.mock.calls[onLabel.mock.calls.length - 1]?.[0] ?? null;
 
 function barElement(asController: GobanController, enabled: boolean) {
     return (
