@@ -22,7 +22,13 @@ import { useKibitzScoreEstimation } from "./useKibitzScoreEstimation";
 
 function fakeController() {
     const events = new EventEmitter();
-    const goban = Object.assign(new EventEmitter(), { mode: "play", redraw: jest.fn() });
+    const first = { id: 1 };
+    const engine = { cur_move: first, last_official_move: first };
+    const goban = Object.assign(new EventEmitter(), {
+        mode: "play",
+        redraw: jest.fn(),
+        engine,
+    });
     const fake = {
         goban,
         estimating_score: false,
@@ -37,6 +43,7 @@ function fakeController() {
             goban.emit("mode");
             return true;
         }),
+        refreshScoreEstimate: jest.fn(),
         stopEstimatingScore: jest.fn(() => {
             fake.estimating_score = false;
             events.emit("estimating_score", false);
@@ -142,4 +149,32 @@ test("redraws ownership when an estimate arrives and ignores results after stopp
     expect(fake.goban.redraw).not.toHaveBeenCalled();
     unmount();
     expect(fake.goban.listenerCount("score_estimate")).toBe(0);
+});
+
+test("estimates again when a live move arrives while on the last move", () => {
+    const { fake, controller } = fakeController();
+    const { result } = renderHook(() => useKibitzScoreEstimation(controller, controller, "room"));
+    act(() => result.current.toggle());
+    act(() => fake.goban.emit("update"));
+    expect(fake.refreshScoreEstimate).not.toHaveBeenCalled();
+    const live = { id: 2 };
+    act(() => {
+        fake.goban.engine.cur_move = live;
+        fake.goban.engine.last_official_move = live;
+        fake.goban.emit("update");
+    });
+    expect(fake.refreshScoreEstimate).toHaveBeenCalledTimes(1);
+    act(() => fake.goban.emit("update"));
+    expect(fake.refreshScoreEstimate).toHaveBeenCalledTimes(1);
+});
+
+test("keeps the estimate when a live move arrives while viewing an earlier move", () => {
+    const { fake, controller } = fakeController();
+    const { result } = renderHook(() => useKibitzScoreEstimation(controller, controller, "room"));
+    act(() => result.current.toggle());
+    act(() => {
+        fake.goban.engine.last_official_move = { id: 2 };
+        fake.goban.emit("update");
+    });
+    expect(fake.refreshScoreEstimate).not.toHaveBeenCalled();
 });

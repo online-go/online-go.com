@@ -21,10 +21,6 @@ import EventEmitter from "eventemitter3";
 import type { GobanController } from "@/lib/GobanController";
 import { KibitzEvaluation } from "./KibitzEvaluation";
 
-jest.mock("goban", () => ({
-    ...jest.requireActual("goban"),
-    ScoreEstimator: jest.fn(() => ({ when_ready: Promise.resolve(), estimated_hard_score: -6.5 })),
-}));
 const mockSelect = jest.fn();
 const mockReview = { moves: { 1: { score: 8 } }, scores: [], analyzed_variations: {} };
 jest.mock("@/components/AIReview/hooks", () => ({
@@ -32,59 +28,89 @@ jest.mock("@/components/AIReview/hooks", () => ({
 }));
 jest.mock("@/lib/requests", () => ({ get: () => Promise.resolve([]) }));
 
-function setup(allowed = true) {
+function setup({ allowed = true, estimating = true } = {}) {
     const trunk = {
         move_number: 1,
         getMoveStringToThisPoint: () => "aa",
         getBranchPoint: () => trunk,
     };
+    const bar = document.createElement("div");
     const goban = Object.assign(new EventEmitter(), {
         engine: { cur_move: trunk, move_tree: trunk },
         width: 19,
         height: 19,
         evaluation: 0.5,
+        evaluation_bar_container: bar,
+        score_estimator: null as null | { amount: number; winner: string },
     });
-    const controller = { goban, canEstimateScore: () => allowed } as unknown as GobanController;
-    return { goban, controller, trunk };
+    const controller = Object.assign(new EventEmitter(), {
+        goban,
+        estimating_score: estimating,
+        canEstimateScore: () => allowed,
+    });
+    return {
+        goban,
+        bar,
+        trunk,
+        controller,
+        asController: controller as unknown as GobanController,
+    };
 }
 
-test("keeps the previous bar value while an unreviewed variation is estimated", async () => {
-    const { goban, controller, trunk } = setup();
-    render(<KibitzEvaluation controller={controller} source={controller} gameId={0} />);
-    expect(screen.getByRole("status")).toHaveTextContent("Black +8.0");
-    expect(goban.evaluation).toBeGreaterThan(0.5);
-    const previousEvaluation = goban.evaluation;
+test("shows nothing and hides the bar until score estimation is on", async () => {
+    const { goban, bar, controller, asController } = setup({ estimating: false });
+    render(<KibitzEvaluation controller={asController} source={asController} gameId={0} />);
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(bar.style.visibility).toBe("hidden");
+    expect(goban.evaluation).toBe(0.5);
     act(() => {
-        goban.engine.cur_move = { ...trunk, getMoveStringToThisPoint: () => "aabb" };
-        goban.emit("update");
+        controller.estimating_score = true;
+        controller.emit("estimating_score", true);
     });
-    expect(screen.getByRole("status")).toHaveTextContent("Score unavailable");
-    expect(goban.evaluation).toBe(previousEvaluation);
+    expect(screen.getByRole("status")).toHaveTextContent("Black +8.0 · AI review");
+    expect(bar.style.visibility).toBe("");
+    expect(goban.evaluation).toBeGreaterThan(0.5);
+    act(() => {
+        controller.estimating_score = false;
+        controller.emit("estimating_score", false);
+    });
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(bar.style.visibility).toBe("hidden");
     await act(async () => {});
 });
 
-test("withholds review data when score analysis is restricted", async () => {
-    const { goban, controller } = setup(false);
-    render(<KibitzEvaluation controller={controller} source={controller} gameId={0} />);
+test("uses the score estimator for an unreviewed position and follows its updates", async () => {
+    const { goban, trunk, asController } = setup();
+    goban.engine.cur_move = { ...trunk, getMoveStringToThisPoint: () => "aabb" };
+    render(<KibitzEvaluation controller={asController} source={asController} gameId={0} />);
     expect(screen.getByRole("status")).toHaveTextContent("Score unavailable");
+    expect(screen.getByRole("status")).not.toHaveTextContent("Estimate");
+    act(() => {
+        goban.score_estimator = { amount: 6.5, winner: "White" };
+        goban.emit("score_estimate");
+    });
+    expect(screen.getByRole("status")).toHaveTextContent("White +6.5 · Estimate");
+    expect(goban.evaluation).toBeLessThan(0.5);
+    act(() => {
+        goban.score_estimator = { amount: 3, winner: "Black" };
+        goban.emit("score_estimate");
+    });
+    expect(screen.getByRole("status")).toHaveTextContent("Black +3.0 · Estimate");
+    expect(goban.evaluation).toBeGreaterThan(0.5);
+    act(() => {
+        goban.score_estimator = { amount: NaN, winner: "" };
+        goban.emit("score_estimate");
+    });
+    expect(screen.getByRole("status")).toHaveTextContent("Black +3.0 · Estimate");
+    await act(async () => {});
+});
+
+test("withholds scores when score analysis is restricted", async () => {
+    const { goban, asController } = setup({ allowed: false });
+    goban.score_estimator = { amount: 6.5, winner: "White" };
+    render(<KibitzEvaluation controller={asController} source={asController} gameId={0} />);
+    expect(screen.getByRole("status")).toHaveTextContent("Score unavailable");
+    expect(screen.getByRole("status")).not.toHaveTextContent("·");
     expect(goban.evaluation).toBe(0.5);
     await act(async () => {});
-});
-
-test("automatically estimates an unreviewed variation locally after navigation settles", async () => {
-    jest.useFakeTimers();
-    const { goban, controller, trunk } = setup();
-    goban.engine.cur_move = { ...trunk, getMoveStringToThisPoint: () => "aabb" };
-    const view = render(
-        <KibitzEvaluation controller={controller} source={controller} gameId={0} />,
-    );
-    expect(screen.getByRole("status")).toHaveTextContent("Score unavailable");
-    await act(async () => {
-        jest.advanceTimersByTime(250);
-    });
-    expect(screen.getByRole("status")).toHaveTextContent("White +6.5");
-    expect(screen.getByRole("status")).toHaveTextContent("Estimate");
-    expect(goban.evaluation).toBeLessThan(0.5);
-    view.unmount();
-    jest.useRealTimers();
 });

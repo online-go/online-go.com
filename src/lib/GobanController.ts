@@ -30,6 +30,8 @@ import {
     MarkInterface,
     MoveTreeJson,
     MoveTreePenMarks,
+    SCORE_ESTIMATION_TOLERANCE,
+    SCORE_ESTIMATION_TRIALS,
 } from "goban";
 import { EventEmitter } from "eventemitter3";
 import { sfx, SFXSprite, ValidSound } from "@/lib/sfx";
@@ -285,6 +287,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     public destroyed: boolean = false;
     private enable_sounds: boolean = true;
     private _estimating_score: boolean = false;
+    private score_estimation_prefer_remote: boolean = false;
     private score_estimation_annotations?: {
         node: MoveTree;
         marks: MarkInterface[][];
@@ -1161,8 +1164,26 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         const use_ai_estimate =
             source.goban.engine.phase === "finished" ||
             (!source.goban.engine.isParticipant(user.id) && !shared_ip_with_player);
+        this.score_estimation_prefer_remote = use_ai_estimate;
         this.goban.setScoringMode(true, use_ai_estimate);
         return true;
+    };
+    /**
+     * Estimates the score again at the current move, without leaving score
+     * estimation mode. Use this when the move under the estimate changes, for
+     * example when a live move arrives while the viewer is on the last move.
+     */
+    refreshScoreEstimate = (): void => {
+        if (!this._estimating_score || this.destroyed) {
+            return;
+        }
+        this.goban.score_estimator = this.goban.engine.estimateScore(
+            SCORE_ESTIMATION_TRIALS,
+            SCORE_ESTIMATION_TOLERANCE,
+            this.score_estimation_prefer_remote,
+            false,
+        );
+        this.goban.redraw(true);
     };
     stopEstimatingScore = (): MoveTree | undefined => {
         if (!this._estimating_score) {

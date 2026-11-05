@@ -73,12 +73,16 @@ export function observeKibitzMainBoardPlacement(
         | "enableStonePlacement"
         | "setMode"
         | "setAnalyzeTool"
+        | "mode"
     >,
     onPlacement: (path: string) => boolean,
 ): () => void {
     const enable = () => {
         if (board.engine.phase === "stone removal") {
             board.disableStonePlacement();
+            return;
+        }
+        if (board.mode === "score estimation") {
             return;
         }
         board.setMode("analyze");

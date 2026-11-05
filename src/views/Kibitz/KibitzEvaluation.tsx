@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { JGOFAIReview, ScoreEstimator } from "goban";
+import { translate, type JGOFAIReview } from "goban";
 import type { GobanController } from "@/lib/GobanController";
 import { generateGobanHook } from "@/components/GobanView";
 import { useAIReviewData } from "@/components/AIReview/hooks";
@@ -30,6 +30,31 @@ const usePosition = generateGobanHook(
     ["update", "phase"],
 );
 
+const useEstimatedScore = generateGobanHook(
+    (goban) => {
+        const estimator = goban?.score_estimator;
+        if (!estimator || !Number.isFinite(estimator.amount)) {
+            return undefined;
+        }
+        // `winner` and `amount` hold the AI score when the server sends one,
+        // so the bar shows the same number as the score estimate banner.
+        return estimator.winner === translate._("Black") ? estimator.amount : -estimator.amount;
+    },
+    ["score_estimate"],
+);
+
+function useEstimating(controller: GobanController): boolean {
+    const [estimating, setEstimating] = React.useState(controller.estimating_score);
+    React.useEffect(() => {
+        setEstimating(controller.estimating_score);
+        controller.on("estimating_score", setEstimating);
+        return () => {
+            controller.off("estimating_score", setEstimating);
+        };
+    }, [controller]);
+    return estimating;
+}
+
 export function KibitzEvaluation({
     controller,
     source,
@@ -38,10 +63,11 @@ export function KibitzEvaluation({
     controller: GobanController;
     source: GobanController;
     gameId: number;
-}): React.ReactElement {
+}): React.ReactElement | null {
     const goban = controller.goban;
     const { move } = usePosition(goban);
-    const allowed = controller.canEstimateScore(source);
+    const estimating = useEstimating(controller);
+    const allowed = estimating && controller.canEstimateScore(source);
     const { reviewData, setSelectedAIReview } = useAIReviewData({
         gameId,
         moveTree: goban.engine.move_tree,
@@ -79,43 +105,30 @@ export function KibitzEvaluation({
                 : (reviewData?.moves[move.move_number]?.score ??
                   reviewData?.scores?.[move.move_number])
             : undefined;
-    const [estimate, setEstimate] = React.useState<{ move: typeof move; score: number } | null>(
-        null,
-    );
-    React.useEffect(() => {
-        let active = true;
-        if (!allowed || Number.isFinite(reviewedScore)) {
-            return;
-        }
-        const timer = window.setTimeout(() => {
-            // A detached local estimate does not enter scoring mode or request backend analysis.
-            const estimator = new ScoreEstimator(goban.engine, undefined, 1000, 0.25, false);
-            void estimator.when_ready
-                .then(() => {
-                    if (active && goban.engine.cur_move === move) {
-                        setEstimate({ move, score: estimator.estimated_hard_score });
-                    }
-                })
-                .catch(() => {});
-        }, 250);
-        return () => {
-            active = false;
-            window.clearTimeout(timer);
-        };
-    }, [goban, move, allowed, reviewedScore]);
-    const score = Number.isFinite(reviewedScore)
-        ? reviewedScore
-        : estimate?.move === move
-          ? estimate?.score
-          : undefined;
+    const currentEstimate = useEstimatedScore(goban);
+    // Keep the previous estimate while a new one is calculated, so the label
+    // does not flicker when live moves arrive.
+    const lastEstimate = React.useRef<number | undefined>(undefined);
+    if (!estimating) {
+        lastEstimate.current = undefined;
+    } else if (currentEstimate !== undefined) {
+        lastEstimate.current = currentEstimate;
+    }
+    const estimatedScore = currentEstimate ?? lastEstimate.current;
+    const score = Number.isFinite(reviewedScore) ? reviewedScore : estimatedScore;
     const available = allowed && typeof score === "number" && Number.isFinite(score);
     React.useEffect(() => {
         const bar = goban.evaluation_bar_container;
         if (!bar) {
             return;
         }
+        if (!estimating) {
+            bar.style.visibility = "hidden";
+            return;
+        }
         const previousTransform = bar.style.transform;
         bar.style.transform = "translateX(-8px)";
+        bar.style.visibility = "";
         const size = Math.max(goban.width, goban.height);
         const limit = size <= 9 ? 20 : size <= 13 ? 40 : 60;
         const labels = [limit, limit / 2, 0, -limit / 2, -limit].map((points) => {
@@ -155,8 +168,9 @@ export function KibitzEvaluation({
         return () => {
             labels.forEach((label) => label.remove());
             bar.style.transform = previousTransform;
+            bar.style.visibility = "hidden";
         };
-    }, [goban]);
+    }, [goban, estimating]);
     React.useEffect(() => {
         if (available) {
             goban.evaluation = kibitzEvaluation(score!, Math.max(goban.width, goban.height));
@@ -168,12 +182,18 @@ export function KibitzEvaluation({
               score: Math.abs(score!).toFixed(1),
           })
         : pgettext("Kibitz evaluation", "Score unavailable");
+    if (!estimating) {
+        return null;
+    }
     return (
         <div className="KibitzEvaluation" role="status">
-            {label} ·{" "}
-            {Number.isFinite(reviewedScore)
-                ? pgettext("Kibitz score source", "AI review")
-                : pgettext("Kibitz score source", "Estimate")}
+            {label}
+            {available &&
+                ` · ${
+                    Number.isFinite(reviewedScore)
+                        ? pgettext("Kibitz score source", "AI review")
+                        : pgettext("Kibitz score source", "Estimate")
+                }`}
         </div>
     );
 }
