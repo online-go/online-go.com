@@ -231,4 +231,61 @@ describe("kibitzAnalysisPolicy", () => {
     it("isActiveGame: false for null", () => {
         expect(isActiveGame(null)).toBe(false);
     });
+    it("blocks players of a correspondence game, matching the server", () => {
+        const game = makeGame({
+            live: false,
+            players: { black: { id: 7 }, white: { id: 8 } },
+        });
+
+        expect(getKibitzAccessPolicyForUser(makeUser(7), game)).toEqual({
+            allowed: false,
+            reason: "own-active-game",
+        });
+        expect(getKibitzAccessPolicyForUser(makeUser(8), game)).toEqual({
+            allowed: false,
+            reason: "own-active-game",
+        });
+        expect(getKibitzAccessPolicyForUser(makeUser(9), game)).toEqual({ allowed: true });
+    });
+
+    it("allows players of a finished correspondence game", () => {
+        const game = makeGame({
+            live: false,
+            ended: "2026-04-01T10:00:00Z",
+            players: { black: { id: 7 }, white: { id: 8 } },
+        });
+
+        expect(getKibitzAccessPolicyForUser(makeUser(7), game)).toEqual({ allowed: true });
+    });
+
+    it("blocks rengo team members given as id arrays", () => {
+        const game = makeGame({
+            live: false,
+            players: { black: { id: 7 }, white: { id: 8 } },
+            rengo_black_team: [7, 11],
+            rengo_white_team: [8, 12],
+        });
+
+        expect(isCurrentUserGamePlayer(makeUser(11), game)).toBe(true);
+        expect(getKibitzAccessPolicyForUser(makeUser(12), game)).toEqual({
+            allowed: false,
+            reason: "own-active-game",
+        });
+        expect(getKibitzAccessPolicyForUser(makeUser(13), game)).toEqual({ allowed: true });
+    });
+
+    it("blocks rengo team members given as rengo_teams player objects", () => {
+        const game = makeGame({
+            players: { black: { id: 7 }, white: { id: 8 } },
+            rengo_teams: { black: [{ id: 7 }, { id: 21 }], white: [{ id: 8 }] },
+        });
+        const gamedataGame = makeGame({
+            players: { black: { id: 7 }, white: { id: 8 } },
+            gamedata: { rengo_teams: { black: [{ id: 7 }], white: [{ id: 8 }, { id: 22 }] } },
+        });
+
+        expect(isCurrentUserGamePlayer(makeUser(21), game)).toBe(true);
+        expect(isCurrentUserGamePlayer(makeUser(22), gamedataGame)).toBe(true);
+        expect(isCurrentUserGamePlayer(makeUser(23), gamedataGame)).toBe(false);
+    });
 });

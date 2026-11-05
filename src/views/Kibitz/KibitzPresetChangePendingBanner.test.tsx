@@ -31,17 +31,17 @@ describe("KibitzPresetChangePendingBanner", () => {
     it("renders the remaining seconds rounded up", () => {
         const effectiveAt = new Date("2026-05-11T12:00:18Z").toISOString();
         render(<KibitzPresetChangePendingBanner changeEffectiveAt={effectiveAt} />);
-        expect(screen.getByText(/Switching to a new game in 18s/)).toBeInTheDocument();
+        expect(screen.getByText(/Next game in 0:18/)).toBeInTheDocument();
     });
 
     it("counts down each second", () => {
         const effectiveAt = new Date("2026-05-11T12:00:20Z").toISOString();
         render(<KibitzPresetChangePendingBanner changeEffectiveAt={effectiveAt} />);
-        expect(screen.getByText(/20s/)).toBeInTheDocument();
+        expect(screen.getByText(/0:20/)).toBeInTheDocument();
         act(() => {
             jest.advanceTimersByTime(1000);
         });
-        expect(screen.getByText(/19s/)).toBeInTheDocument();
+        expect(screen.getByText(/0:19/)).toBeInTheDocument();
     });
 
     it("stops the interval after the deadline passes", () => {
@@ -57,17 +57,31 @@ describe("KibitzPresetChangePendingBanner", () => {
         });
 
         expect(clearIntervalSpy).toHaveBeenCalled();
-        expect(screen.getByText(/Switching/)).toBeInTheDocument();
+        expect(screen.getByText(/Waiting for the next game/)).toBeInTheDocument();
 
         setIntervalSpy.mockRestore();
         clearIntervalSpy.mockRestore();
     });
 
-    it("renders 'switching...' text once the deadline passes", () => {
+    it("renders a waiting message once the deadline passes", () => {
         const effectiveAt = new Date("2026-05-11T11:59:59Z").toISOString();
         render(<KibitzPresetChangePendingBanner changeEffectiveAt={effectiveAt} />);
-        expect(screen.getByText(/Switching/)).toBeInTheDocument();
+        expect(screen.getByText(/Waiting for the next game/)).toBeInTheDocument();
         expect(screen.queryByText(/\d+s/)).toBeNull();
+    });
+
+    it("updates when the server changes the deadline", () => {
+        const { rerender } = render(
+            <KibitzPresetChangePendingBanner changeEffectiveAt="2026-05-11T12:00:10Z" />,
+        );
+        expect(screen.getByText(/0:10/)).toBeInTheDocument();
+        rerender(<KibitzPresetChangePendingBanner changeEffectiveAt="2026-05-11T12:00:30Z" />);
+        expect(screen.getByText(/0:30/)).toBeInTheDocument();
+    });
+
+    it("does not show a countdown for an invalid deadline", () => {
+        render(<KibitzPresetChangePendingBanner changeEffectiveAt="invalid" />);
+        expect(screen.queryByRole("timer")).toBeNull();
     });
 
     it("does not create an interval when the deadline is already past", () => {

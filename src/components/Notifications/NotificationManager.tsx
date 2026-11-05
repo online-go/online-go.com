@@ -68,9 +68,32 @@ window.addEventListener("storage", (event) => {
     }
 });
 
-export function emitNotification(title: string, body: string, cb?: () => void) {
+/* A type follows its own setting. With every setting off, as the All notifications
+ * switch leaves them, nothing shows, including pop-ups that have no setting of their own. */
+function desktopSettingsAllow(notification_type?: string): boolean {
+    const settings = data.get("config.desktop_notifications");
+    if (!settings) {
+        return true;
+    }
+    if (notification_type && settings[notification_type] === false) {
+        return false;
+    }
+    const values = Object.values(settings);
+    return values.length === 0 || values.includes(true);
+}
+
+export function emitNotification(
+    title: string,
+    body: string,
+    cb?: () => void,
+    notification_type?: string,
+) {
     try {
         if (!preferences.get("desktop-notifications")) {
+            return;
+        }
+
+        if (!desktopSettingsAllow(notification_type)) {
             return;
         }
 
@@ -90,13 +113,13 @@ export function emitNotification(title: string, body: string, cb?: () => void) {
                                 try {
                                     Notification.requestPermission()
                                         .then(() => {
-                                            emitNotification(title, body, cb);
+                                            emitNotification(title, body, cb, notification_type);
                                         })
                                         .catch((err: any) => console.error(err));
                                 } catch {
                                     /* deprecated usage, but only way supported on safari currently */
                                     void Notification.requestPermission(() => {
-                                        emitNotification(title, body, cb);
+                                        emitNotification(title, body, cb, notification_type);
                                     });
                                 }
                                 t.close();
@@ -397,6 +420,7 @@ export class NotificationManager {
                                         browserHistory.push("/game/" + game.id);
                                     }
                                 },
+                                "yourMove",
                             );
                             game_turn_notifications_sent[game_notification_key] = true;
                         }
@@ -440,6 +464,8 @@ export class NotificationManager {
                     interpolate("You have received a challenge from {{username}}", {
                         username: notification.user.username,
                     }),
+                    undefined,
+                    "challenge",
                 );
                 if (time_since_connect() > 5000) {
                     sfx.play("challenge_received");
@@ -455,6 +481,8 @@ export class NotificationManager {
                     emitNotification(
                         _("Friend Request"),
                         _("You have received a new friend request"),
+                        undefined,
+                        "friendRequest",
                     );
                 }
             }
@@ -520,7 +548,7 @@ export class NotificationManager {
                             title = _("Notification from Online Go");
                             body = _("You have received a new notification from OGS");
                         }
-                        emitNotification(title, body);
+                        emitNotification(title, body, undefined, notification.type);
                     }
                 } catch {
                     // ignore error
@@ -541,6 +569,7 @@ export class NotificationManager {
                                 browserHistory.push("/game/" + notification.game_id);
                             }
                         },
+                        "lateChatReceivedInGame",
                     );
                 }
             }

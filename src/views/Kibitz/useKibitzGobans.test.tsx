@@ -684,6 +684,75 @@ describe("useKibitzGobans", () => {
         expect(composedOrderWhenSelecting("v3")).toEqual(["v1", "v2", "v3"]);
     });
 
+    describe("reader position across a rebuild", () => {
+        const node = { id: 7 };
+        const endpoint = { id: 42 };
+        const variations = [makeVariation("v1"), makeVariation("v2")];
+
+        // Every composed board reports the reader at path "aa", and finds
+        // that path in its tree only while `pathPresent` holds.
+        let pathPresent = true;
+        beforeEach(() => {
+            pathPresent = true;
+            applyKibitzVariationToController.mockImplementation((controller: unknown) => {
+                const engine = (controller as { goban: { engine: Record<string, unknown> } }).goban
+                    .engine;
+                engine.cur_move = { getMoveStringToThisPoint: () => "aa" };
+                engine.decodeMoves = () => [{ x: 0, y: 0 }];
+                engine.playerByColor = () => 1;
+                engine.move_tree = { lookupMove: () => (pathPresent ? node : null) };
+                return { variationId: "v", endpoint };
+            });
+        });
+
+        const renderPane = (variationId: string, visible: string[]) => {
+            readyMainTrunk();
+            const { rerender } = render(
+                <Harness options={baseOptions()} onResult={() => undefined} />,
+            );
+            emit(instances[0], "load");
+            const show = (id: string, ids: string[]) =>
+                rerender(
+                    <Harness
+                        options={baseOptions({
+                            secondaryPane: { collapsed: false, variation_id: id },
+                            variations,
+                            visibleVariationIds: ids,
+                        })}
+                        onResult={() => undefined}
+                    />,
+                );
+            show(variationId, visible);
+            return show;
+        };
+
+        const lastJump = (instance: Record<string, unknown>) => {
+            const calls = (instance as { goban: { engine: { jumpTo: jest.Mock } } }).goban.engine
+                .jumpTo.mock.calls;
+            return calls[calls.length - 1]?.[0];
+        };
+
+        test("hiding another variation keeps the reader where they were", () => {
+            const show = renderPane("v2", ["v1", "v2"]);
+            show("v2", ["v2"]);
+            expect(instances).toHaveLength(3);
+            expect(lastJump(instances[2])).toBe(node);
+        });
+
+        test("a position that left the board falls back to the line's end", () => {
+            const show = renderPane("v2", ["v1", "v2"]);
+            pathPresent = false;
+            show("v2", ["v2"]);
+            expect(lastJump(instances[2])).toBe(endpoint);
+        });
+
+        test("selecting another variation opens it at its end", () => {
+            const show = renderPane("v2", ["v1", "v2"]);
+            show("v1", ["v1", "v2"]);
+            expect(lastJump(instances[2])).toBe(endpoint);
+        });
+    });
+
     test("marks are applied only to the selected variation", () => {
         readyMainTrunk();
         render(

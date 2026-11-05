@@ -1,0 +1,146 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.PushAppPanel {
+    margin-top: 1.5rem;
+    border: 1px solid var(--shade3);
+    border-radius: 0.3rem;
+    overflow: hidden;
+
+    > * + * {
+        border-top: 1px solid var(--shade3);
+    }
+
+    summary {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        list-style: none;
+
+        &::-webkit-details-marker {
+            display: none;
+        }
+
+        &::before {
+            content: "";
+            flex: none;
+            width: 0.4rem;
+            height: 0.4rem;
+            margin-top: 0.4rem;
+            border-right: 2px solid var(--text-dimmed);
+            border-bottom: 2px solid var(--text-dimmed);
+            transform: rotate(-45deg);
+        }
+
+        &:hover {
+            background-color: var(--shade5);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--link-color);
+            outline-offset: -2px;
+        }
+    }
+
+    details[open] > summary::before {
+        transform: rotate(45deg);
+    }
+
+    .push-app-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.25rem 1rem;
+        padding: 0.75rem 1rem;
+        background-color: var(--card-background-color);
+
+        h3 {
+            margin: 0;
+        }
+
+        code {
+            overflow-wrap: anywhere;
+            user-select: all;
+        }
+    }
+
+    .push-client-id {
+        color: var(--shade0);
+    }
+
+    .webhook-signing-secret {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+        padding: 0.75rem 1rem;
+        background-color: var(--warning-bg);
+        color: var(--warning-fg);
+
+        code {
+            word-break: break-all;
+            user-select: all;
+        }
+    }
+
+    .push-test {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem 0.75rem;
+        padding: 0.75rem 1rem;
+
+        button {
+            flex: none;
+            margin: 0;
+        }
+
+        span {
+            flex: 1 1 16rem;
+        }
+
+        span:empty {
+            display: none;
+        }
+    }
+
+    .push-no-errors {
+        padding: 0.75rem 1rem;
+        color: var(--shade0);
+    }
+
+    .push-errors ul {
+        margin: 0;
+        padding: 0 1rem 0.75rem 2.4rem;
+        list-style: none;
+    }
+
+    .push-errors li {
+        display: flex;
+        flex-direction: column;
+        padding: 0.4rem 0;
+        overflow-wrap: anywhere;
+    }
+
+    .push-error-source {
+        color: var(--shade0);
+        font-size: var(--font-size-small);
+    }
+}

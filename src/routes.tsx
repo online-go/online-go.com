@@ -370,6 +370,11 @@ export const routes = (
                 <Route path="/joseki/" element={<Joseki />} />{" "}
                 {/* ^^ this is equivalent to specifying pos = "root" */}
                 <Route path="/joseki/:pos" element={<Joseki />} />
+                {/* The notifications page used to be "email" */}
+                <Route
+                    path="/settings/email"
+                    element={<Navigate to="/settings/notifications" replace />}
+                />
                 <Route path="/settings/:category" element={<Settings />} />
                 <Route path="/settings/:category/*" element={<Settings />} />
                 <Route path="/settings/:category/**/*" element={<Settings />} />

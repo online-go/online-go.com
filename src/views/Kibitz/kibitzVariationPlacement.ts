@@ -82,10 +82,13 @@ export function observeKibitzMainBoardPlacement(
             board.disableStonePlacement();
             return;
         }
+        // A running score estimate owns the board's mode until it ends.
         if (board.mode === "score estimation") {
             return;
         }
-        board.setMode("analyze");
+        // This also runs on `load` and `phase`; jumping to the official move
+        // here would pull a reader who stepped back up to the newest move.
+        board.setMode("analyze", true);
         board.setAnalyzeTool("stone", "alternate");
         board.enableStonePlacement();
     };

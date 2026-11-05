@@ -71,6 +71,8 @@ export interface ConfigSchema {
     chat_auth: string;
     superchat_auth: string;
     notification_auth: string;
+    desktop_notifications?: { [type: string]: boolean };
+    vapid_public_key?: string;
     incident_auth: string;
     dismissable_messages: DismissableMessagesSchema;
     payment_problems?: PaymentProblems;

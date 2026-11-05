@@ -60,6 +60,7 @@ type PaneEntry =
           gobanChannel?: string;
           gobanLine?: protocol.GameChatLine;
           position?: { game_id: number; move_number: number };
+          routineSystem?: boolean;
       }
     | {
           kind: "variation";
@@ -208,6 +209,7 @@ function createChatLineFromItem(
         key: item.id,
         createdAt: item.created_at,
         source,
+        routineSystem: item.type === "system" && source !== "game-chat",
         position:
             item.type === "chat" &&
             typeof item.game_id === "number" &&
@@ -852,6 +854,7 @@ export function KibitzChatPanel({
                                 className={
                                     "kibitz-chat-entry " +
                                     entry.source +
+                                    (entry.routineSystem ? " routine-system" : "") +
                                     (entry.gobanChannel ? " " + entry.gobanChannel : "")
                                 }
                             >

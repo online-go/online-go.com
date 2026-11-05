@@ -23,6 +23,7 @@ import { GobanControllerContext } from "./goban_context";
 import { GobanController } from "../../lib/GobanController";
 import {
     useCanRequestUndo,
+    useGamePlayersLoaded,
     usePauseControl,
     usePlayerToMoveOnOfficialBranch,
     useResignMode,
@@ -209,6 +210,34 @@ describe("usePauseControl", () => {
     });
 });
 
+describe("useGamePlayersLoaded", () => {
+    function LoadedProbe({ controller }: { controller: GobanController }): React.ReactElement {
+        const loaded = useGamePlayersLoaded(controller.goban);
+        return <span data-testid="players-loaded">{loaded ? "yes" : "no"}</span>;
+    }
+    const playersLoaded = () => screen.getByTestId("players-loaded").textContent === "yes";
+
+    test("false for a goban that has only a game id", () => {
+        const controller = new GobanController({ game_id: 1 });
+        render(
+            <GobanControllerContext.Provider value={controller}>
+                <LoadedProbe controller={controller} />
+            </GobanControllerContext.Provider>,
+        );
+        expect(playersLoaded()).toBe(false);
+    });
+
+    test("true once the game config carries both players", () => {
+        const controller = new GobanController(GAME_IN_PROGRESS);
+        render(
+            <GobanControllerContext.Provider value={controller}>
+                <LoadedProbe controller={controller} />
+            </GobanControllerContext.Provider>,
+        );
+        expect(playersLoaded()).toBe(true);
+    });
+});
+
 describe("useResignMode", () => {
     test("is 'cancel' in the first 6 moves", () => {
         renderProbe(
@@ -304,6 +333,84 @@ describe("useCanRequestUndo", () => {
         renderProbe(
             new GobanController({
                 players: { black: ME, white: OPPONENT },
+            }),
+        );
+
+        expect(canRequestUndo()).toBe(false);
+    });
+
+    test("false for white after only black has moved", () => {
+        renderProbe(
+            new GobanController({
+                moves: [[16, 3, 9136.12]], // B
+                players: { black: OPPONENT, white: ME },
+            }),
+        );
+
+        expect(canRequestUndo()).toBe(false);
+    });
+
+    test("true for black after black's first move", () => {
+        renderProbe(
+            new GobanController({
+                moves: [[16, 3, 9136.12]], // B
+                players: { black: ME, white: OPPONENT },
+            }),
+        );
+
+        expect(canRequestUndo()).toBe(true);
+    });
+
+    test("true for white after white's first move", () => {
+        renderProbe(
+            new GobanController({
+                moves: [
+                    [16, 3, 9136.12], // B
+                    [3, 2, 1897.853], // W
+                ],
+                players: { black: OPPONENT, white: ME },
+            }),
+        );
+
+        expect(canRequestUndo()).toBe(true);
+    });
+
+    test("false for black after white's first move in a fixed handicap game", () => {
+        renderProbe(
+            new GobanController({
+                handicap: 2,
+                free_handicap_placement: false,
+                moves: [[3, 2, 1897.853]], // W
+                players: { black: ME, white: OPPONENT },
+            }),
+        );
+
+        expect(canRequestUndo()).toBe(false);
+    });
+
+    test("true for black after a free handicap stone", () => {
+        renderProbe(
+            new GobanController({
+                handicap: 2,
+                free_handicap_placement: true,
+                moves: [[16, 3, 9136.12]], // B handicap stone
+                players: { black: ME, white: OPPONENT },
+            }),
+        );
+
+        expect(canRequestUndo()).toBe(true);
+    });
+
+    test("false for white during free handicap placement", () => {
+        renderProbe(
+            new GobanController({
+                handicap: 2,
+                free_handicap_placement: true,
+                moves: [
+                    [16, 3, 9136.12], // B handicap stone
+                    [3, 2, 1897.853], // B handicap stone
+                ],
+                players: { black: OPPONENT, white: ME },
             }),
         );
 

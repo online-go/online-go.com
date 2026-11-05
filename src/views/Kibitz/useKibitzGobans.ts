@@ -212,6 +212,21 @@ function refreshLastOfficialMoveFromTrunk(controller: GobanController): void {
     }
 }
 
+/** The node at the end of `path` (as from `getMoveStringToThisPoint`), or
+ *  null when any step of it is not in the tree. Unlike `followPath` this
+ *  never places a move, so a node that left the board is not recreated. */
+export function findNodeByMovePath(controller: GobanController, path: string): MoveTree | null {
+    const { engine } = controller.goban;
+    let cur: MoveTree | null = engine.move_tree;
+    for (const mv of engine.decodeMoves(path)) {
+        cur = cur?.lookupMove(mv.x, mv.y, engine.playerByColor(mv.color || 0), !!mv.edited) ?? null;
+        if (!cur) {
+            return null;
+        }
+    }
+    return cur;
+}
+
 /**
  * Owns the Kibitz GobanControllers. The main controller connects to the
  * room's live game and lives as long as that game is the room's game. The
@@ -341,6 +356,10 @@ export function useKibitzGobans({
                   secondaryPane.variation_source_move_path ?? "",
                   composedVariationIds.join(","),
               ].join(":");
+    // The key without the composed set: when only this stays the same, the
+    // rebuild was a visibility change and the reader keeps their place.
+    const secondarySelectionKey = secondaryKey?.slice(0, secondaryKey.lastIndexOf(":")) ?? null;
+    const restorePositionRef = React.useRef<{ selectionKey: string; path: string } | null>(null);
 
     // A same-game board copies the main trunk, so it waits for `mainReady`. A
     // board for another game connects on its own; gating it on `mainReady`
@@ -467,8 +486,18 @@ export function useKibitzGobans({
                 // reader was standing in it, which is only the end of the
                 // line when they never stepped back.
                 baselineNodeCount = countBranchNodes(controller.goban.engine.move_tree);
+                const restore = restorePositionRef.current;
+                restorePositionRef.current = null;
+                const restoreNode =
+                    mode === "variation" &&
+                    restore?.path &&
+                    restore.selectionKey === secondarySelectionKey
+                        ? findNodeByMovePath(controller, restore.path)
+                        : null;
                 if (mode === "draft" && pane.variation_draft_base_path) {
                     controller.goban.engine.followPath(0, pane.variation_draft_base_path);
+                } else if (restoreNode) {
+                    controller.goban.engine.jumpTo(restoreNode);
                 } else if (focusEndpoint) {
                     controller.goban.engine.jumpTo(focusEndpoint);
                 }
@@ -507,6 +536,13 @@ export function useKibitzGobans({
         setSecondary(controller);
         return () => {
             controller.goban.off("load", compose);
+            restorePositionRef.current =
+                mode === "variation" && secondarySelectionKey
+                    ? {
+                          selectionKey: secondarySelectionKey,
+                          path: controller.goban.engine.cur_move.getMoveStringToThisPoint(),
+                      }
+                    : null;
             if (draftBaselineRef.current?.controller === controller) {
                 draftBaselineRef.current = null;
             }

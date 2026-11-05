@@ -60,6 +60,8 @@ export interface KibitzWatchedGame {
     move_number?: number;
     live?: boolean;
     analysis_disabled?: boolean;
+    rengo_black_team?: number[];
+    rengo_white_team?: number[];
 }
 
 export interface KibitzPresetBlock {
@@ -77,6 +79,7 @@ export interface KibitzRoomSummary {
     viewer_count: number;
     description?: string;
     creator_id?: number | null;
+    current_game_id?: number | null;
     current_game?: KibitzWatchedGame;
     pinned?: boolean;
     proposals_enabled?: boolean;

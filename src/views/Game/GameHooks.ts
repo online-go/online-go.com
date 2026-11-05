@@ -23,6 +23,7 @@ import {
     JGOFClockWithTransmitting,
     JGOFPauseState,
     JGOFSealingIntersection,
+    MoveTree,
     PlayerColor,
 } from "goban";
 import * as data from "@/lib/data";
@@ -196,6 +197,14 @@ export function useShowUndoRequested(
     return show_undo_requested;
 }
 
+/** React hook that returns true once the game's players are known. Until
+ *  the gamedata has loaded the engine carries placeholder players, so
+ *  `useUserIsParticipant` is false for everyone, including the players. */
+export const useGamePlayersLoaded = generateGobanHook((goban: Goban | null) => {
+    const players = goban?.engine.players;
+    return Boolean(players?.black?.id && players?.white?.id);
+});
+
 /** React hook that returns true if user is a participant in this game */
 export const useUserIsParticipant = generateGobanHook((goban: Goban | null) => {
     const user = data.get("user");
@@ -213,8 +222,31 @@ export const useResignMode = generateGobanHook(
     ["cur_move"],
 );
 
+/** True when the official line holds at least one move by this player. Fixed
+ *  handicap stones are not moves, and free handicap stones are black's moves. */
+function hasPlayedOfficialMove(goban: Goban, player_id: number): boolean {
+    const engine = goban.engine;
+    const player_color = engine.playerColor(player_id);
+    if (player_color === "invalid") {
+        return false;
+    }
+    const color = engine.playerByColor(player_color);
+    for (
+        let move: MoveTree | null = engine.last_official_move;
+        move && move.move_number >= 1;
+        move = move.parent
+    ) {
+        if (move.player === color) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /** React hook that returns true when the user may ask the opponent to take
- *  back the last official move right now. */
+ *  back the last official move right now. A player who has not moved yet has
+ *  nothing of their own to take back, and the request would only remove the
+ *  opponent's move. */
 export const useCanRequestUndo = generateGobanHook(
     (goban: Goban | null) => {
         const user = data.get("user");
@@ -226,7 +258,7 @@ export const useCanRequestUndo = generateGobanHook(
             !engine.rengo &&
             engine.isParticipant(user.id) &&
             engine.cur_move.move_number === engine.last_official_move.move_number &&
-            engine.cur_move.move_number >= 1 &&
+            hasPlayedOfficialMove(goban, user.id) &&
             (engine.undo_requested ?? -1) < engine.getMoveNumber() &&
             goban.submit_move == null
         );

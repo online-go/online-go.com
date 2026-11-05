@@ -1,0 +1,319 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import * as React from "react";
+import { fireEvent, render } from "@testing-library/react";
+import { get, put } from "@/lib/requests";
+import * as preferences from "@/lib/preferences";
+import * as data from "@/lib/data";
+
+jest.mock("@/lib/requests", () => ({
+    get: jest.fn(() => Promise.resolve({ results: [] })),
+    put: jest.fn(() => Promise.resolve({})),
+}));
+
+import { NotificationPreferences } from "./NotificationPreferences";
+
+const mockedGet = get as jest.Mock;
+
+function device(provider: string, form_factor: string | null) {
+    return {
+        id: 1,
+        application: provider === "webpush" ? null : { id: 1, name: "SomeApp" },
+        provider,
+        token: null,
+        label: provider === "webpush" ? "Chrome on Linux" : null,
+        form_factor,
+        apns_environment: null,
+        created_at: "2026-10-01T00:00:00Z",
+        last_seen_at: "2026-10-29T00:00:00Z",
+    };
+}
+
+function renderWithDevices(devices: ReturnType<typeof device>[]) {
+    mockedGet.mockImplementation(() => Promise.resolve({ results: devices }));
+    const state = {
+        notifications: {
+            yourMove: {
+                description: "It is my turn to move",
+                value: { email: true, mobile: true },
+            },
+        },
+    };
+    return render(
+        <NotificationPreferences
+            state={state}
+            vacation_base_time={0}
+            refresh={() => () => 0}
+            updateSelfReportedAccountLinkages={() => 0}
+        />,
+    );
+}
+
+beforeEach(() => {
+    mockedGet.mockImplementation(() => Promise.resolve({ results: [] }));
+    preferences.set("desktop-notifications", false);
+});
+
+test("each notification's email, mobile and desktop toggles are saved independently", async () => {
+    const description = "It is my turn to move";
+    const view = renderWithDevices([device("fcm", "mobile"), device("webpush", "desktop")]);
+    await view.findByText("Chrome on Linux");
+    const [email, mobile, desktop] = view.getAllByRole("switch").slice(3);
+    expect(desktop).toBeChecked();
+
+    fireEvent.click(desktop);
+    expect(put).toHaveBeenLastCalledWith("me/settings", {
+        notifications: {
+            yourMove: { description, value: { email: true, mobile: true, desktop: false } },
+        },
+    });
+
+    fireEvent.click(mobile);
+    expect(put).toHaveBeenLastCalledWith("me/settings", {
+        notifications: {
+            yourMove: { description, value: { email: true, mobile: false, desktop: false } },
+        },
+    });
+
+    fireEvent.click(email);
+    expect(put).toHaveBeenLastCalledWith("me/settings", {
+        notifications: {
+            yourMove: { description, value: { email: false, mobile: false, desktop: false } },
+        },
+    });
+});
+
+test("streak notifications, which aren't released yet, have no settings row", async () => {
+    const state = {
+        notifications: {
+            yourMove: {
+                description: "It is my turn to move",
+                value: { email: true, mobile: true },
+            },
+            streak_at_risk_reminder: {
+                description: "My streak is at risk",
+                value: { email: false, mobile: false, desktop: false },
+            },
+        },
+    };
+    const view = render(
+        <NotificationPreferences
+            state={state}
+            vacation_base_time={0}
+            refresh={() => () => 0}
+            updateSelfReportedAccountLinkages={() => 0}
+        />,
+    );
+    await view.findByText(/No devices/);
+    expect(view.getByText("It is my turn to move")).toBeTruthy();
+    expect(view.queryByText("My streak is at risk")).toBeNull();
+});
+
+test("mobile and desktop toggles are disabled when no device gets notifications that way", async () => {
+    const view = renderWithDevices([device("webhook", null)]);
+    await view.findByText(/Webhook/);
+    const [email, mobile, desktop] = view.getAllByRole("switch").slice(3);
+    expect(email).not.toBeDisabled();
+    expect(mobile).toBeDisabled();
+    expect(mobile).not.toBeChecked();
+    expect(desktop).toBeDisabled();
+    expect(desktop).not.toBeChecked();
+});
+
+test("a phone browser or native app enables only the mobile toggles", async () => {
+    const view = renderWithDevices([device("webpush", "mobile")]);
+    await view.findByText("Chrome on Linux");
+    const [, mobile, desktop] = view.getAllByRole("switch").slice(3);
+    expect(mobile).not.toBeDisabled();
+    expect(mobile).toBeChecked();
+    expect(desktop).toBeDisabled();
+    expect(desktop).not.toBeChecked();
+});
+
+test("desktop toggles stay enabled while this browser shows notifications itself", async () => {
+    preferences.set("desktop-notifications", true);
+    Object.defineProperty(window, "Notification", {
+        value: { permission: "granted" },
+        configurable: true,
+    });
+    try {
+        const view = renderWithDevices([]);
+        await view.findByText(/No devices/);
+        const [, mobile, desktop] = view.getAllByRole("switch").slice(3);
+        expect(mobile).toBeDisabled();
+        expect(desktop).not.toBeDisabled();
+    } finally {
+        delete (window as { Notification?: unknown }).Notification;
+    }
+});
+
+test("an all notifications switch turns a delivery method off and on, keeping each notification's own setting", async () => {
+    mockedGet.mockImplementation(() =>
+        Promise.resolve({ results: [device("fcm", "mobile"), device("webpush", "desktop")] }),
+    );
+    const state = {
+        notifications: {
+            yourMove: {
+                description: "It is my turn to move",
+                value: { email: true, mobile: true, desktop: true },
+            },
+            challenge: {
+                description: "Someone challenges me",
+                value: { email: false, mobile: true, desktop: true },
+            },
+        },
+    };
+    const view = render(
+        <NotificationPreferences
+            state={state}
+            vacation_base_time={0}
+            refresh={() => () => 0}
+            updateSelfReportedAccountLinkages={() => 0}
+        />,
+    );
+    await view.findByText("Chrome on Linux");
+    const [all_email] = view.getAllByRole("switch");
+    expect(all_email).toBeChecked();
+
+    fireEvent.click(all_email);
+    expect(put).toHaveBeenLastCalledWith("me/settings", {
+        notifications_enabled: { email: false },
+    });
+    let rows = view.getAllByRole("switch").slice(3);
+    expect(all_email).not.toBeChecked();
+    expect(rows[0]).toBeDisabled();
+    expect(rows[0]).not.toBeChecked();
+    expect(rows[3]).toBeDisabled();
+
+    fireEvent.click(all_email);
+    expect(put).toHaveBeenLastCalledWith("me/settings", {
+        notifications_enabled: { email: true },
+    });
+    rows = view.getAllByRole("switch").slice(3);
+    expect(rows[0]).not.toBeDisabled();
+    expect(rows[0]).toBeChecked();
+    expect(rows[3]).not.toBeChecked();
+});
+
+test("a delivery method switched off for all notifications shows its rows off", async () => {
+    mockedGet.mockImplementation(() =>
+        Promise.resolve({ results: [device("fcm", "mobile"), device("webpush", "desktop")] }),
+    );
+    const state = {
+        notifications: {
+            yourMove: {
+                description: "It is my turn to move",
+                value: { email: true, mobile: true, desktop: true },
+            },
+        },
+        notifications_enabled: { email: true, mobile: true, desktop: false },
+    };
+    const view = render(
+        <NotificationPreferences
+            state={state}
+            vacation_base_time={0}
+            refresh={() => () => 0}
+            updateSelfReportedAccountLinkages={() => 0}
+        />,
+    );
+    await view.findByText("Chrome on Linux");
+    const [, all_mobile, all_desktop, , mobile, desktop] = view.getAllByRole("switch");
+    expect(all_mobile).toBeChecked();
+    expect(mobile).toBeChecked();
+    expect(all_desktop).not.toBeChecked();
+    expect(all_desktop).not.toBeDisabled();
+    expect(desktop).toBeDisabled();
+    expect(desktop).not.toBeChecked();
+
+    fireEvent.click(all_desktop);
+    expect(desktop).toBeChecked();
+    expect(data.get("config.desktop_notifications")).toEqual({ yourMove: true });
+});
+
+test("the all notifications switch is disabled and off with its column", async () => {
+    const view = renderWithDevices([]);
+    await view.findByText(/No devices/);
+    const [all_email, all_mobile, all_desktop] = view.getAllByRole("switch");
+    expect(all_email).not.toBeDisabled();
+    expect(all_mobile).toBeDisabled();
+    expect(all_mobile).not.toBeChecked();
+    expect(all_desktop).toBeDisabled();
+    expect(all_desktop).not.toBeChecked();
+});
+
+function renderPrivateMessageRow(devices: ReturnType<typeof device>[]) {
+    mockedGet.mockImplementation(() => Promise.resolve({ results: devices }));
+    return render(
+        <NotificationPreferences
+            state={{
+                notifications: {
+                    privateMessage: {
+                        description: "Someone sends me a private message",
+                        value: { mobile: true, desktop: true },
+                    },
+                },
+            }}
+            vacation_base_time={0}
+            refresh={() => () => 0}
+            updateSelfReportedAccountLinkages={() => 0}
+        />,
+    );
+}
+
+test("the private message row has no email toggle, and saves its mobile and desktop ones", async () => {
+    const view = renderPrivateMessageRow([device("fcm", "mobile"), device("webpush", "desktop")]);
+    await view.findByText("Chrome on Linux");
+
+    /* The three all notifications switches, then this row's two toggles */
+    const switches = view.getAllByRole("switch");
+    expect(switches).toHaveLength(5);
+    const [mobile, desktop] = switches.slice(3);
+    expect(mobile).toBeChecked();
+    expect(desktop).toBeChecked();
+
+    fireEvent.click(mobile);
+    expect(put).toHaveBeenLastCalledWith("me/settings", {
+        notifications: {
+            privateMessage: {
+                description: "Someone sends me a private message",
+                value: { mobile: false, desktop: true },
+            },
+        },
+    });
+
+    fireEvent.click(desktop);
+    expect(put).toHaveBeenLastCalledWith("me/settings", {
+        notifications: {
+            privateMessage: {
+                description: "Someone sends me a private message",
+                value: { mobile: false, desktop: false },
+            },
+        },
+    });
+    expect(data.get("config.desktop_notifications")).toEqual({ privateMessage: false });
+});
+
+test("the private message row's mobile toggle is disabled with no mobile device", async () => {
+    const view = renderPrivateMessageRow([device("webpush", "desktop")]);
+    await view.findByText("Chrome on Linux");
+
+    const [mobile, desktop] = view.getAllByRole("switch").slice(3);
+    expect(mobile).toBeDisabled();
+    expect(mobile).not.toBeChecked();
+    expect(desktop).not.toBeDisabled();
+});

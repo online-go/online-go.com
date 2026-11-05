@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { interpolate, pgettext } from "@/lib/translate";
+import { interpolate, npgettext, pgettext } from "@/lib/translate";
 import type { KibitzRoomSummary } from "@/models/kibitz";
 import { getKibitzRoomLockedTooltip } from "./kibitzAnalysisPolicyText";
 import "./KibitzRoomList.css";
@@ -66,13 +66,25 @@ export function KibitzRoomList({
     return (
         <div className="KibitzRoomList">
             <div className="KibitzRoomList-items">
-                {roomGroups.map((group) => (
+                {roomGroups.map((group, groupIndex) => (
                     <section
                         className="KibitzRoomList-group"
                         aria-label={group.label}
                         key={group.id}
                     >
-                        <h4 className="KibitzRoomList-groupHeading">{group.label}</h4>
+                        <h4 className="KibitzRoomList-groupHeading">
+                            <span>{group.label}</span>
+                            {groupIndex === 0 && (
+                                <span
+                                    className="KibitzRoomList-countHeading"
+                                    role="img"
+                                    aria-label={pgettext("Kibitz room count column", "Spectators")}
+                                    title={pgettext("Kibitz room count column", "Spectators")}
+                                >
+                                    <i className="fa fa-user" aria-hidden="true" />
+                                </span>
+                            )}
+                        </h4>
                         {group.rooms.map((room) => {
                             const isActive = room.id === activeRoomId;
                             const isBlocked = blockedRoomIds?.has(room.id) ?? false;
@@ -105,6 +117,15 @@ export function KibitzRoomList({
                                     }
                                     disabled={isBlocked}
                                     title={tooltip}
+                                    aria-label={interpolate(
+                                        npgettext(
+                                            "Kibitz room name and spectator count",
+                                            "{{room}}, {{count}} spectator",
+                                            "{{room}}, {{count}} spectators",
+                                            room.viewer_count,
+                                        ),
+                                        { room: room.title, count: room.viewer_count },
+                                    )}
                                     onClick={() => onSelectRoom(room.id)}
                                 >
                                     <span className="room-title">
@@ -116,9 +137,11 @@ export function KibitzRoomList({
                                     <span
                                         className="room-viewer-count"
                                         title={interpolate(
-                                            pgettext(
+                                            npgettext(
                                                 "Tooltip for the viewer count shown in the kibitz room list",
-                                                "{{count}} people here",
+                                                "{{count}} spectator",
+                                                "{{count}} spectators",
+                                                room.viewer_count,
                                             ),
                                             { count: room.viewer_count },
                                         )}

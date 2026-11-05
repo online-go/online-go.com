@@ -16,9 +16,10 @@
  */
 
 import * as React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
 import type { GobanController } from "@/lib/GobanController";
 import type { KibitzRoomUser, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 import { KibitzView, KibitzViewProps } from "./KibitzView";
@@ -49,7 +50,9 @@ jest.mock("@/components/KBShortcut", () => ({
 }));
 jest.mock("@/components/GobanContainer", () => ({
     __esModule: true,
-    GobanContainer: () => <div data-testid="goban-container" />,
+    GobanContainer: ({ onWheel }: { onWheel?: React.WheelEventHandler<HTMLDivElement> }) => (
+        <div data-testid="goban-container" onWheel={onWheel} />
+    ),
 }));
 jest.mock("@/components/GobanView/PlayerBar", () => ({
     __esModule: true,
@@ -147,6 +150,8 @@ function fakeController(curMove = 5, lastOfficialMove = 5): GobanController {
         canEstimateScore: jest.fn(() => true),
         estimateScore: jest.fn(),
         stopEstimatingScore: jest.fn(),
+        nextMove: jest.fn(),
+        previousMove: jest.fn(),
         goban: {
             config: { game_id: 100 },
             engine: {
@@ -250,6 +255,20 @@ function variationLeftAside(
 // jsdom reports a 1024x768 window, which GobanView resolves as a horizontal
 // desktop layout unless a test sets a compact viewport explicitly.
 describe("KibitzView", () => {
+    test.each([false, true])("keeps room status in the header (portrait: %s)", (isPortrait) => {
+        const props = baseProps({ isPortrait, banner: <span>Next game in 0:30</span> });
+        const { rerender } = render(<KibitzView {...props} />);
+        expect(screen.getByText("Next game in 0:30").closest(".Kibitz-header")).not.toBeNull();
+        const secondary = fakeController();
+        rerender(
+            <KibitzView
+                {...props}
+                gobans={{ ...props.gobans, center: secondary, secondary, centerMode: "variation" }}
+            />,
+        );
+        expect(screen.getByText("Next game in 0:30").closest(".Kibitz-header")).not.toBeNull();
+    });
+
     test("horizontal mode shows sidebar cards before Kibitz content and no board bars", () => {
         const props = baseProps({ banner: <div data-testid="banner" /> });
         const { container } = render(<KibitzView {...props} />);
@@ -264,9 +283,7 @@ describe("KibitzView", () => {
             ".GobanView-sidebar-content .GobanView-tab-panel.always",
         )!;
         expect(panel.firstElementChild).toHaveClass("Kibitz-sidebar-player-cards");
-        expect(panel.children[0].compareDocumentPosition(screen.getByTestId("banner"))).toBe(
-            Node.DOCUMENT_POSITION_FOLLOWING,
-        );
+        expect(screen.getByTestId("banner").closest(".Kibitz-header")).not.toBeNull();
         expect(panel.children[0].compareDocumentPosition(screen.getByTestId("proposals"))).toBe(
             Node.DOCUMENT_POSITION_FOLLOWING,
         );
@@ -943,4 +960,58 @@ describe("Kibitz score estimation", () => {
             jest.mocked(controller.stopEstimatingScore).mock.invocationCallOrder[0],
         ).toBeLessThan(jest.mocked(props.onCreateVariation!).mock.invocationCallOrder[0]);
     });
+});
+
+test("wheel navigation follows the enabled preference and the center board", () => {
+    const savedPreference = preferences.get("scroll-to-navigate");
+    preferences.set("scroll-to-navigate", true);
+    const props = baseProps();
+    const main = props.gobans.main!;
+    const variation = fakeController();
+    const { container, rerender, unmount } = render(<KibitzView {...props} />);
+    try {
+        const board = screen.getByTestId("goban-container");
+        fireEvent.wheel(board, { deltaY: 1 });
+        fireEvent.wheel(board, { deltaY: -1 });
+        fireEvent.wheel(board, { deltaY: 0 });
+        expect(main.nextMove).toHaveBeenCalledTimes(1);
+        expect(main.previousMove).toHaveBeenCalledTimes(1);
+
+        fireEvent.wheel(screen.getByTestId("chat"), { deltaY: 1 });
+        expect(main.nextMove).toHaveBeenCalledTimes(1);
+
+        rerender(
+            <KibitzView
+                {...props}
+                gobans={{
+                    ...props.gobans,
+                    center: variation,
+                    secondary: variation,
+                    centerMode: "variation",
+                }}
+            />,
+        );
+        fireEvent.wheel(container.querySelector(".GobanView-center")!, { deltaY: 1 });
+        expect(variation.nextMove).toHaveBeenCalledTimes(1);
+        expect(main.nextMove).toHaveBeenCalledTimes(1);
+        rerender(
+            <KibitzView
+                {...props}
+                gobans={{
+                    ...props.gobans,
+                    center: variation,
+                    secondary: variation,
+                    centerMode: "draft",
+                }}
+            />,
+        );
+        fireEvent.wheel(container.querySelector(".GobanView-center")!, { deltaY: -1 });
+        expect(variation.previousMove).toHaveBeenCalledTimes(1);
+        act(() => preferences.set("scroll-to-navigate", false));
+        fireEvent.wheel(container.querySelector(".GobanView-center")!, { deltaY: -1 });
+        expect(variation.previousMove).toHaveBeenCalledTimes(1);
+    } finally {
+        unmount();
+        preferences.set("scroll-to-navigate", savedPreference);
+    }
 });

@@ -27,6 +27,7 @@ import {
 } from "@/lib/chat_manager";
 import { del, get, post, put } from "@/lib/requests";
 import { push_manager } from "@/components/UIPush/UIPush";
+import { KIBITZ_DIRECTORY_CHANNEL } from "@/lib/useKibitzDirectoryRooms";
 import { interpolate, pgettext } from "@/lib/translate";
 import type { User } from "goban";
 import { getCurrentKibitzUser, isKibitzAccessBlockedForUser } from "./kibitzAnalysisPolicy";
@@ -83,6 +84,9 @@ interface BackendCurrentGameBlock {
     move_number: number | null;
     live: boolean;
     analysis_disabled: boolean;
+    /** Optional rengo team player ids. Used by the Kibitz access policy. */
+    rengo_black_team?: number[] | null;
+    rengo_white_team?: number[] | null;
 }
 
 interface BackendKibitzRoom {
@@ -139,8 +143,6 @@ interface KibitzAccessBlock {
     room_title: string;
 }
 
-const DIRECTORY_CHANNEL = "kibitz-rooms";
-
 function mapBackendCurrentGamePlayer(raw: BackendCurrentGamePlayerBlock | null): KibitzRoomUser {
     if (raw === null) {
         return { id: 0, username: "", ranking: 0, professional: false, ui_class: "" };
@@ -167,6 +169,8 @@ function mapBackendCurrentGameToWatched(backend: BackendCurrentGameBlock): Kibit
         move_number: backend.move_number ?? undefined,
         live: backend.live,
         analysis_disabled: backend.analysis_disabled,
+        ...(backend.rengo_black_team ? { rengo_black_team: backend.rengo_black_team } : {}),
+        ...(backend.rengo_white_team ? { rengo_white_team: backend.rengo_white_team } : {}),
     };
 }
 
@@ -576,7 +580,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             push_manager.on("rooms-refresh", this.onRoomsRefresh),
             push_manager.on("viewer-count-changed", this.onViewerCountChanged),
         );
-        push_manager.subscribe(DIRECTORY_CHANNEL);
+        push_manager.subscribe(KIBITZ_DIRECTORY_CHANNEL);
 
         void this.refreshRoomDirectory();
     }
@@ -591,7 +595,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             push_manager.off(handler);
         }
         this._directory_handlers = [];
-        push_manager.unsubscribe(DIRECTORY_CHANNEL);
+        push_manager.unsubscribe(KIBITZ_DIRECTORY_CHANNEL);
 
         this.unsubscribeActiveRoom();
     }
@@ -1194,7 +1198,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             this.onBoardChanged(payload);
             // Per briefing § 2.8: the initiating client posts the resulting
             // system chat line so the room's stream has a record of the swap.
-            this.postChangeBoardSystemMessage(game);
+            this.postChangeBoardSystemMessage(roomId, game);
             kibitzTelemetry.record("change_board");
             return true;
         } catch (error) {
@@ -1246,7 +1250,10 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
     }
 
-    private postChangeBoardSystemMessage(game: KibitzWatchedGame): void {
+    private postChangeBoardSystemMessage(roomId: string, game: KibitzWatchedGame): void {
+        if (this._active_room?.id !== roomId) {
+            return;
+        }
         const user = getCurrentKibitzUser();
         if (!user || user.anonymous) {
             return;
