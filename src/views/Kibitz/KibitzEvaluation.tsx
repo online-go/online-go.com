@@ -16,12 +16,12 @@
  */
 
 import * as React from "react";
-import { translate, type JGOFAIReview } from "goban";
+import { ScoreEstimator, translate, type JGOFAIReview, type MoveTree } from "goban";
 import type { GobanController } from "@/lib/GobanController";
 import { generateGobanHook } from "@/components/GobanView";
 import { useAIReviewData } from "@/components/AIReview/hooks";
 import { get } from "@/lib/requests";
-import { pgettext, interpolate } from "@/lib/translate";
+import { _, pgettext, interpolate } from "@/lib/translate";
 import { kibitzEvaluation } from "./kibitzEvaluationScale";
 import "./KibitzEvaluation.css";
 
@@ -30,16 +30,17 @@ const usePosition = generateGobanHook(
     ["update", "phase"],
 );
 
+/** The signed estimate (positive for Black), as the score estimate banner shows it. */
+function estimatorScore(estimator: ScoreEstimator | null | undefined): number | undefined {
+    if (!estimator || !Number.isFinite(estimator.amount)) {
+        return undefined;
+    }
+    // `winner` and `amount` hold the AI score when the server sends one.
+    return estimator.winner === translate._("Black") ? estimator.amount : -estimator.amount;
+}
+
 const useEstimatedScore = generateGobanHook(
-    (goban) => {
-        const estimator = goban?.score_estimator;
-        if (!estimator || !Number.isFinite(estimator.amount)) {
-            return undefined;
-        }
-        // `winner` and `amount` hold the AI score when the server sends one,
-        // so the bar shows the same number as the score estimate banner.
-        return estimator.winner === translate._("Black") ? estimator.amount : -estimator.amount;
-    },
+    (goban) => estimatorScore(goban?.score_estimator),
     ["score_estimate"],
 );
 
@@ -59,15 +60,20 @@ export function KibitzEvaluation({
     controller,
     source,
     gameId,
+    enabled,
+    onLabelChange,
 }: {
     controller: GobanController;
     source: GobanController;
     gameId: number;
-}): React.ReactElement | null {
+    enabled: boolean;
+    /** Receives the score text to show beside the board, or null when the bar is off. */
+    onLabelChange: (label: string | null) => void;
+}): null {
     const goban = controller.goban;
     const { move } = usePosition(goban);
     const estimating = useEstimating(controller);
-    const allowed = estimating && controller.canEstimateScore(source);
+    const allowed = enabled && controller.canEstimateScore(source);
     const { reviewData, setSelectedAIReview } = useAIReviewData({
         gameId,
         moveTree: goban.engine.move_tree,
@@ -105,11 +111,59 @@ export function KibitzEvaluation({
                 : (reviewData?.moves[move.move_number]?.score ??
                   reviewData?.scores?.[move.move_number])
             : undefined;
-    const currentEstimate = useEstimatedScore(goban);
+    const scoreEstimatorScore = useEstimatedScore(goban);
+    const [barEstimate, setBarEstimate] = React.useState<{
+        move: typeof move;
+        score: number;
+    } | null>(null);
+    const needsBarEstimate = allowed && !estimating && !Number.isFinite(reviewedScore);
+    const preferRemote = controller.prefersRemoteScoreEstimate(source);
+    // Positions already estimated in this game, so going back and forth does
+    // not request the same estimate again.
+    const estimateCache = React.useRef(new WeakMap<MoveTree, number>());
+    React.useEffect(() => {
+        let active = true;
+        if (!needsBarEstimate || !move) {
+            return;
+        }
+        const cached = estimateCache.current.get(move);
+        if (cached !== undefined) {
+            setBarEstimate({ move, score: cached });
+            return;
+        }
+        const timer = window.setTimeout(() => {
+            // A detached estimate does not show ownership on the board. It
+            // asks the AI server under the same rule as score estimation.
+            const estimator = new ScoreEstimator(goban.engine, undefined, 1000, 0.25, preferRemote);
+            void estimator.when_ready
+                .then(() => {
+                    const score = estimatorScore(estimator);
+                    if (score === undefined) {
+                        return;
+                    }
+                    estimateCache.current.set(move, score);
+                    if (active && goban.engine.cur_move === move) {
+                        setBarEstimate({ move, score });
+                    }
+                })
+                .catch(() => {});
+        }, 250);
+        return () => {
+            active = false;
+            window.clearTimeout(timer);
+        };
+    }, [goban, move, needsBarEstimate, preferRemote]);
+    // While score estimation is on, use its estimate so the bar and the
+    // banner agree.
+    const currentEstimate = estimating
+        ? scoreEstimatorScore
+        : barEstimate?.move === move
+          ? barEstimate?.score
+          : undefined;
     // Keep the previous estimate while a new one is calculated, so the label
-    // does not flicker when live moves arrive.
+    // does not flicker when the position changes.
     const lastEstimate = React.useRef<number | undefined>(undefined);
-    if (!estimating) {
+    if (!enabled) {
         lastEstimate.current = undefined;
     } else if (currentEstimate !== undefined) {
         lastEstimate.current = currentEstimate;
@@ -122,16 +176,21 @@ export function KibitzEvaluation({
         if (!bar) {
             return;
         }
-        if (!estimating) {
+        if (!enabled) {
             bar.style.visibility = "hidden";
             return;
         }
+        // Goban places the bar 8px outside the space it reserves for it, so
+        // the bar can be cut off when the board fills its container.
         const previousTransform = bar.style.transform;
-        bar.style.transform = "translateX(-8px)";
+        const previousBoxSizing = bar.style.boxSizing;
+        bar.style.transform = "translateX(8px)";
+        bar.style.boxSizing = "border-box";
         bar.style.visibility = "";
         const size = Math.max(goban.width, goban.height);
         const limit = size <= 9 ? 20 : size <= 13 ? 40 : 60;
-        const labels = [limit, limit / 2, 0, -limit / 2, -limit].map((points) => {
+        const marks = [...new Set([limit, limit / 2, 10, 0, -10, -limit / 2, -limit])];
+        const labels = marks.map((points) => {
             const label = document.createElement("span");
             label.textContent = points > 0 ? `+${points}` : `${points}`;
             label.title =
@@ -168,32 +227,31 @@ export function KibitzEvaluation({
         return () => {
             labels.forEach((label) => label.remove());
             bar.style.transform = previousTransform;
+            bar.style.boxSizing = previousBoxSizing;
             bar.style.visibility = "hidden";
         };
-    }, [goban, estimating]);
+    }, [goban, enabled]);
     React.useEffect(() => {
         if (available) {
             goban.evaluation = kibitzEvaluation(score!, Math.max(goban.width, goban.height));
         }
     }, [goban, available, score]);
-    const label = available
-        ? interpolate(pgettext("Kibitz estimated point lead", "{{color}} +{{score}}"), {
-              color: score! >= 0 ? pgettext("Go color", "Black") : pgettext("Go color", "White"),
+    const leadText = available
+        ? interpolate(_("{{winner}} by {{score}}"), {
+              winner: score! >= 0 ? _("Black") : _("White"),
               score: Math.abs(score!).toFixed(1),
           })
-        : pgettext("Kibitz evaluation", "Score unavailable");
-    if (!estimating) {
-        return null;
-    }
-    return (
-        <div className="KibitzEvaluation" role="status">
-            {label}
-            {available &&
-                ` · ${
-                    Number.isFinite(reviewedScore)
-                        ? pgettext("Kibitz score source", "AI review")
-                        : pgettext("Kibitz score source", "Estimate")
-                }`}
-        </div>
-    );
+        : null;
+    const label = !enabled
+        ? null
+        : leadText
+          ? Number.isFinite(reviewedScore)
+              ? `${leadText} · ${pgettext("Kibitz score source", "AI review")}`
+              : leadText
+          : pgettext("Kibitz evaluation", "Score unavailable");
+    React.useEffect(() => {
+        onLabelChange(label);
+    }, [label, onLabelChange]);
+    React.useEffect(() => () => onLabelChange(null), [onLabelChange]);
+    return null;
 }

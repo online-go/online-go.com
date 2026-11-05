@@ -165,6 +165,16 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     }, [thinHeader]);
     const scoreSource = gobans.playerBars ?? gobans.center;
     const scoreEstimation = useKibitzScoreEstimation(gobans.center, scoreSource, room.channel);
+    const [showScoreBar, setShowScoreBar] = React.useState(false);
+    const [scoreBarLabel, setScoreBarLabel] = React.useState<string | null>(null);
+    const showScore = scoreEstimation.estimating || scoreBarLabel !== null;
+    const scoreLabel = gobans.center ? (
+        <KibitzScoreEstimate
+            controller={gobans.center}
+            scoreText={scoreBarLabel}
+            estimating={scoreEstimation.estimating}
+        />
+    ) : null;
     const stopEstimate = React.useCallback(() => {
         if (gobans.center?.estimating_score) {
             gobans.center.stopEstimatingScore();
@@ -572,6 +582,8 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                                 room.current_game?.game_id ||
                                 0
                             }
+                            enabled={showScoreBar}
+                            onLabelChange={setScoreBarLabel}
                         />
                     )}
 
@@ -604,11 +616,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                     />
                 </>
             }
-            belowBoard={
-                isPortrait && scoreEstimation.estimating && gobans.center ? (
-                    <KibitzScoreEstimate controller={gobans.center} />
-                ) : null
-            }
+            belowBoard={isPortrait && showScore ? scoreLabel : null}
             /* Kibitz presents both players together in the sidebar on every
              * horizontal layout, and in the compact header when stacked. */
             playerBars={false}
@@ -627,9 +635,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         scoreEstimation.estimating && playerInfoController === gobans.center
                     }
                 />
-                {!isPortrait && scoreEstimation.estimating && gobans.center && (
-                    <KibitzScoreEstimate controller={gobans.center} />
-                )}
+                {!isPortrait && showScore && scoreLabel}
                 {props.banner}
                 <KibitzProposalPanel {...props.proposals} />
                 {!isPortrait && variationPanel}
@@ -749,6 +755,17 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 active={scoreEstimation.estimating}
                 disabled={scoreEstimation.disabled && !scoreEstimation.estimating}
                 onClick={scoreEstimation.toggle}
+            />
+
+            <GobanView.Tab
+                id="kibitz-score-bar"
+                type="action"
+                align="center"
+                icon="balance-scale"
+                title={pgettext("Kibitz action that shows the score bar", "Score bar")}
+                active={showScoreBar}
+                disabled={scoreEstimation.disabled && !showScoreBar}
+                onClick={() => setShowScoreBar((shown) => !shown)}
             />
 
             {!isPortrait && (

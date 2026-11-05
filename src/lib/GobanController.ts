@@ -1133,6 +1133,21 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         return !(source.goban.isAnalysisDisabled() && is_player);
     };
 
+    /**
+     * Returns true when score estimates for this game should come from the AI
+     * server: the game is finished, or the viewer is not a player.
+     */
+    prefersRemoteScoreEstimate = (source: GobanController = this): boolean => {
+        const user = data.get("user");
+        const shared_ip_with_player = !!(
+            source.game_id && shared_ip_with_player_map[source.game_id]
+        );
+        return (
+            source.goban.engine.phase === "finished" ||
+            (!source.goban.engine.isParticipant(user.id) && !shared_ip_with_player)
+        );
+    };
+
     estimateScore = ({
         source = this,
         preserveAnnotations = false,
@@ -1155,15 +1170,9 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
                 })),
             };
         }
-        const user = data.get("user");
-        const shared_ip_with_player = !!(
-            source.game_id && shared_ip_with_player_map[source.game_id]
-        );
         this._estimating_score = true;
         this.emit("estimating_score", true);
-        const use_ai_estimate =
-            source.goban.engine.phase === "finished" ||
-            (!source.goban.engine.isParticipant(user.id) && !shared_ip_with_player);
+        const use_ai_estimate = this.prefersRemoteScoreEstimate(source);
         this.score_estimation_prefer_remote = use_ai_estimate;
         this.goban.setScoringMode(true, use_ai_estimate);
         return true;

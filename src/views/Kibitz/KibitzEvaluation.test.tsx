@@ -16,11 +16,21 @@
  */
 
 import * as React from "react";
-import { act, render, screen } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 import EventEmitter from "eventemitter3";
 import type { GobanController } from "@/lib/GobanController";
 import { KibitzEvaluation } from "./KibitzEvaluation";
 
+const mockLocalScore = { value: -6.5 };
+jest.mock("goban", () => ({
+    ...jest.requireActual("goban"),
+    ScoreEstimator: jest.fn(() => ({
+        when_ready: Promise.resolve(),
+        amount: Math.abs(mockLocalScore.value),
+        winner: mockLocalScore.value > 0 ? "Black" : "White",
+    })),
+}));
+import { ScoreEstimator } from "goban";
 const mockSelect = jest.fn();
 const mockReview = { moves: { 1: { score: 8 } }, scores: [], analyzed_variations: {} };
 jest.mock("@/components/AIReview/hooks", () => ({
@@ -28,12 +38,13 @@ jest.mock("@/components/AIReview/hooks", () => ({
 }));
 jest.mock("@/lib/requests", () => ({ get: () => Promise.resolve([]) }));
 
-function setup({ allowed = true, estimating = true } = {}) {
+function setup({ allowed = true, estimating = false } = {}) {
     const trunk = {
         move_number: 1,
         getMoveStringToThisPoint: () => "aa",
         getBranchPoint: () => trunk,
     };
+    const unreviewed = { ...trunk, getMoveStringToThisPoint: () => "aabb" };
     const bar = document.createElement("div");
     const goban = Object.assign(new EventEmitter(), {
         engine: { cur_move: trunk, move_tree: trunk },
@@ -47,70 +58,154 @@ function setup({ allowed = true, estimating = true } = {}) {
         goban,
         estimating_score: estimating,
         canEstimateScore: () => allowed,
+        prefersRemoteScoreEstimate: () => true,
     });
     return {
         goban,
         bar,
         trunk,
+        unreviewed,
         controller,
         asController: controller as unknown as GobanController,
     };
 }
 
-test("shows nothing and hides the bar until score estimation is on", async () => {
-    const { goban, bar, controller, asController } = setup({ estimating: false });
-    render(<KibitzEvaluation controller={asController} source={asController} gameId={0} />);
-    expect(screen.queryByRole("status")).toBeNull();
+const onLabel = jest.fn();
+const label = (): string | null => onLabel.mock.calls.at(-1)?.[0] ?? null;
+
+function barElement(asController: GobanController, enabled: boolean) {
+    return (
+        <KibitzEvaluation
+            controller={asController}
+            source={asController}
+            gameId={0}
+            enabled={enabled}
+            onLabelChange={onLabel}
+        />
+    );
+}
+
+function renderBar(asController: GobanController, enabled = true) {
+    return render(barElement(asController, enabled));
+}
+
+beforeEach(() => {
+    mockLocalScore.value = -6.5;
+    jest.mocked(ScoreEstimator).mockClear();
+    onLabel.mockClear();
+});
+
+test("has no label and hides the bar until the score bar is enabled", async () => {
+    const { goban, bar, asController } = setup();
+    const view = renderBar(asController, false);
+    expect(label()).toBeNull();
     expect(bar.style.visibility).toBe("hidden");
     expect(goban.evaluation).toBe(0.5);
-    act(() => {
-        controller.estimating_score = true;
-        controller.emit("estimating_score", true);
-    });
-    expect(screen.getByRole("status")).toHaveTextContent("Black +8.0 · AI review");
+    view.rerender(barElement(asController, true));
+    expect(label()).toContain("Black by 8.0 · AI review");
     expect(bar.style.visibility).toBe("");
     expect(goban.evaluation).toBeGreaterThan(0.5);
-    act(() => {
-        controller.estimating_score = false;
-        controller.emit("estimating_score", false);
-    });
-    expect(screen.queryByRole("status")).toBeNull();
+    view.rerender(barElement(asController, false));
+    expect(label()).toBeNull();
     expect(bar.style.visibility).toBe("hidden");
     await act(async () => {});
 });
 
-test("uses the score estimator for an unreviewed position and follows its updates", async () => {
-    const { goban, trunk, asController } = setup();
-    goban.engine.cur_move = { ...trunk, getMoveStringToThisPoint: () => "aabb" };
-    render(<KibitzEvaluation controller={asController} source={asController} gameId={0} />);
-    expect(screen.getByRole("status")).toHaveTextContent("Score unavailable");
-    expect(screen.getByRole("status")).not.toHaveTextContent("Estimate");
-    act(() => {
-        goban.score_estimator = { amount: 6.5, winner: "White" };
-        goban.emit("score_estimate");
+test("asks the AI server once per position", async () => {
+    jest.useFakeTimers();
+    const { goban, unreviewed, asController } = setup();
+    goban.engine.cur_move = unreviewed;
+    const view = renderBar(asController);
+    await act(async () => {
+        jest.advanceTimersByTime(250);
     });
-    expect(screen.getByRole("status")).toHaveTextContent("White +6.5 · Estimate");
+    expect(ScoreEstimator).toHaveBeenCalledTimes(1);
+    expect(jest.mocked(ScoreEstimator).mock.calls[0][4]).toBe(true);
+    const next = { ...unreviewed, getMoveStringToThisPoint: () => "aabbcc" };
+    act(() => {
+        goban.engine.cur_move = next;
+        goban.emit("update");
+    });
+    await act(async () => {
+        jest.advanceTimersByTime(250);
+    });
+    act(() => {
+        goban.engine.cur_move = unreviewed;
+        goban.emit("update");
+    });
+    await act(async () => {
+        jest.advanceTimersByTime(250);
+    });
+    expect(ScoreEstimator).toHaveBeenCalledTimes(2);
+    expect(label()).toContain("White by 6.5");
+    view.unmount();
+    jest.useRealTimers();
+});
+
+test("estimates an unreviewed position without score estimation mode", async () => {
+    jest.useFakeTimers();
+    const { goban, unreviewed, asController } = setup();
+    goban.engine.cur_move = unreviewed;
+    const view = renderBar(asController);
+    expect(label()).toContain("Score unavailable");
+    await act(async () => {
+        jest.advanceTimersByTime(250);
+    });
+    expect(label()).toContain("White by 6.5");
     expect(goban.evaluation).toBeLessThan(0.5);
+    mockLocalScore.value = 3;
+    act(() => {
+        goban.engine.cur_move = { ...unreviewed, getMoveStringToThisPoint: () => "aabbcc" };
+        goban.emit("update");
+    });
+    expect(label()).toContain("White by 6.5");
+    await act(async () => {
+        jest.advanceTimersByTime(250);
+    });
+    expect(label()).toContain("Black by 3.0");
+    view.unmount();
+    jest.useRealTimers();
+});
+
+test("uses the score estimation result while score estimation is on", async () => {
+    const { goban, unreviewed, asController } = setup({ estimating: true });
+    goban.engine.cur_move = unreviewed;
+    renderBar(asController);
+    expect(label()).toContain("Score unavailable");
     act(() => {
         goban.score_estimator = { amount: 3, winner: "Black" };
         goban.emit("score_estimate");
     });
-    expect(screen.getByRole("status")).toHaveTextContent("Black +3.0 · Estimate");
-    expect(goban.evaluation).toBeGreaterThan(0.5);
+    expect(label()).toContain("Black by 3.0");
     act(() => {
         goban.score_estimator = { amount: NaN, winner: "" };
         goban.emit("score_estimate");
     });
-    expect(screen.getByRole("status")).toHaveTextContent("Black +3.0 · Estimate");
+    expect(label()).toContain("Black by 3.0");
     await act(async () => {});
 });
 
 test("withholds scores when score analysis is restricted", async () => {
-    const { goban, asController } = setup({ allowed: false });
+    const { goban, asController } = setup({ allowed: false, estimating: true });
     goban.score_estimator = { amount: 6.5, winner: "White" };
-    render(<KibitzEvaluation controller={asController} source={asController} gameId={0} />);
-    expect(screen.getByRole("status")).toHaveTextContent("Score unavailable");
-    expect(screen.getByRole("status")).not.toHaveTextContent("·");
+    renderBar(asController);
+    expect(label()).toContain("Score unavailable");
+    expect(label()).not.toContain("·");
     expect(goban.evaluation).toBe(0.5);
+    await act(async () => {});
+});
+
+test("marks +10 and -10 on the bar alongside the scale ends", async () => {
+    const { bar: container, asController } = setup();
+    renderBar(asController);
+    expect([...container.querySelectorAll("span")].map((span) => span.textContent)).toEqual([
+        "+60",
+        "+30",
+        "+10",
+        "0",
+        "-10",
+        "-30",
+        "-60",
+    ]);
     await act(async () => {});
 });
