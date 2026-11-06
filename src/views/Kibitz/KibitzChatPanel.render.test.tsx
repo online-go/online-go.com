@@ -688,6 +688,79 @@ describe("Kibitz room chat move references", () => {
         });
     });
 
+    test.each([
+        { viewed: 17, isVariation: false, context: undefined },
+        { viewed: 3, isVariation: false, context: { game_id: 42, move_number: 3 } },
+        {
+            viewed: 3,
+            isVariation: true,
+            context: {
+                game_id: 42,
+                move_number: 3,
+                variation: { from: 1, moves: "aabb", name: "Variation 3" },
+            },
+        },
+    ])(
+        "captures viewing context at send time ($viewed, $isVariation)",
+        ({ viewed, isVariation, context }) => {
+            const props = propsWithGame();
+            const goban = props.gameController.goban;
+            goban.engine.cur_move.move_number = viewed;
+            goban.engine.getMoveDiff = () => ({ from: 1, moves: "aabb" });
+            render(
+                <KibitzChatPanel
+                    {...props}
+                    viewingBoard={{ goban, gameId: 42, isVariation, variationName: "Variation 3" }}
+                />,
+            );
+            const input = screen.getByPlaceholderText("Message kibitz");
+            fireEvent.change(input, { target: { value: "Hello" } });
+            fireEvent.keyPress(input, { key: "Enter", charCode: 13 });
+            const position = { game_id: 42, move_number: 17 };
+            expect(mockRoomProxy.channel.send).toHaveBeenLastCalledWith(
+                "Hello",
+                position,
+                ...(context ? [context] : []),
+            );
+        },
+    );
+
+    test("opens historical viewing context independently of the live separator", () => {
+        const props = propsWithGame();
+        const onOpenChatVariation = jest.fn();
+        render(
+            <KibitzChatPanel
+                {...props}
+                onOpenChatVariation={onOpenChatVariation}
+                items={[
+                    {
+                        ...makeChatItem("main", "room-stream", "Earlier move"),
+                        game_id: 42,
+                        move_number: 12,
+                        viewing_position: { game_id: 42, move_number: 3 },
+                    },
+                    {
+                        ...makeChatItem("branch", "room-stream", "A variation"),
+                        game_id: 42,
+                        move_number: 12,
+                        viewing_position: {
+                            game_id: 42,
+                            move_number: 3,
+                            variation: { from: 1, moves: "aabb", name: "Variation 3" },
+                        },
+                    },
+                ]}
+            />,
+        );
+        expect(screen.getAllByRole("button", { name: "Move 12" })).toHaveLength(1);
+        fireEvent.click(screen.getByRole("button", { name: "(looking at move 3)" }));
+        expect(props.onOpenChatMove).toHaveBeenCalledWith(42, 3);
+        fireEvent.click(screen.getByRole("button", { name: "(looking at move 3 of Variation 3)" }));
+        expect(onOpenChatVariation).toHaveBeenCalledWith(
+            expect.objectContaining({ game_id: 42, analysis_from: 1, analysis_moves: "aabb" }),
+        );
+    });
+
     test("sends plain chat while the main board belongs to the previous game", () => {
         const props = propsWithGame();
         props.room = { ...props.room, current_game: { game_id: 43 } } as KibitzRoomSummary;

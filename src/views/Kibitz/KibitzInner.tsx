@@ -1026,9 +1026,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         ],
     );
     const onBranchFromVariation = React.useCallback(() => {
-        const variation = displayedVariations.find(
-            (candidate) => candidate.id === secondaryPane.variation_id,
-        );
+        const variation =
+            secondaryPane.chat_variation ??
+            displayedVariations.find((candidate) => candidate.id === secondaryPane.variation_id);
         if (variation) {
             // "From here" is the move on screen, which is not always the end
             // of the line: the reader can step back through the variation
@@ -1043,13 +1043,14 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         gobans.secondary,
         onCreateVariationFromPostedVariation,
         secondaryPane.variation_id,
+        secondaryPane.chat_variation,
     ]);
 
     React.useEffect(() => {
         const board = gobans.secondary?.goban;
-        const variation = displayedVariations.find(
-            (candidate) => candidate.id === secondaryPane.variation_id,
-        );
+        const variation =
+            secondaryPane.chat_variation ??
+            displayedVariations.find((candidate) => candidate.id === secondaryPane.variation_id);
         if (centerMode !== "variation" || !board || !variation) {
             return;
         }
@@ -1061,6 +1062,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         gobans.secondary,
         displayedVariations,
         secondaryPane.variation_id,
+        secondaryPane.chat_variation,
         onCreateVariationFromPostedVariation,
     ]);
 
@@ -1302,6 +1304,29 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         [gobans.main, confirmDiscardDraft, controller],
     );
 
+    const onOpenChatVariation = React.useCallback(
+        (variation: KibitzVariationSummary) => {
+            void confirmDiscardDraft().then((confirmed) => {
+                if (confirmed && currentRoomIdRef.current === variation.room_id) {
+                    void controller.ensureGamesCached([variation.game_id]);
+                    controller.openChatVariation(variation);
+                    setVariationFocusRequestId((previous) => previous + 1);
+                }
+            });
+        },
+        [confirmDiscardDraft, controller],
+    );
+    const viewedVariation =
+        secondaryPane.chat_variation ??
+        displayedVariations.find(
+            ({ id }) =>
+                id === (secondaryPane.variation_id ?? secondaryPane.variation_draft_base_id),
+        );
+    const viewingSecondary = gobans.secondary && gobans.center === gobans.secondary;
+    const viewedGameId = viewingSecondary
+        ? (secondaryPane.variation_source_game_id ?? viewedVariation?.game_id)
+        : resolvedRoom?.current_game?.game_id;
+
     const onRoomsOpened = React.useCallback(() => {
         void controller.refreshRoomDirectory();
     }, [controller]);
@@ -1420,6 +1445,18 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                         onOpenVariationFromUser(variationId, focusVariation, "chat"),
                     variationColorIndexes,
                     onOpenChatMove,
+                    onOpenChatVariation,
+                    viewingBoard:
+                        gobans.center && viewedGameId
+                            ? {
+                                  goban: gobans.center.goban,
+                                  gameId: viewedGameId,
+                                  isVariation: Boolean(viewingSecondary),
+                                  variationName: viewingSecondary
+                                      ? viewedVariation?.title
+                                      : undefined,
+                              }
+                            : undefined,
                 }}
                 proposals={{
                     activeProposal,

@@ -46,7 +46,12 @@ export interface ChatSystemLink {
     href: string;
 }
 
+export interface ChatViewingPosition extends ChatGamePosition {
+    variation?: { from: number; moves: string; name?: string };
+}
+
 export interface TypedChatBody {
+    viewing_position?: ChatViewingPosition;
     type: string;
     name?: string;
     text?: string;
@@ -623,11 +628,15 @@ class ChatChannel extends TypedEventEmitter<Events> {
         );
     }
 
-    public send(text: string, position?: ChatGamePosition): void {
+    public send(
+        text: string,
+        position?: ChatGamePosition,
+        viewingPosition?: ChatViewingPosition,
+    ): void {
         text = sanitizeMessage(text);
         if (text.length > maxMessageLength) {
             for (const split_str of string_splitter(text)) {
-                this.send(split_str, position);
+                this.send(split_str, position, viewingPosition);
             }
             return;
         }
@@ -692,7 +701,15 @@ class ChatChannel extends TypedEventEmitter<Events> {
         const _send_obj = {
             channel: this.channel,
             uuid: chatSoftUid(user.id),
-            message: position ? { type: "chat", text, ...position } : text,
+            message:
+                position || viewingPosition
+                    ? {
+                          type: "chat",
+                          text,
+                          ...position,
+                          ...(viewingPosition ? { viewing_position: viewingPosition } : {}),
+                      }
+                    : text,
         };
 
         socket.send("chat/send", _send_obj);
