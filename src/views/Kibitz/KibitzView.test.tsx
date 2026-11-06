@@ -614,6 +614,26 @@ describe("KibitzView", () => {
             }
         });
 
+        test("passes the continuation action to More actions and renders no continuation tab", () => {
+            const onActivate = jest.fn();
+            const continuationAction = {
+                title: "Join continuation room (3)",
+                creating: false,
+                onActivate,
+            };
+            const { container } = render(<KibitzView {...baseProps({ continuationAction })} />);
+
+            expect(container.querySelector('[id="kibitz-continuation-room"]')).toBeNull();
+            fireEvent.click(screen.getByTitle("More actions"));
+            const { openKibitzMoreActions } = jest.requireMock("./KibitzMoreActionsPopover");
+            expect(openKibitzMoreActions).toHaveBeenCalledWith(
+                expect.any(HTMLElement),
+                expect.anything(),
+                expect.anything(),
+                continuationAction,
+            );
+        });
+
         test("the action bar switches the pane and remembers the choice", () => {
             render(<KibitzView {...baseProps({ isPortrait: true })} />);
             fireEvent.click(screen.getByTitle("Variations"));

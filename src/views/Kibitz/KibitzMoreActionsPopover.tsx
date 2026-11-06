@@ -58,17 +58,25 @@ export interface KibitzMoreActionsRoomActions {
     onRoomInformation: () => void;
 }
 
+export interface KibitzContinuationAction {
+    title: string;
+    creating: boolean;
+    onActivate: () => void;
+}
+
 interface KibitzMoreActionsPopoverProps {
     /** Null while the room has no live game; the game entries are then
      *  left out and only the room entries remain. */
     controller: GobanController | null;
     roomActions?: KibitzMoreActionsRoomActions;
+    continuationAction?: KibitzContinuationAction;
     onClose: () => void;
 }
 
 export function KibitzMoreActionsPopover({
     controller,
     roomActions,
+    continuationAction,
     onClose,
 }: KibitzMoreActionsPopoverProps): React.ReactElement {
     const user = useUser();
@@ -234,6 +242,22 @@ export function KibitzMoreActionsPopover({
                         ) : null}
                     </>
                 )}
+                {continuationAction && (
+                    <button
+                        type="button"
+                        className="GameSidebarPanel-item"
+                        disabled={continuationAction.creating}
+                        onClick={wrap(continuationAction.onActivate)}
+                    >
+                        <i
+                            className={
+                                "fa fa-" +
+                                (continuationAction.creating ? "spinner fa-spin" : "comments")
+                            }
+                        />
+                        <span>{continuationAction.title}</span>
+                    </button>
+                )}
             </div>
         </div>
     );
@@ -244,6 +268,7 @@ export function openKibitzMoreActions(
     button: HTMLElement,
     controller: GobanController | null,
     roomActions?: KibitzMoreActionsRoomActions,
+    continuationAction?: KibitzContinuationAction,
 ): PopOver {
     let instance: PopOver | null = null;
     const close = () => instance?.close();
@@ -252,6 +277,7 @@ export function openKibitzMoreActions(
             <KibitzMoreActionsPopover
                 controller={controller}
                 roomActions={roomActions}
+                continuationAction={continuationAction}
                 onClose={close}
             />
         ),

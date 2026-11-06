@@ -1151,6 +1151,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         game: KibitzWatchedGame,
         roomName: string,
         description: string,
+        options: { beforeSelectRoom?: (roomId: string) => void; select?: boolean } = {},
     ): Promise<string | null> {
         try {
             // Frontend guard only. The backend must enforce the same rule on
@@ -1169,7 +1170,14 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             // UIPush broadcast will arrive too and be deduped by id.
             this.onRoomCreated(payload);
             kibitzTelemetry.record("create_room");
-            void this.selectRoom(payload.id);
+            try {
+                options.beforeSelectRoom?.(payload.id);
+            } catch (error) {
+                console.warn("kibitz: beforeSelectRoom callback failed", error);
+            }
+            if (options.select !== false) {
+                void this.selectRoom(payload.id);
+            }
             return payload.id;
         } catch (error) {
             console.warn("kibitz: createRoom failed", error);
@@ -1271,6 +1279,32 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             text,
             game_id: game.game_id,
             links: [{ text: title, href: `/game/${game.game_id}` }],
+        });
+    }
+
+    public postContinuationRoomAnnouncement(
+        sourceRoomId: string,
+        sourceGameId: number,
+        continuationRoomId: string,
+        continuationTitle: string,
+    ): void {
+        if (
+            this._active_room?.id !== sourceRoomId ||
+            this._active_room.current_game?.game_id !== sourceGameId
+        ) {
+            return;
+        }
+        this.sendTypedToActiveChannel({
+            type: "system",
+            text: interpolate(
+                pgettext(
+                    "Kibitz chat announcement that a separate room is available to continue watching a game",
+                    "Continue watching in a separate room: %s",
+                ),
+                [continuationTitle],
+            ),
+            game_id: sourceGameId,
+            links: [{ text: continuationTitle, href: `/kibitz/${continuationRoomId}` }],
         });
     }
 
