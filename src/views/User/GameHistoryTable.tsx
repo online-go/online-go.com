@@ -48,6 +48,7 @@ import "./GameHistoryTable.css";
 
 interface GameHistoryProps {
     user_id: number;
+    username: string;
     is_bot?: boolean;
 }
 
@@ -83,6 +84,7 @@ interface GroomedGame {
     ranked: boolean;
     played_black: boolean;
     player: PlayerCacheEntry;
+    has_historical_rank: boolean;
     player_won: boolean;
     date: Date;
     opponent?: PlayerCacheEntry;
@@ -269,16 +271,26 @@ export function GameHistoryTable(props: GameHistoryProps) {
             item.black = r.players.black;
             item.white = r.players.white;
 
-            item.played_black = playedBlack(r, props.user_id);
+            const historical: Partial<rest_api.Game["historical_ratings"]> =
+                r.historical_ratings ?? {};
 
-            if (item.played_black === false) {
-                item.opponent = r.historical_ratings.black;
-                item.player = r.historical_ratings.white;
-                item.player_won = white_won;
-            } else if (item.played_black === true) {
-                item.opponent = r.historical_ratings.white;
-                item.player = r.historical_ratings.black;
-                item.player_won = black_won;
+            item.played_black = playedBlack(r, props.user_id);
+            item.player = { id: props.user_id, username: props.username };
+            item.has_historical_rank = false;
+
+            if (item.played_black !== undefined) {
+                const player_colour = item.played_black ? "black" : "white";
+                const opponent_colour = item.played_black ? "white" : "black";
+                const historical_player = historical[player_colour];
+
+                item.opponent = historical[opponent_colour] ?? r.players[opponent_colour];
+                if (historical_player) {
+                    item.player = historical_player;
+                    item.has_historical_rank = true;
+                } else if (!r.rengo) {
+                    item.player = r.players[player_colour];
+                }
+                item.player_won = item.played_black ? black_won : white_won;
             }
 
             if (r.rengo) {
@@ -476,7 +488,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                                   ? "⚫"
                                                   : "⚪"}
                                         </span>
-                                        {X.played_black != null &&
+                                        {X.has_historical_rank &&
                                             maskedRank(`[${rankString(X.player)}]`)}
                                     </React.Fragment>
                                 ),
@@ -648,10 +660,19 @@ function getResultClass(game: rest_api.Game, user_id: number): ResultClass {
         return "library-tie-result";
     }
 
-    if (ranked && !preferences.get("hide-ranks")) {
+    const historical: Partial<rest_api.Game["historical_ratings"]> = game.historical_ratings ?? {};
+    const black_rating = historical.black?.ratings.overall.rating;
+    const white_rating = historical.white?.ratings.overall.rating;
+
+    if (
+        ranked &&
+        !preferences.get("hide-ranks") &&
+        black_rating !== undefined &&
+        white_rating !== undefined
+    ) {
         const { black_effective_stronger, white_effective_stronger } = effective_outcome(
-            game.historical_ratings.black.ratings.overall.rating,
-            game.historical_ratings.white.ratings.overall.rating,
+            black_rating,
+            white_rating,
             game.handicap,
         );
         const player_effective_stronger =
