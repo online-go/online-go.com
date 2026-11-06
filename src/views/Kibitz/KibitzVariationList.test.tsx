@@ -42,6 +42,10 @@ jest.mock("@/lib/translate", () => ({
         ),
 }));
 
+const translate = jest.requireMock("@/lib/translate") as {
+    pgettext: (context: string, text: string) => string;
+};
+
 function makeUser(id: number, username: string): KibitzRoomUser {
     return {
         id,
@@ -52,13 +56,18 @@ function makeUser(id: number, username: string): KibitzRoomUser {
     };
 }
 
-function makeVariation(id: string, gameId: number, title: string): KibitzVariationSummary {
+function makeVariation(
+    id: string,
+    gameId: number,
+    title: string | undefined,
+    createdAt = gameId,
+): KibitzVariationSummary {
     return {
         id,
         room_id: "room-1",
         game_id: gameId,
-        creator: makeUser(gameId, `${title}-creator`),
-        created_at: gameId,
+        creator: makeUser(gameId, `${title || "untitled"}-creator`),
+        created_at: createdAt,
         viewer_count: 0,
         current_viewers: [],
         title,
@@ -144,6 +153,151 @@ describe("KibitzVariationList", () => {
         expect(screen.getByText("Gamma")).toBeInTheDocument();
         expect(screen.getByText("Delta")).toBeInTheDocument();
         expect(screen.getAllByLabelText("Remove from board")).toHaveLength(2);
+    });
+
+    it("numbers variations that share a trimmed title and leaves unique titles unchanged", () => {
+        render(
+            <KibitzVariationList
+                variations={[
+                    makeVariation("late", 10, "Ladder", 30),
+                    makeVariation("unique", 10, "Joseki", 25),
+                    makeVariation("padded", 10, " Ladder ", 10),
+                    makeVariation("middle", 20, "Ladder", 20),
+                    makeVariation("blank", 20, "   ", 40),
+                    makeVariation("missing", 20, undefined, 50),
+                ]}
+                currentGameId={10}
+                onRecallVariation={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByTitle("Variation: Ladder (1)")).toBeInTheDocument();
+        expect(screen.getByTitle("Variation: Ladder (2)")).toBeInTheDocument();
+        expect(screen.getByTitle("Variation: Ladder (3)")).toBeInTheDocument();
+        expect(screen.getByTitle("Variation: Joseki")).toBeInTheDocument();
+        expect(screen.queryByTitle("Variation: Ladder")).toBeNull();
+        expect(screen.getByTitle("Variation: Untitled variation (1)")).toBeInTheDocument();
+        expect(screen.getByTitle("Variation: Untitled variation (2)")).toBeInTheDocument();
+        expect(screen.getAllByText("(1)")).toHaveLength(2);
+        expect(screen.getAllByText("(2)")).toHaveLength(2);
+        expect(screen.getByText("(3)")).toBeInTheDocument();
+    });
+
+    it("does not show the same label for a stored title and a generated ordinal", () => {
+        render(
+            <KibitzVariationList
+                variations={[
+                    makeVariation("first", 10, "Ladder", 1),
+                    makeVariation("second", 10, "Ladder", 2),
+                    makeVariation("stored", 10, "Ladder (1)", 3),
+                ]}
+                currentGameId={10}
+                onRecallVariation={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByTitle("Variation: Ladder (2)")).toBeInTheDocument();
+        expect(screen.getByTitle("Variation: Ladder (3)")).toBeInTheDocument();
+        expect(screen.getByTitle("Variation: Ladder (1)")).toBeInTheDocument();
+        expect(screen.getAllByTitle(/^Variation: Ladder/)).toHaveLength(3);
+    });
+
+    it("keeps Ladder (2) when the earlier Ladder is no longer shown", () => {
+        const history = [
+            makeVariation("first", 10, "Ladder", 1),
+            makeVariation("second", 10, "Ladder", 2),
+        ];
+        const { rerender } = render(
+            <KibitzVariationList
+                variations={history}
+                displayedVariations={history}
+                currentGameId={10}
+                onRecallVariation={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByTitle("Variation: Ladder (1)")).toBeInTheDocument();
+        expect(screen.getByTitle("Variation: Ladder (2)")).toBeInTheDocument();
+
+        rerender(
+            <KibitzVariationList
+                variations={[history[1]]}
+                displayedVariations={history}
+                currentGameId={10}
+                onRecallVariation={jest.fn()}
+            />,
+        );
+
+        expect(screen.queryByTitle("Variation: Ladder (1)")).toBeNull();
+        expect(screen.getByTitle("Variation: Ladder (2)")).toBeInTheDocument();
+        expect(screen.queryByTitle("Variation: Ladder")).toBeNull();
+        expect(screen.getByText("(2)")).toBeInTheDocument();
+        expect(screen.queryByText("(1)")).toBeNull();
+    });
+
+    it("gives spectators who loaded the same variations the same ordinals", () => {
+        const first = makeVariation("first", 10, "Ladder", 1);
+        const second = makeVariation("second", 10, "Ladder", 2);
+        const third = makeVariation("third", 10, "Ladder", 3);
+        const loadedForA = [first, second, third];
+        const secondForB = { ...second };
+        const thirdForB = { ...third };
+        const loadedForB = [{ ...first }, secondForB, thirdForB].reverse();
+        const { unmount } = render(
+            <KibitzVariationList
+                variations={[first, second]}
+                displayedVariations={loadedForA}
+                currentGameId={10}
+                onRecallVariation={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByTitle("Variation: Ladder (1)")).toBeInTheDocument();
+        expect(screen.getByTitle("Variation: Ladder (2)")).toBeInTheDocument();
+        expect(screen.queryByTitle("Variation: Ladder (3)")).toBeNull();
+        unmount();
+
+        render(
+            <KibitzVariationList
+                variations={[secondForB, thirdForB]}
+                displayedVariations={loadedForB}
+                currentGameId={10}
+                onRecallVariation={jest.fn()}
+            />,
+        );
+
+        expect(screen.queryByTitle("Variation: Ladder (1)")).toBeNull();
+        expect(screen.getByTitle("Variation: Ladder (2)")).toBeInTheDocument();
+        expect(screen.getByTitle("Variation: Ladder (3)")).toBeInTheDocument();
+    });
+
+    it("numbers with the same suffix string the row renders", () => {
+        const original = translate.pgettext;
+        translate.pgettext = (_context: string, text: string) =>
+            text === "({{ordinal}})" ? "#{{ordinal}}" : text;
+
+        try {
+            render(
+                <KibitzVariationList
+                    variations={[
+                        makeVariation("first", 10, "Ladder", 1),
+                        makeVariation("second", 10, "Ladder", 2),
+                        makeVariation("stored", 10, "Ladder #1", 3),
+                    ]}
+                    currentGameId={10}
+                    onRecallVariation={jest.fn()}
+                />,
+            );
+        } finally {
+            translate.pgettext = original;
+        }
+
+        expect(screen.getByTitle("Variation: Ladder #2")).toBeInTheDocument();
+        expect(screen.getByTitle("Variation: Ladder #3")).toBeInTheDocument();
+        expect(screen.getByTitle("Variation: Ladder #1")).toBeInTheDocument();
+        expect(screen.getByText("#2")).toBeInTheDocument();
+        expect(screen.getByText("#3")).toBeInTheDocument();
+        expect(screen.queryByText("(1)")).toBeNull();
     });
 });
 
