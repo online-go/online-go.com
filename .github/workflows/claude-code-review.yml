@@ -50,9 +50,9 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           allowed_non_write_users: '*'
-          # Cursor pushes commits to contributors' PRs, so the synchronize event
-          # has cursor[bot] as the actor. The action rejects bot actors by default.
-          allowed_bots: 'cursor'
+          # Bots such as Cursor push commits to PRs, which makes them the actor of
+          # the synchronize event. The action rejects bot actors by default.
+          allowed_bots: '*'
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
