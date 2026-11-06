@@ -98,6 +98,7 @@ export function KibitzPortraitPanes({
             <div className="KibitzPortraitPanes-pane" hidden={active !== "variations"}>
                 <KibitzVariationList
                     variations={leftAside.variations}
+                    displayedVariations={leftAside.displayedVariations}
                     currentGameId={leftAside.currentGameId}
                     gameById={leftAside.variationGameById}
                     colorIndexes={leftAside.variationColorIndexes}

@@ -189,6 +189,34 @@ test("an ordinal is skipped when the rendered suffix matches a stored title", ()
     expect(displayNames.get("stored")).toBe("Ladder #1");
 });
 
+test("viewers who loaded the same variations get the same ordinals", () => {
+    const history = [
+        { id: "first", title: "Ladder", created_at: 1 },
+        { id: "second", title: "Ladder", created_at: 2 },
+        { id: "third", title: "Ladder", created_at: 3 },
+        { id: "other", title: "Joseki", created_at: 4 },
+    ];
+    const spectatorA = names(history.map((variation) => ({ ...variation })));
+    const spectatorB = names(history.map((variation) => ({ ...variation })).reverse());
+
+    expect(spectatorA).toEqual(spectatorB);
+    expect(spectatorA.get("first")).toBe("Ladder (1)");
+    expect(spectatorA.get("second")).toBe("Ladder (2)");
+    expect(spectatorA.get("third")).toBe("Ladder (3)");
+    expect(spectatorA.get("other")).toBe("Joseki");
+});
+
+test("a later duplicate keeps its ordinal while the earlier one stays in the loaded set", () => {
+    const loaded = [
+        { id: "first", title: "Ladder", created_at: 1 },
+        { id: "second", title: "Ladder", created_at: 2 },
+    ];
+
+    expect(names(loaded).get("first")).toBe("Ladder (1)");
+    expect(names(loaded).get("second")).toBe("Ladder (2)");
+    expect(names([loaded[1]]).get("second")).toBe("Ladder");
+});
+
 test("case differences stay distinct, and blank titles share the untitled name", () => {
     const displayNames = names([
         { id: "lower", title: "ladder", created_at: 1 },

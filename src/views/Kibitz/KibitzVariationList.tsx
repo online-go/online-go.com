@@ -25,7 +25,15 @@ import { KibitzVariationSwatch } from "./KibitzVariationSwatch";
 import "./KibitzVariationList.css";
 
 interface KibitzVariationListProps {
+    /** Variations on the board. These are the rows the list renders. */
     variations: KibitzVariationSummary[];
+    /**
+     * Every loaded variation, including ones that are not on the board.
+     * Duplicate-title ordinals are computed from this list so hiding a
+     * variation does not renumber the rows that stay visible. Omit to number
+     * `variations` alone.
+     */
+    displayedVariations?: KibitzVariationSummary[];
     currentGameId?: number | null;
     gameById?: ReadonlyMap<number, KibitzWatchedGame>;
     selectedVariationId?: string | null;
@@ -46,6 +54,7 @@ interface KibitzVariationListProps {
 
 export function KibitzVariationList({
     variations,
+    displayedVariations,
     currentGameId,
     gameById,
     selectedVariationId = null,
@@ -74,10 +83,13 @@ export function KibitzVariationList({
         );
     const formatSharedTitle = (name: string, ordinal: number) =>
         `${name} ${ordinalSuffix(ordinal)}`;
-    const variationDisplayNameById = formatKibitzVariationDisplayNames(variations, {
-        untitledLabel: untitledVariationLabel,
-        formatSharedTitle,
-    });
+    const variationDisplayNameById = formatKibitzVariationDisplayNames(
+        displayedVariations ?? variations,
+        {
+            untitledLabel: untitledVariationLabel,
+            formatSharedTitle,
+        },
+    );
     const groupedVariations = React.useMemo(() => {
         const groups = new Map<number, KibitzVariationSummary[]>();
 

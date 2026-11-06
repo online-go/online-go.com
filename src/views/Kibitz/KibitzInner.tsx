@@ -1399,6 +1399,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     canOpenCreateRoomFlow,
                     signInHref: createRoomSignInHref,
                     variations: activePostedVariations,
+                    displayedVariations,
                     currentGameId: resolvedRoom.current_game?.game_id ?? null,
                     variationGameById,
                     selectedVariationId: secondaryPane.variation_id ?? null,

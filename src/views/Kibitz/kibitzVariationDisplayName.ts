@@ -43,22 +43,29 @@ export interface KibitzVariationDisplayName {
 /**
  * Display titles for the Kibitz variation list.
  *
- * A title that no other listed variation shares is returned unchanged: the
- * stored title when it is non-empty, otherwise `untitledLabel`. Blank and
- * whitespace-only titles share the untitled name. Variations share a group
- * when their titles collapse to the same words, so `Ladder A` and `Ladder  A`
- * are one sequence. Every member gets an ordinal, including the earliest.
+ * `variations` is every loaded variation (the chat history this viewer has),
+ * including variations that are not on the board. The list renders a subset
+ * and looks each row up by id. A title that no other loaded variation shares
+ * is returned unchanged: the stored title when it is non-empty, otherwise
+ * `untitledLabel`. Blank and whitespace-only titles share the untitled name.
+ * Variations share a group when their titles collapse to the same words, so
+ * `Ladder A` and `Ladder  A` are one sequence. Every member of a shared group
+ * gets an ordinal, including the earliest, whether or not that member is
+ * rendered.
  *
  * An ordinal is skipped when `formatSharedTitle` would equal a label already
- * shown: another row's unique title, or a label assigned earlier in posting
- * order. The comparison uses the text the row will show, trimmed, with
- * internal whitespace collapsed. Stored titles `Ladder`, `Ladder`, and
+ * shown: another loaded variation's unique title, or a label assigned earlier
+ * in posting order. The comparison uses the text the row will show, trimmed,
+ * with internal whitespace collapsed. Stored titles `Ladder`, `Ladder`, and
  * `Ladder (1)` therefore show `Ladder (2)`, `Ladder (3)`, and `Ladder (1)`,
  * and a stored ` Ladder (1) ` reserves `Ladder (1)`.
  *
  * Ordinals follow posting order: `created_at` ascending, then `id`. That is
  * the same order the room uses when it merges variations, and it does not
- * follow the list's visual grouping (current game first).
+ * follow the list's visual grouping (current game first). Two viewers who
+ * pass the same loaded variations get the same ordinal for each id. Hiding a
+ * variation removes it from the rendered rows only. It stays in this input,
+ * so the remaining ids keep their ordinals.
  */
 export function formatKibitzVariationDisplayNames(
     variations: readonly KibitzVariationDisplayNameSource[],
