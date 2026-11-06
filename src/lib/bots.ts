@@ -120,7 +120,8 @@ export interface BoardSizeRanges {
  * that goban's `BotConfigV2` type does not list. */
 export type BotBoardSizes = BotConfigV2["allowed_board_sizes"] | BoardSizeRanges;
 
-function isOrderedFinitePair(value: unknown): value is [number, number] {
+/** True when `value` is a pair of finite numbers with the lower bound first. */
+export function isOrderedFinitePair(value: unknown): value is [number, number] {
     return (
         Array.isArray(value) &&
         value.length === 2 &&
@@ -218,11 +219,6 @@ export function botTimeSettingRanges(
             if (!settings?.fischer) {
                 return null;
             }
-            const initial_time = {
-                setting: pgettext("Name of a time setting", "Initial time"),
-                format: botDurationString,
-                value: (tc: TimeControl) => (tc as TimeControlTypes.Fischer).initial_time,
-            };
             const time_increment = {
                 setting: pgettext("Name of a time setting", "Time increment"),
                 range: settings.fischer.time_increment_range,
@@ -232,16 +228,20 @@ export function botTimeSettingRanges(
             if (bot.config._config_version === 1) {
                 // v1 configs compare the initial time against max_time_range
                 return [
-                    { ...initial_time, range: settings.fischer.max_time_range },
+                    {
+                        setting: pgettext("Name of a time setting", "Initial time"),
+                        range: settings.fischer.max_time_range,
+                        format: botDurationString,
+                        value: (tc: TimeControl) => (tc as TimeControlTypes.Fischer).initial_time,
+                    },
                     time_increment,
                 ];
             }
-            const fischer = (settings as BotAllowedClockSettingsV2).fischer!;
+            // gtp2ogs checks max_time and time_increment for v2 Fischer, not initial_time
             return [
-                { ...initial_time, range: fischer.initial_time_range },
                 {
                     setting: pgettext("Name of a time setting", "Max time"),
-                    range: fischer.max_time_range,
+                    range: settings.fischer.max_time_range,
                     format: botDurationString,
                     value: (tc) => (tc as TimeControlTypes.Fischer).max_time,
                 },
