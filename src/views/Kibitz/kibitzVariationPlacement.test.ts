@@ -182,6 +182,17 @@ describe("main board placement", () => {
         expect(next).toHaveBeenCalledTimes(1);
     });
 
+    test("re-observing the main board keeps score estimation active", () => {
+        const { board, stop } = mainBoard();
+        stop();
+        board.setMode("score estimation", true);
+        observeKibitzMainBoardPlacement(
+            board,
+            jest.fn(() => true),
+        );
+        expect(board.mode).toBe("score estimation");
+    });
+
     test("does not accept analysis placements during stone removal", () => {
         const { board, placed } = mainBoard();
         board.engine.phase = "stone removal";

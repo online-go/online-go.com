@@ -1,0 +1,4 @@
+/* The renderer owns the board background; its positioning wrapper must stay clear. */
+.Kibitz .goban-container > .Goban {
+    background: transparent;
+}
