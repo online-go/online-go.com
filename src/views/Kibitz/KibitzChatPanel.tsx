@@ -25,7 +25,12 @@ import { TabCompleteInput } from "@/components/TabCompleteInput";
 import { sanitizeMessage } from "@/lib/misc";
 import { ChatUserList } from "@/components/ChatUserList";
 import { Player } from "@/components/Player";
-import { chat_manager, ChatChannelProxy, ChatMessage } from "@/lib/chat_manager";
+import {
+    chat_manager,
+    ChatChannelProxy,
+    ChatMessage,
+    type ChatViewingPosition,
+} from "@/lib/chat_manager";
 import * as data from "@/lib/data";
 import { useUser } from "@/lib/hooks";
 import type { GobanController } from "@/lib/GobanController";
@@ -60,6 +65,7 @@ type PaneEntry =
           gobanChannel?: string;
           gobanLine?: protocol.GameChatLine;
           position?: { game_id: number; move_number: number };
+          viewingPosition?: ChatViewingPosition;
           routineSystem?: boolean;
       }
     | {
@@ -75,6 +81,8 @@ export interface KibitzChatPanelProps {
     variations: KibitzVariationSummary[];
     onOpenVariation: (variationId: string, focusVariation?: boolean) => void;
     onOpenChatMove?: (gameId: number, moveNumber: number) => void;
+    onOpenChatVariation?: (variation: KibitzVariationSummary) => void;
+    viewingBoard?: { goban: Goban; gameId: number; variationName?: string; isVariation: boolean };
     /** Live game controller whose chat_log feeds the Game tab. */
     gameController: GobanController | null;
     coordinateGoban?: Goban | null;
@@ -210,6 +218,7 @@ function createChatLineFromItem(
         createdAt: item.created_at,
         source,
         routineSystem: item.type === "system" && source !== "game-chat",
+        viewingPosition: item.type === "chat" ? item.viewing_position : undefined,
         position:
             item.type === "chat" &&
             typeof item.game_id === "number" &&
@@ -265,6 +274,8 @@ export function KibitzChatPanel({
     variations,
     onOpenVariation,
     onOpenChatMove,
+    onOpenChatVariation,
+    viewingBoard,
     gameController,
     coordinateGoban,
     variationColorIndexes,
@@ -631,12 +642,35 @@ export function KibitzChatPanel({
                 moveNumber >= 0
                     ? { game_id: gameId, move_number: moveNumber }
                     : undefined;
-            roomProxy.channel.send(value, position);
+            const viewed = viewingBoard?.goban.engine.cur_move;
+            const isVariation = viewingBoard?.isVariation || viewed?.trunk === false;
+            const viewingPosition =
+                viewingBoard &&
+                viewed &&
+                (isVariation || (position && viewed.move_number !== moveNumber))
+                    ? {
+                          game_id: viewingBoard.gameId,
+                          move_number: viewed.move_number,
+                          ...(isVariation
+                              ? {
+                                    variation: {
+                                        ...viewingBoard.goban.engine.getMoveDiff(),
+                                        name: viewingBoard.variationName,
+                                    },
+                                }
+                              : {}),
+                      }
+                    : undefined;
+            if (viewingPosition) {
+                roomProxy.channel.send(value, position, viewingPosition);
+            } else {
+                roomProxy.channel.send(value, position);
+            }
             kibitzTelemetry.record("send_message");
             input.value = "";
             return false;
         },
-        [roomProxy, room.current_game?.game_id, watchedController],
+        [roomProxy, room.current_game?.game_id, watchedController, viewingBoard],
     );
 
     // Both line components draw a date separator whenever the previous line
@@ -789,6 +823,18 @@ export function KibitzChatPanel({
                         position.game_id === room.current_game?.game_id &&
                         position.game_id === watchedController?.goban.game_id &&
                         !watchedController.destroyed;
+                    const viewed = entry.viewingPosition;
+                    const variation = viewed?.variation;
+                    const canOpenViewed =
+                        viewed &&
+                        Number.isSafeInteger(viewed.game_id) &&
+                        viewed.game_id > 0 &&
+                        (variation
+                            ? onOpenChatVariation &&
+                              Number.isSafeInteger(variation.from) &&
+                              variation.from >= 0 &&
+                              typeof variation.moves === "string"
+                            : onOpenChatMove && viewed.game_id === room.current_game?.game_id);
                     const previousRoomLine = roomLastLine;
                     const previousGameLine = gameLastLine;
                     if (source === "room") {
@@ -889,6 +935,65 @@ export function KibitzChatPanel({
                                         }
                                     />
                                 )}
+                                {viewed &&
+                                    Number.isSafeInteger(viewed.move_number) &&
+                                    viewed.move_number >= 0 && (
+                                        <div className="kibitz-viewing-position">
+                                            <button
+                                                type="button"
+                                                disabled={!canOpenViewed}
+                                                onClick={() => {
+                                                    if (variation) {
+                                                        onOpenChatVariation?.({
+                                                            id: `chat-position:${entry.key}`,
+                                                            room_id: room.id,
+                                                            game_id: viewed.game_id,
+                                                            creator: {
+                                                                id: entry.line.id,
+                                                                username: entry.line.username,
+                                                                ranking: entry.line.ranking,
+                                                                professional:
+                                                                    entry.line.professional,
+                                                                ui_class: entry.line.ui_class,
+                                                            },
+                                                            created_at: entry.createdAt,
+                                                            viewer_count: 0,
+                                                            current_viewers: [],
+                                                            title: variation.name,
+                                                            analysis_from: variation.from,
+                                                            analysis_moves: variation.moves,
+                                                        });
+                                                    } else {
+                                                        onOpenChatMove?.(
+                                                            viewed.game_id,
+                                                            viewed.move_number,
+                                                        );
+                                                    }
+                                                }}
+                                            >
+                                                {interpolate(
+                                                    variation
+                                                        ? variation.name
+                                                            ? pgettext(
+                                                                  "Kibitz chat viewing context",
+                                                                  "(looking at move {{move}} of {{variation}})",
+                                                              )
+                                                            : pgettext(
+                                                                  "Kibitz chat viewing context",
+                                                                  "(looking at move {{move}} of a variation)",
+                                                              )
+                                                        : pgettext(
+                                                              "Kibitz chat viewing context",
+                                                              "(looking at move {{move}})",
+                                                          ),
+                                                    {
+                                                        move: viewed.move_number,
+                                                        variation: variation?.name ?? "",
+                                                    },
+                                                )}
+                                            </button>
+                                        </div>
+                                    )}
                             </div>
                         </React.Fragment>
                     );
