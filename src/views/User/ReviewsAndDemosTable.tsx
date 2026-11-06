@@ -61,9 +61,9 @@ export function ReviewsAndDemosTable(props: ReviewsAndDemosProps): React.ReactEl
             const isReviewOfGame = !!(r.game && (typeof r.game === "number" || r.game.id));
             const prefix = isReviewOfGame ? "/review/" : "/demo/";
             item.href = prefix + item.id;
-            item.historical = (r.game && r.game.historical_ratings) || {
-                black: item.black,
-                white: item.white,
+            item.historical = {
+                black: r.game?.historical_ratings?.black ?? item.black,
+                white: r.game?.historical_ratings?.white ?? item.white,
             };
 
             if (!item.name || item.name.trim() === "") {

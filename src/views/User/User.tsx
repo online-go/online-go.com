@@ -539,7 +539,11 @@ export function User(props: { user_id?: number }): React.ReactElement {
                     )}
 
                     <div className="row">
-                        <GameHistoryTable user_id={user.id} is_bot={user.is_bot} />
+                        <GameHistoryTable
+                            user_id={user.id}
+                            username={user.username}
+                            is_bot={user.is_bot}
+                        />
                     </div>
 
                     <div className="row">
