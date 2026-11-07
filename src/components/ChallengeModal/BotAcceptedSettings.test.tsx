@@ -127,7 +127,97 @@ describe("BotAcceptedSettings", () => {
             screen.getByText("Initial time: 1m to 10m, Time increment: 5s to 30s"),
         ).toBeInTheDocument();
     });
+
+    it("does not show an initial time range for a v2 Fischer bot", () => {
+        render(
+            <BotAcceptedSettings
+                bot={v2FischerBot({
+                    initial_time_range: [10, 3600],
+                    max_time_range: [5, 7200],
+                    time_increment_range: [10, 300],
+                })}
+                time_control={liveFischer()}
+            />,
+        );
+
+        expect(
+            screen.getByText("Max time: 5s to 2h, Time increment: 10s to 5m"),
+        ).toBeInTheDocument();
+        expect(screen.queryByText(/Initial time/)).not.toBeInTheDocument();
+    });
+
+    it("skips a time or komi row whose range is not a finite ordered pair", () => {
+        render(
+            <BotAcceptedSettings
+                bot={v2Bot({
+                    allowed_time_control_systems: ["fischer", "byoyomi"],
+                    allowed_live_settings: {
+                        fischer: {
+                            initial_time_range: [10, 3600],
+                            time_increment_range: [10, 300],
+                        },
+                        byoyomi: {
+                            main_time_range: [60, 1200],
+                            period_time_range: [10, 60],
+                            periods_range: [10, 1],
+                        },
+                    },
+                    allowed_komi_range: [Number.NaN, 7.5],
+                })}
+                time_control={liveFischer()}
+            />,
+        );
+
+        expect(screen.getByText("19x19")).toBeInTheDocument();
+        expect(screen.getByText("Time increment: 10s to 5m")).toBeInTheDocument();
+        expect(
+            screen.getByText("Main time: 1m to 20m, Period time: 10s to 1m"),
+        ).toBeInTheDocument();
+        expect(screen.queryByText(/Max time/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Periods/)).not.toBeInTheDocument();
+        expect(screen.queryByText("Komi")).not.toBeInTheDocument();
+        expect(screen.queryByText(/NaN/)).not.toBeInTheDocument();
+    });
 });
+
+function liveFischer(): TimeControl {
+    return {
+        system: "fischer",
+        speed: "live",
+        initial_time: 2 * 3600,
+        max_time: 2 * 3600,
+        time_increment: 10,
+        pause_on_weekends: false,
+    };
+}
+
+function v2FischerBot(fischer: {
+    initial_time_range?: [number, number];
+    max_time_range?: [number, number];
+    time_increment_range?: [number, number];
+}): Bot {
+    return v2Bot({
+        allowed_time_control_systems: ["fischer"],
+        allowed_live_settings: { fischer },
+    });
+}
+
+function v2Bot(config: Record<string, unknown>): Bot {
+    return {
+        id: 1,
+        username: "TestBot",
+        config: {
+            _config_version: 2,
+            allowed_time_control_systems: ["simple"],
+            allowed_board_sizes: [19],
+            allow_ranked: true,
+            allow_unranked: true,
+            allow_ranked_handicap: true,
+            allow_unranked_handicap: true,
+            ...config,
+        } as unknown as BotConfigV2,
+    } as Bot;
+}
 
 function rapidTimeControl(): TimeControl {
     return {
