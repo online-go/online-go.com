@@ -3,4 +3,3 @@
  */
 
 export * from "./OnlineLeaguesAdmin";
-export * from "./PeerReviewSettings";
