@@ -840,6 +840,7 @@ describe("ChallengeModalBody", () => {
 describe("rematch saved settings", () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        (bots_list as jest.Mock).mockReturnValue([]);
         mockPreferredSettings = [];
         mockDataValues.clear();
         mockDataValues.set("user", { id: 123, ranking: 10, anonymous: false });
@@ -867,7 +868,10 @@ describe("rematch saved settings", () => {
         });
     });
 
-    function rematchProps(color: "black" | "white" | "automatic"): ChallengeModalProperties {
+    function rematchProps(
+        color: "black" | "white" | "automatic",
+        ranked = false,
+    ): ChallengeModalProperties {
         return {
             ...defaultProps,
             mode: "player" as const,
@@ -884,7 +888,7 @@ describe("rematch saved settings", () => {
                     challenger_color: color,
                     game: {
                         ...defaultProps.config!.challenge.game,
-                        ranked: false,
+                        ranked,
                         komi_auto: "custom",
                         komi: 0.5,
                     },
@@ -911,6 +915,37 @@ describe("rematch saved settings", () => {
         expect(savedKeys).not.toContain("challenge.challenge.live");
         expect(savedKeys).not.toContain("challenge.restrict_rank");
         expect(savedKeys).not.toContain("time_control.speed");
+    });
+
+    it("hides Ranked and sends an unranked rematch when the opponent is a bot", async () => {
+        const user = userEvent.setup();
+        (bots_list as jest.Mock).mockReturnValue([{ id: 456, username: "TestBot" }]);
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+
+        render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({
+                    ranked: false,
+                    komi_auto: "custom",
+                    komi: 0.5,
+                }),
+            }),
+        );
+    });
+
+    it("shows Ranked for a rematch against a person", () => {
+        (bots_list as jest.Mock).mockReturnValue([{ id: 999, username: "OtherBot" }]);
+        render(<ChallengeModalBody {...rematchProps("white", true)} modal={mockModal} />);
+
+        expect(screen.getByLabelText("Ranked")).toBeEnabled();
+        expect(screen.getByLabelText("Ranked")).toBeChecked();
     });
 
     it("sends a fork but does not save its settings", async () => {

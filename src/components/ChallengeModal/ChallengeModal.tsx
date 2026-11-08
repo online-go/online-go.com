@@ -118,6 +118,12 @@ function applyBotRanked(game: GameInput): GameInput {
     return { ...game, ranked: computeBotRanked(game) };
 }
 
+/** A direct challenge, including a rematch, is against a bot when that
+ *  player's id is in the active bot list. */
+function challengedPlayerIsBot(playerId: number | undefined): boolean {
+    return playerId !== undefined && bots_list().some((bot) => bot.id === playerId);
+}
+
 // The backend's handicap calculator ignores requested_komi when the handicap
 // is automatic (<0), so in the UI we keep komi in lockstep: auto handicap =>
 // auto komi.
@@ -294,6 +300,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             state.challenge.game = applyBotRanked(state.challenge.game);
             state.challenge.game.disable_analysis = false;
         }
+        // Ranked games against bots are disabled. A rematch still copies the
+        // previous game's ranked flag, so clear it here.
+        if (this.props.mode === "player" && challengedPlayerIsBot(this.props.playerId)) {
+            state.challenge.game.ranked = false;
+        }
 
         if (this.props.autoCreate) {
             setTimeout(() => {
@@ -463,6 +474,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             setting.game.rengo = false;
             setting.game.rengo_casual_mode = true;
         }
+        if (this.props.mode === "player" && challengedPlayerIsBot(this.props.playerId)) {
+            setting.game.ranked = false;
+        }
         this.setState({
             challenge: setting,
             time_control: JSON.parse(JSON.stringify(setting.game.time_control_parameters)),
@@ -543,6 +557,11 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
         challenge.game.rengo = next.challenge.game.rengo;
         challenge.game.rengo_casual_mode = next.challenge.game.rengo_casual_mode;
+
+        // Clear ranked before the ranked komi rule, so a bot rematch keeps its komi.
+        if (this.props.mode === "player" && challengedPlayerIsBot(this.props.playerId)) {
+            challenge.game.ranked = false;
+        }
 
         if (challenge.game.ranked) {
             challenge.game.komi_auto = "automatic";
@@ -1293,6 +1312,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             >
                 {!this.state.forking_game &&
                     this.props.mode !== "computer" &&
+                    !challengedPlayerIsBot(this.props.playerId) &&
                     this.rankedSettings()}
                 {!this.state.forking_game && this.boardSizeSettings()}
             </div>
