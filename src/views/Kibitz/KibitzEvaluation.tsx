@@ -119,14 +119,21 @@ export function KibitzEvaluation({
     const needsBarEstimate = allowed && !estimating && !Number.isFinite(reviewedScore);
     const preferRemote = controller.prefersRemoteScoreEstimate(source);
     // Positions already estimated in this game, so going back and forth does
-    // not request the same estimate again.
-    const estimateCache = React.useRef(new WeakMap<MoveTree, number>());
+    // not request the same estimate again. AI and local estimates are kept
+    // apart, so a game that finishes does not reuse local estimates.
+    const estimateCaches = React.useRef({
+        remote: new WeakMap<MoveTree, number>(),
+        local: new WeakMap<MoveTree, number>(),
+    });
+    const estimateCache = preferRemote
+        ? estimateCaches.current.remote
+        : estimateCaches.current.local;
     React.useEffect(() => {
         let active = true;
         if (!needsBarEstimate || !move) {
             return;
         }
-        const cached = estimateCache.current.get(move);
+        const cached = estimateCache.get(move);
         if (cached !== undefined) {
             setBarEstimate({ move, score: cached });
             return;
@@ -141,7 +148,7 @@ export function KibitzEvaluation({
                     if (score === undefined) {
                         return;
                     }
-                    estimateCache.current.set(move, score);
+                    estimateCache.set(move, score);
                     if (active && goban.engine.cur_move === move) {
                         setBarEstimate({ move, score });
                     }
@@ -152,7 +159,7 @@ export function KibitzEvaluation({
             active = false;
             window.clearTimeout(timer);
         };
-    }, [goban, move, needsBarEstimate, preferRemote]);
+    }, [goban, move, needsBarEstimate, preferRemote, estimateCache]);
     // While score estimation is on, use its estimate so the bar and the
     // banner agree.
     const currentEstimate = estimating
@@ -263,9 +270,12 @@ export function KibitzEvaluation({
         };
     }, [goban, enabled]);
     React.useEffect(() => {
-        if (available) {
-            goban.evaluation = kibitzEvaluation(score!, Math.max(goban.width, goban.height));
-        }
+        // Without a score the bar returns to even, so it does not show the
+        // previous position. While a new estimate is calculated the previous
+        // score is still available and stays shown.
+        goban.evaluation = available
+            ? kibitzEvaluation(score!, Math.max(goban.width, goban.height))
+            : 0.5;
     }, [goban, available, score]);
     const leadText = available
         ? interpolate(_("{{winner}} by {{score}}"), {

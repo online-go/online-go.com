@@ -57,8 +57,8 @@ function setup({ allowed = true, estimating = false } = {}) {
     const controller = Object.assign(new EventEmitter(), {
         goban,
         estimating_score: estimating,
-        canEstimateScore: () => allowed,
-        prefersRemoteScoreEstimate: () => true,
+        canEstimateScore: jest.fn(() => allowed),
+        prefersRemoteScoreEstimate: jest.fn(() => true),
     });
     return {
         goban,
@@ -232,4 +232,36 @@ test("drops the signs and shrinks the labels on a narrow bar", async () => {
     expect(spans.every((span) => span.scrollWidth <= 11)).toBe(true);
     scrollWidth.mockRestore();
     await act(async () => {});
+});
+
+test("returns the bar to even when the score is no longer allowed", async () => {
+    const { goban, controller, asController } = setup();
+    const view = renderBar(asController);
+    expect(goban.evaluation).toBeGreaterThan(0.5);
+    controller.canEstimateScore.mockReturnValue(false);
+    view.rerender(barElement(asController, true));
+    expect(label()).toBe("Score unavailable");
+    expect(goban.evaluation).toBe(0.5);
+    await act(async () => {});
+});
+
+test("does not reuse local estimates once AI estimates apply", async () => {
+    jest.useFakeTimers();
+    const { goban, unreviewed, controller, asController } = setup();
+    controller.prefersRemoteScoreEstimate.mockReturnValue(false);
+    goban.engine.cur_move = unreviewed;
+    const view = renderBar(asController);
+    await act(async () => {
+        jest.advanceTimersByTime(250);
+    });
+    expect(ScoreEstimator).toHaveBeenCalledTimes(1);
+    controller.prefersRemoteScoreEstimate.mockReturnValue(true);
+    view.rerender(barElement(asController, true));
+    await act(async () => {
+        jest.advanceTimersByTime(250);
+    });
+    expect(ScoreEstimator).toHaveBeenCalledTimes(2);
+    expect(jest.mocked(ScoreEstimator).mock.calls[1][4]).toBe(true);
+    view.unmount();
+    jest.useRealTimers();
 });

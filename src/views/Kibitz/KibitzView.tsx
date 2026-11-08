@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { KibitzEvaluation } from "./KibitzEvaluation";
 import * as React from "react";
 import { _, interpolate, pgettext } from "@/lib/translate";
 import * as data from "@/lib/data";
@@ -48,6 +47,7 @@ import { KibitzStackedPlayerHeader } from "./KibitzStackedPlayerHeader";
 import { useKibitzThinHeader } from "./kibitzThinHeader";
 import { KibitzMoreActionsRoomActions, openKibitzMoreActions } from "./KibitzMoreActionsPopover";
 import { KibitzScoreEstimate } from "./KibitzScoreEstimate";
+import { KibitzEvaluation } from "./KibitzEvaluation";
 import { useKibitzScoreEstimation } from "./useKibitzScoreEstimation";
 import { useKibitzHelp } from "./useKibitzHelp";
 import "./KibitzView.css";
@@ -628,14 +628,12 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             leftAsideCollapsedWidth={leftAsideCollapsed ? 28 : undefined}
             centerPlaceholder={waitingMessage}
             aboveBoard={
-                <>
-                    <KibitzStackedPlayerHeader
-                        controller={playerInfoController}
-                        estimatingScore={
-                            scoreEstimation.estimating && playerInfoController === gobans.center
-                        }
-                    />
-                </>
+                <KibitzStackedPlayerHeader
+                    controller={playerInfoController}
+                    estimatingScore={
+                        scoreEstimation.estimating && playerInfoController === gobans.center
+                    }
+                />
             }
             belowBoard={isPortrait && showScore ? scoreLabel : null}
             /* Kibitz presents both players together in the sidebar on every
