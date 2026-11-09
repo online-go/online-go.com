@@ -23,6 +23,7 @@ import {
     boardSizeRangeText,
     botTimeSettingRanges,
     isBoardSizeRanges,
+    isOrderedFinitePair,
     isUnsupportedBoardSizeSetting,
     unsupportedBoardSizeSettingMessage,
 } from "@/lib/bots";
@@ -97,31 +98,36 @@ export function BotAcceptedSettings({
 
     // The server always sends v1 allowed_rapid_settings, at least as {}. Use a
     // system's rapid entry when it exists, and otherwise the live entry.
-    const time_rows = config.allowed_time_control_systems.map((system) => {
+    const time_rows = config.allowed_time_control_systems.flatMap((system) => {
         const v1_rapid = config._config_version === 1 && time_control.speed === "rapid";
         const ranges = v1_rapid
             ? (botTimeSettingRanges(bot, system, config.allowed_rapid_settings) ??
               botTimeSettingRanges(bot, system, config.allowed_live_settings))
             : botTimeSettingRanges(bot, system, config[`allowed_${time_control.speed}_settings`]);
-        return {
-            system,
-            text: ranges
-                ? ranges
-                      .map(({ setting, range, format }) =>
-                          interpolate(
-                              pgettext(
-                                  "A time setting and the range a bot accepts for it, such as 'Main time: 1m to 10m'",
-                                  "{{setting}}: {{range}}",
-                              ),
-                              { setting, range: rangeText(format(range[0]), format(range[1])) },
-                          ),
-                      )
-                      .join(", ")
-                : pgettext(
-                      "A bot does not play this time control system at the selected speed",
-                      "Not at this speed",
-                  ),
-        };
+        if (!ranges) {
+            return [
+                {
+                    system,
+                    text: pgettext(
+                        "A bot does not play this time control system at the selected speed",
+                        "Not at this speed",
+                    ),
+                },
+            ];
+        }
+        const text = ranges
+            .filter(({ range }) => isOrderedFinitePair(range))
+            .map(({ setting, range, format }) =>
+                interpolate(
+                    pgettext(
+                        "A time setting and the range a bot accepts for it, such as 'Main time: 1m to 10m'",
+                        "{{setting}}: {{range}}",
+                    ),
+                    { setting, range: rangeText(format(range[0]), format(range[1])) },
+                ),
+            )
+            .join(", ");
+        return text ? [{ system, text }] : [];
     });
 
     return (
@@ -135,7 +141,7 @@ export function BotAcceptedSettings({
             <dt>{_("Handicap")}</dt>
             <dd>{handicapText(config.allow_ranked_handicap, config.allow_unranked_handicap)}</dd>
 
-            {config.allowed_komi_range && (
+            {isOrderedFinitePair(config.allowed_komi_range) && (
                 <>
                     <dt>{_("Komi")}</dt>
                     <dd>

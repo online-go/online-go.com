@@ -36,6 +36,8 @@ export interface KibitzLeftAsideProps {
     canOpenCreateRoomFlow: boolean;
     signInHref: string;
     variations: KibitzVariationSummary[];
+    /** Loaded variations used to number duplicate titles. The list renders `variations`. */
+    displayedVariations?: KibitzVariationSummary[];
     currentGameId: number | null;
     variationGameById: ReadonlyMap<number, KibitzWatchedGame>;
     selectedVariationId: string | null;
@@ -155,6 +157,7 @@ export function KibitzLeftAside(props: KibitzLeftAsideProps): React.ReactElement
                         {!collapsed.variations && (
                             <KibitzVariationList
                                 variations={props.variations}
+                                displayedVariations={props.displayedVariations}
                                 currentGameId={props.currentGameId}
                                 gameById={props.variationGameById}
                                 selectedVariationId={props.selectedVariationId}

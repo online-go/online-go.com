@@ -90,6 +90,19 @@ function makeBotWithBoardSizes(allowed_board_sizes: unknown): Bot {
     };
 }
 
+/** gtp2ogs default live Fischer ranges: initial 10s-1h, max 5s-2h, increment 10s-5m. */
+function gtp2ogsDefaultLiveFischerBot(): Bot {
+    return makeBot({
+        allowed_live_settings: {
+            fischer: {
+                initial_time_range: [10, 3600],
+                max_time_range: [5, 7200],
+                time_increment_range: [10, 300],
+            },
+        },
+    });
+}
+
 function options(fields: Partial<BotChallengeOptions> = {}): BotChallengeOptions {
     return {
         rank: 20,
@@ -141,6 +154,73 @@ describe("getAcceptableTimeSetting", () => {
         );
         expect(result).toBeNull();
         expect(message).toBe("Max time must be from 1m to 30m");
+    });
+
+    it("accepts a v2 Fischer game when the initial time is outside the gtp2ogs default range", () => {
+        const two_hours = 2 * 3600;
+        const [allowed, message] = getAcceptableTimeSetting(
+            gtp2ogsDefaultLiveFischerBot(),
+            options({
+                time_control: {
+                    ...live_fischer,
+                    initial_time: two_hours,
+                    max_time: two_hours,
+                    time_increment: 10,
+                },
+            }),
+        );
+        expect(message).toBeNull();
+        expect(allowed).not.toBeNull();
+    });
+
+    it("still checks v2 Fischer max time and increment when the initial time is outside its range", () => {
+        const two_hours = 2 * 3600;
+        const bot = gtp2ogsDefaultLiveFischerBot();
+
+        const [, max_message] = getAcceptableTimeSetting(
+            bot,
+            options({
+                time_control: {
+                    ...live_fischer,
+                    initial_time: two_hours,
+                    max_time: two_hours + 1,
+                    time_increment: 10,
+                },
+            }),
+        );
+        expect(max_message).toBe("Max time must be from 5s to 2h");
+
+        const [, increment_message] = getAcceptableTimeSetting(
+            bot,
+            options({
+                time_control: {
+                    ...live_fischer,
+                    initial_time: two_hours,
+                    max_time: two_hours,
+                    time_increment: 9,
+                },
+            }),
+        );
+        expect(increment_message).toBe("Time increment must be from 10s to 5m");
+    });
+
+    it("still compares a v1 Fischer initial time with max_time_range", () => {
+        const bot = gtp2ogsDefaultLiveFischerBot();
+        bot.config = { ...bot.config, _config_version: 1 } as BotConfigV1;
+
+        const [rejected, message] = getAcceptableTimeSetting(
+            bot,
+            options({
+                time_control: {
+                    ...live_fischer,
+                    initial_time: 2 * 3600 + 1,
+                    max_time: 2 * 3600,
+                    time_increment: 10,
+                },
+            }),
+        );
+        expect(rejected).toBeNull();
+        expect(message).toBe("Initial time must be from 5s to 2h");
     });
 
     it("applies the rank range only to ranked games", () => {

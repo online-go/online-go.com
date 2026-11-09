@@ -189,6 +189,24 @@
         text-decoration: none;
     }
 
+    .kibitz-viewing-position button {
+        background: none;
+        border: 0;
+        box-shadow: none;
+        color: inherit;
+        font-size: var(--font-size-smaller);
+        height: auto;
+        min-height: 24px;
+        padding: 0;
+        text-align: start;
+        text-decoration: underline;
+        white-space: normal;
+
+        &:disabled {
+            text-decoration: none;
+        }
+    }
+
     .move-number {
         @mixin monospace;
         font-size: var(--font-size-smaller);
