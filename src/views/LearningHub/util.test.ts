@@ -31,6 +31,10 @@ import {
     getFirstUncompletedPage,
     setSectionPageCompleted,
     resetProgress,
+    parsePageParam,
+    canonicalPagePath,
+    nextPageHref,
+    pageHref,
 } from "./util";
 
 const SECTION = "rules-intro";
@@ -149,5 +153,93 @@ describe("Learning Hub progress merging", () => {
         serverRow(undefined, data.Replication.REMOTE_OVERWRITES_LOCAL);
 
         expect(getSectionCompletion(SECTION).finished).toBe(0);
+    });
+});
+
+describe("learning hub page URLs", () => {
+    test.each<[string | undefined, number | undefined]>([
+        ["23It", 23],
+        ["10~~", 10],
+        ["16     poti sa vezi cum se rezolva: ca nu stiu", 16],
+        ["4. 這題怎樣解", 4],
+        ["6c", 6],
+        ["1.5", 1],
+        ["07", 7],
+        ["0", 0],
+        ["abc", undefined],
+        ["Infinity", undefined],
+        ["-2", undefined],
+        ["", undefined],
+        [undefined, undefined],
+    ])("parsePageParam(%j) is %j", (raw, expected) => {
+        expect(parsePageParam(raw)).toBe(expected);
+    });
+
+    const CANONICAL_CASES: Array<[string, string | undefined, number, string | null]> = [
+        ["/learn-to-play-go/bl1-ladder/10~~", "10~~", 12, "/learn-to-play-go/bl1-ladder/10"],
+        ["/learn-to-play-go/bl1-ladder/10%7E%7E", "10~~", 12, "/learn-to-play-go/bl1-ladder/10"],
+        [
+            "/learn-to-play-go/bl1-calculate-escape/23It",
+            "23It",
+            24,
+            "/learn-to-play-go/bl1-calculate-escape/23",
+        ],
+        [
+            "/learn-to-play-go/bl1-capture3/16%20%20poti",
+            "16  poti",
+            24,
+            "/learn-to-play-go/bl1-capture3/16",
+        ],
+        ["/learn-to-play-go/ko/07", "07", 8, "/learn-to-play-go/ko/7"],
+        ["/docs/learn-to-play-go/ko/abc", "abc", 8, "/docs/learn-to-play-go/ko"],
+        ["/learning-hub/ko/99", "99", 8, "/learning-hub/ko"],
+        ["/learn-to-play-go/ko/8", "8", 8, "/learn-to-play-go/ko"],
+        ["/learn-to-play-go/ko/abc/", "abc", 8, "/learn-to-play-go/ko"],
+        ["/learn-to-play-go/ko/4/", "4", 8, "/learn-to-play-go/ko/4"],
+        ["/learn-to-play-go/ko/%34", "4", 8, "/learn-to-play-go/ko/4"],
+        ["/learn-to-play-go/ko/", undefined, 8, "/learn-to-play-go/ko"],
+        ["/learn-to-play-go/ko/4", "4", 8, null],
+        ["/learn-to-play-go/ko/0", "0", 8, null],
+        ["/learn-to-play-go/ko/7", "7", 8, null],
+        ["/learn-to-play-go/ko", undefined, 8, null],
+    ];
+
+    test.each(CANONICAL_CASES)(
+        "canonicalPagePath(%j, %j, %j) is %j",
+        (pathname, raw, nPages, expected) => {
+            expect(canonicalPagePath(pathname, raw, nPages)).toBe(expected);
+        },
+    );
+
+    test.each(CANONICAL_CASES.filter((c) => c[3] !== null))(
+        "the redirect target for %j is already canonical",
+        (_pathname, _raw, nPages, expected) => {
+            const target = expected as string;
+            const last = target.slice(target.lastIndexOf("/") + 1);
+            const raw = /^[0-9]+$/.test(last) ? last : undefined;
+            expect(canonicalPagePath(target, raw, nPages)).toBeNull();
+        },
+    );
+
+    const canonicalPaths = CANONICAL_CASES.map(([pathname, , , expected]) =>
+        expected === null ? pathname : expected,
+    );
+
+    test.each(canonicalPaths)("navigation from canonical path %j stays in the section", (path) => {
+        const match = /\/([0-9]+)$/.exec(path);
+        const base = match ? path.slice(0, match.index) : path;
+        const cur = match ? parseInt(match[1], 10) : 0;
+        expect(nextPageHref(path, cur + 1)).toBe(`${base}/${cur + 1}`);
+        expect(pageHref(path, 3)).toBe(`${base}/3`);
+    });
+
+    test("page dots on a path with a trailing slash append to the page segment", () => {
+        expect(pageHref("/learn-to-play-go/ko/4/", 5)).toBe("/learn-to-play-go/ko/4/5");
+    });
+
+    test("next on a path with a junk suffix moves the suffix into the section segment", () => {
+        expect(nextPageHref("/learn-to-play-go/bl1-ladder/10~~", 11)).toBe(
+            "/learn-to-play-go/bl1-ladder~~/11",
+        );
     });
 });

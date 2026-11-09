@@ -78,6 +78,55 @@ export function getSectionByName(section_name: string): typeof LearningHubSectio
     return null;
 }
 
+/**
+ * Page index from a learning hub URL page segment, or undefined when the
+ * segment is missing or does not start with a non-negative decimal integer.
+ * A trailing suffix is ignored ("23It" -> 23), because shared lesson links
+ * often have question text pasted onto the end.
+ */
+export function parsePageParam(raw: string | undefined): number | undefined {
+    if (raw === undefined) {
+        return undefined;
+    }
+    const n = parseInt(raw, 10);
+    return Number.isFinite(n) && n >= 0 ? n : undefined;
+}
+
+/**
+ * The path that a learning hub URL must be redirected to, or null when
+ * `pathname` is already in that form. The form is `<prefix>/<section>` or
+ * `<prefix>/<section>/<n>` with a plain decimal `n` below `nPages` and no
+ * trailing slash. That is the form that nextPageHref and pageHref need.
+ * `raw` is the decoded page segment from the router, or undefined when the
+ * route has no page segment. A usable page number is kept. An unusable
+ * segment (no number, or out of range) is dropped, so the section resumes at
+ * its first uncompleted page.
+ */
+export function canonicalPagePath(
+    pathname: string,
+    raw: string | undefined,
+    nPages: number,
+): string | null {
+    const trimmed = pathname.replace(/\/+$/, "");
+    let expected = trimmed;
+    if (raw !== undefined) {
+        const base = trimmed.replace(/\/[^/]*$/, "");
+        const n = parsePageParam(raw);
+        expected = n !== undefined && n < nPages ? `${base}/${n}` : base;
+    }
+    return pathname === expected ? null : expected;
+}
+
+/** The URL of page `page` in the section that `pathname` shows. Used by Next. */
+export function nextPageHref(pathname: string, page: number): string {
+    return pathname.replace(/\/[0-9]+/, "") + "/" + page;
+}
+
+/** The URL of page `page` in the section that `pathname` shows. Used by the page dots. */
+export function pageHref(pathname: string, page: number): string {
+    return pathname.replace(/\/[0-9]*$/, "") + "/" + page;
+}
+
 export function getFirstUncompletedPage(section_name: string): number {
     const completion = getCompletion(section_name);
     let section: any = null;
