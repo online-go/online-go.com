@@ -175,53 +175,44 @@ describe("learning hub page URLs", () => {
         expect(parsePageParam(raw)).toBe(expected);
     });
 
-    const CANONICAL_CASES: Array<[string, string | undefined, number, string | null]> = [
-        ["/learn-to-play-go/bl1-ladder/10~~", "10~~", 12, "/learn-to-play-go/bl1-ladder/10"],
-        ["/learn-to-play-go/bl1-ladder/10%7E%7E", "10~~", 12, "/learn-to-play-go/bl1-ladder/10"],
+    const CANONICAL_CASES: Array<[string, string | undefined, string | null]> = [
+        ["/learn-to-play-go/bl1-ladder/10~~", "10~~", "/learn-to-play-go/bl1-ladder/10"],
+        ["/learn-to-play-go/bl1-ladder/10%7E%7E", "10~~", "/learn-to-play-go/bl1-ladder/10"],
         [
             "/learn-to-play-go/bl1-calculate-escape/23It",
             "23It",
-            24,
             "/learn-to-play-go/bl1-calculate-escape/23",
         ],
         [
             "/learn-to-play-go/bl1-capture3/16%20%20poti",
             "16  poti",
-            24,
             "/learn-to-play-go/bl1-capture3/16",
         ],
-        ["/learn-to-play-go/ko/07", "07", 8, "/learn-to-play-go/ko/7"],
-        ["/docs/learn-to-play-go/ko/abc", "abc", 8, "/docs/learn-to-play-go/ko"],
-        ["/learning-hub/ko/99", "99", 8, "/learning-hub/ko"],
-        ["/learn-to-play-go/ko/8", "8", 8, "/learn-to-play-go/ko"],
-        ["/learn-to-play-go/ko/abc/", "abc", 8, "/learn-to-play-go/ko"],
-        ["/learn-to-play-go/ko/4/", "4", 8, "/learn-to-play-go/ko/4"],
-        ["/learn-to-play-go/ko/%34", "4", 8, "/learn-to-play-go/ko/4"],
-        ["/learn-to-play-go/ko/", undefined, 8, "/learn-to-play-go/ko"],
-        ["/learn-to-play-go/ko/4", "4", 8, null],
-        ["/learn-to-play-go/ko/0", "0", 8, null],
-        ["/learn-to-play-go/ko/7", "7", 8, null],
-        ["/learn-to-play-go/ko", undefined, 8, null],
+        ["/docs/learn-to-play-go/ko/abc", "abc", "/docs/learn-to-play-go/ko"],
+        ["/learning-hub/ko/99~~", "99~~", "/learning-hub/ko/99"],
+        ["/learn-to-play-go/ko/abc/", "abc", "/learn-to-play-go/ko"],
+        ["/learn-to-play-go/ko/4", "4", null],
+        ["/learn-to-play-go/ko/07", "07", null],
+        ["/learn-to-play-go/ko/99", "99", null],
+        ["/learn-to-play-go/ko/0", "0", null],
+        ["/learn-to-play-go/ko", undefined, null],
     ];
 
-    test.each(CANONICAL_CASES)(
-        "canonicalPagePath(%j, %j, %j) is %j",
-        (pathname, raw, nPages, expected) => {
-            expect(canonicalPagePath(pathname, raw, nPages)).toBe(expected);
-        },
-    );
+    test.each(CANONICAL_CASES)("canonicalPagePath(%j, %j) is %j", (pathname, raw, expected) => {
+        expect(canonicalPagePath(pathname, raw)).toBe(expected);
+    });
 
-    test.each(CANONICAL_CASES.filter((c) => c[3] !== null))(
+    test.each(CANONICAL_CASES.filter((c) => c[2] !== null))(
         "the redirect target for %j is already canonical",
-        (_pathname, _raw, nPages, expected) => {
+        (_pathname, _raw, expected) => {
             const target = expected as string;
             const last = target.slice(target.lastIndexOf("/") + 1);
             const raw = /^[0-9]+$/.test(last) ? last : undefined;
-            expect(canonicalPagePath(target, raw, nPages)).toBeNull();
+            expect(canonicalPagePath(target, raw)).toBeNull();
         },
     );
 
-    const canonicalPaths = CANONICAL_CASES.map(([pathname, , , expected]) =>
+    const canonicalPaths = CANONICAL_CASES.map(([pathname, , expected]) =>
         expected === null ? pathname : expected,
     );
 

@@ -62,9 +62,15 @@ describe("LearningHubSection page selection", () => {
         test.each([
             ["abc", "2"],
             ["-1", "2"],
-            ["6", "2"],
-            ["99", "2"],
         ])("falls back to the first uncompleted page for %j", (page, expected) => {
+            expect(renderSection(page)).toBe(expected);
+        });
+
+        test.each([
+            ["6", "5"],
+            ["99", "5"],
+            ["99~~", "5"],
+        ])("shows the last page for the out-of-range page %j", (page, expected) => {
             expect(renderSection(page)).toBe(expected);
         });
 

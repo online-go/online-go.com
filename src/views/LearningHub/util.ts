@@ -93,28 +93,21 @@ export function parsePageParam(raw: string | undefined): number | undefined {
 }
 
 /**
- * The path that a learning hub URL must be redirected to, or null when
- * `pathname` is already in that form. The form is `<prefix>/<section>` or
- * `<prefix>/<section>/<n>` with a plain decimal `n` below `nPages` and no
- * trailing slash. That is the form that nextPageHref and pageHref need.
+ * The path that a learning hub URL must be redirected to when its page
+ * segment is not a plain decimal number, or null when no redirect is needed.
+ * The page segment is replaced with its leading integer, or dropped when it
+ * has none, so the section resumes at its first uncompleted page. A plain
+ * decimal segment is necessary for nextPageHref and pageHref to work.
  * `raw` is the decoded page segment from the router, or undefined when the
- * route has no page segment. A usable page number is kept. An unusable
- * segment (no number, or out of range) is dropped, so the section resumes at
- * its first uncompleted page.
+ * route has no page segment.
  */
-export function canonicalPagePath(
-    pathname: string,
-    raw: string | undefined,
-    nPages: number,
-): string | null {
-    const trimmed = pathname.replace(/\/+$/, "");
-    let expected = trimmed;
-    if (raw !== undefined) {
-        const base = trimmed.replace(/\/[^/]*$/, "");
-        const n = parsePageParam(raw);
-        expected = n !== undefined && n < nPages ? `${base}/${n}` : base;
+export function canonicalPagePath(pathname: string, raw: string | undefined): string | null {
+    if (raw === undefined || /^[0-9]+$/.test(raw)) {
+        return null;
     }
-    return pathname === expected ? null : expected;
+    const base = pathname.replace(/\/[^/]*\/?$/, "");
+    const n = parsePageParam(raw);
+    return n === undefined ? base : `${base}/${n}`;
 }
 
 /** The URL of page `page` in the section that `pathname` shows. Used by Next. */

@@ -51,11 +51,9 @@ export abstract class LearningHubSection extends React.PureComponent<LearningHub
     }
 
     render() {
-        const requested = parsePageParam(this.props.page);
-        const page =
-            requested !== undefined && requested < this.props.pages.length
-                ? requested
-                : getFirstUncompletedPage(this.props.section);
+        let page = parsePageParam(this.props.page) ?? getFirstUncompletedPage(this.props.section);
+        page = Math.min(page, this.props.pages.length - 1);
+        page = Math.max(page, 0);
         const P = this.props.pages[page];
         const SectionClass = this.constructor as typeof LearningHubSection;
         return (

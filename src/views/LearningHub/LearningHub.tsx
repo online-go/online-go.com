@@ -61,7 +61,7 @@ export function LearningHub(): React.ReactElement {
 
     if (section) {
         const S = section;
-        const canonical = canonicalPagePath(location.pathname, params.page, S.pages().length);
+        const canonical = canonicalPagePath(location.pathname, params.page);
         if (canonical !== null) {
             return <Navigate to={canonical} replace />;
         }
