@@ -315,6 +315,10 @@ const fetch_player = new Batcher<FetchEntry>((fetch_queue) => {
                         } catch (e) {
                             console.error(e);
                         }
+                        const rest = queue.filter((_, entry_index) => entry_index !== idx);
+                        if (rest.length > 0) {
+                            fetch_player.soon(...rest);
+                        }
                         return;
                     }
                 }

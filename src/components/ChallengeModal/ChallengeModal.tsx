@@ -136,15 +136,23 @@ function challengedPlayerIsBot(playerId: number | undefined): boolean {
     return !!player?.ui_class?.split(" ").includes("bot");
 }
 
-/** "unknown" until the active list or the player cache can answer. */
+/** A cache entry counts only when it carries is_bot or ui_class. A username
+ *  alone, as chat and autocomplete store, is still unknown. */
 function opponentKind(playerId: number | undefined): "unknown" | "bot" | "human" {
     if (playerId === undefined) {
         return "human";
     }
-    if (challengedPlayerIsBot(playerId)) {
+    if (bots_list().some((bot) => bot.id === playerId)) {
         return "bot";
     }
-    if (player_cache.lookup(playerId)) {
+    const player = player_cache.lookup(playerId);
+    if (!player) {
+        return "unknown";
+    }
+    if (player.is_bot || player.ui_class?.split(" ").includes("bot")) {
+        return "bot";
+    }
+    if (player.is_bot === false || typeof player.ui_class === "string") {
         return "human";
     }
     return "unknown";
@@ -197,6 +205,7 @@ export class ChallengeModal extends Modal<{}, ChallengeModalProperties, Challeng
 export class ChallengeModalBody extends React.Component<ChallengeModalInput, ChallengeModalState> {
     ref: React.RefObject<HTMLDivElement | null> = React.createRef();
     private alive = false;
+    private autoCreated = false;
 
     constructor(props: ChallengeModalInput) {
         super(props);
@@ -346,7 +355,14 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     componentDidMount() {
         this.alive = true;
-        if (this.props.mode === "player" && this.state.opponent_kind === "unknown") {
+        const playerId = this.props.playerId;
+        const cached = playerId ? player_cache.lookup(playerId) : null;
+        // Also fetch a known bot that is not cached, so the title is not stuck on "...".
+        if (
+            this.props.mode === "player" &&
+            playerId &&
+            (!cached || this.state.opponent_kind === "unknown")
+        ) {
             this.loadOpponent();
             return;
         }
@@ -365,7 +381,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         }
         this.setState({ opponent_error: false });
         player_cache
-            .fetch(playerId)
+            .fetch(playerId, ["ui_class"])
             .then(() => {
                 if (!this.alive) {
                     return;
@@ -373,7 +389,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                 const kind = opponentKind(playerId);
                 this.setState(
                     (state) => ({
-                        opponent_kind: kind,
+                        opponent_kind: kind === "unknown" ? state.opponent_kind : kind,
                         opponent_error: false,
                         challenge:
                             kind === "bot" && state.challenge.game.ranked
@@ -391,14 +407,20 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                     return;
                 }
                 errorLogger(err);
-                this.setState({ opponent_kind: "unknown", opponent_error: true });
+                this.setState({ opponent_error: true }, () => this.maybeAutoCreate());
             });
     };
 
     maybeAutoCreate = () => {
-        if (!this.alive || !this.props.autoCreate || this.state.opponent_kind === "unknown") {
+        if (
+            !this.alive ||
+            this.autoCreated ||
+            !this.props.autoCreate ||
+            this.state.opponent_kind === "unknown"
+        ) {
             return;
         }
+        this.autoCreated = true;
         this.createChallenge();
     };
 
