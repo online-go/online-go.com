@@ -83,6 +83,8 @@ export interface PlayerCacheEntry {
         };
     };
     ui_class?: string;
+    /** Set when a full player record was stored. Game records use `ui_class` instead. */
+    is_bot?: boolean;
     username?: string;
 }
 

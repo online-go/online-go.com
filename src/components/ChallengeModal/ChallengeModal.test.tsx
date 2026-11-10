@@ -21,6 +21,7 @@ import userEvent from "@testing-library/user-event";
 import { ChallengeModalBody } from "./ChallengeModal";
 import { post } from "@/lib/requests";
 import * as data from "@/lib/data";
+import * as player_cache from "@/lib/player_cache";
 import {
     ChallengeDetails,
     ChallengeModalProperties,
@@ -90,8 +91,8 @@ jest.mock("@/lib/data", () => ({
 }));
 
 jest.mock("@/lib/player_cache", () => ({
-    lookup: () => ({ id: 456, username: "opponent" }),
-    fetch: () => Promise.resolve({ id: 456, username: "opponent" }),
+    lookup: jest.fn(() => ({ id: 456, username: "opponent" })),
+    fetch: jest.fn(() => Promise.resolve({ id: 456, username: "opponent" })),
 }));
 
 jest.mock("@/lib/requests", () => ({
@@ -841,6 +842,7 @@ describe("rematch saved settings", () => {
     beforeEach(() => {
         jest.clearAllMocks();
         (bots_list as jest.Mock).mockReturnValue([]);
+        (player_cache.lookup as jest.Mock).mockReturnValue({ id: 456, username: "opponent" });
         mockPreferredSettings = [];
         mockDataValues.clear();
         mockDataValues.set("user", { id: 123, ranking: 10, anonymous: false });
@@ -946,6 +948,107 @@ describe("rematch saved settings", () => {
 
         expect(screen.getByLabelText("Ranked")).toBeEnabled();
         expect(screen.getByLabelText("Ranked")).toBeChecked();
+    });
+
+    it("hides Ranked for a bot that is not in the active bot list", async () => {
+        const user = userEvent.setup();
+        (bots_list as jest.Mock).mockReturnValue([]);
+        (player_cache.lookup as jest.Mock).mockReturnValue({
+            id: 456,
+            username: "OfflineBot",
+            ui_class: "bot provisional",
+        });
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+
+        render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({
+                    ranked: false,
+                    komi_auto: "custom",
+                    komi: 0.5,
+                }),
+            }),
+        );
+    });
+
+    it("hides Ranked when the cached player is a bot and the active list is empty", async () => {
+        const user = userEvent.setup();
+        (bots_list as jest.Mock).mockReturnValue([]);
+        (player_cache.lookup as jest.Mock).mockReturnValue({
+            id: 456,
+            username: "ProfileBot",
+            is_bot: true,
+        });
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+
+        render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ ranked: false }),
+            }),
+        );
+    });
+
+    it("does not apply ranked from a preferred setting against a bot", async () => {
+        const user = userEvent.setup();
+        (bots_list as jest.Mock).mockReturnValue([{ id: 456, username: "TestBot" }]);
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        mockPreferredSettings = [
+            {
+                initialized: false,
+                min_ranking: -1000,
+                max_ranking: 1000,
+                challenger_color: "white",
+                rengo_auto_start: 0,
+                game: {
+                    name: "Ranked template",
+                    rules: "japanese",
+                    ranked: true,
+                    width: 13,
+                    height: 13,
+                    handicap: 0,
+                    komi_auto: "automatic",
+                    disable_analysis: false,
+                    initial_state: null,
+                    private: false,
+                    rengo: false,
+                    rengo_casual_mode: true,
+                    time_control_parameters: {
+                        system: "byoyomi",
+                        speed: "live",
+                        main_time: 1200,
+                        period_time: 30,
+                        periods: 5,
+                        pause_on_weekends: false,
+                    },
+                },
+            },
+        ];
+
+        render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "25x25" })).toBeEnabled();
+
+        await user.click(screen.getByText("Preferred settings (1)"));
+        await user.click(screen.getByText(/Ranked template/));
+
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+        expect(screen.getByLabelText("Board Size")).toHaveValue("13x13");
+        expect(screen.getByRole("option", { name: "25x25" })).toBeEnabled();
     });
 
     it("sends a fork but does not save its settings", async () => {

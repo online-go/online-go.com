@@ -119,9 +119,21 @@ function applyBotRanked(game: GameInput): GameInput {
 }
 
 /** A direct challenge, including a rematch, is against a bot when that
- *  player's id is in the active bot list. */
+ *  player is on the active bot list, or the player cache already marks
+ *  them as a bot. The list is empty for an offline bot and until it loads.
+ *  Game records carry `ui_class` ("bot"); a full profile carries `is_bot`. */
 function challengedPlayerIsBot(playerId: number | undefined): boolean {
-    return playerId !== undefined && bots_list().some((bot) => bot.id === playerId);
+    if (playerId === undefined) {
+        return false;
+    }
+    if (bots_list().some((bot) => bot.id === playerId)) {
+        return true;
+    }
+    const player = player_cache.lookup(playerId);
+    if (player?.is_bot) {
+        return true;
+    }
+    return !!player?.ui_class?.split(" ").includes("bot");
 }
 
 // The backend's handicap calculator ignores requested_komi when the handicap
@@ -1892,7 +1904,23 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         if (player_id && !player) {
             player_cache
                 .fetch(player_id)
-                .then(() => this.setState({ player_username_resolved: true }))
+                .then(() => {
+                    this.setState((state) => {
+                        const ranked_against_bot =
+                            this.props.mode === "player" &&
+                            challengedPlayerIsBot(player_id) &&
+                            state.challenge.game.ranked;
+                        return {
+                            player_username_resolved: true,
+                            challenge: ranked_against_bot
+                                ? {
+                                      ...state.challenge,
+                                      game: { ...state.challenge.game, ranked: false },
+                                  }
+                                : state.challenge,
+                        };
+                    });
+                })
                 .catch(errorLogger);
         }
 
