@@ -1132,33 +1132,41 @@ describe("rematch saved settings", () => {
         );
     });
 
-    it("shows an error and retries when the opponent lookup fails", async () => {
+    it.each([
+        ["manual", false],
+        ["automatic", true],
+    ])("retries a %s challenge after the opponent lookup fails", async (_label, automatic) => {
         const user = userEvent.setup();
         const opponent = controlledOpponent();
         jest.mocked(post).mockResolvedValueOnce({ id: 123 });
-        render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+        render(
+            <ChallengeModalBody
+                {...rematchProps("black", true)}
+                autoCreate={automatic}
+                modal={mockModal}
+            />,
+        );
 
         await act(async () => {
             opponent.reject(new Error("network"));
         });
 
         expect(await screen.findByText("Could not check this player.")).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /send challenge/i })).toBeDisabled();
         expect(post).not.toHaveBeenCalled();
 
         await user.click(screen.getByRole("button", { name: "Retry" }));
         await act(async () => {
-            opponent.resolve({ id: 456, username: "LateBot", is_bot: true });
+            opponent.resolve({ id: 456, username: "LateBot", ui_class: "bot" });
         });
 
-        await waitFor(() =>
-            expect(screen.getByRole("button", { name: /send challenge/i })).toBeEnabled(),
-        );
-        expect(screen.queryByText("Could not check this player.")).not.toBeInTheDocument();
+        if (!automatic) {
+            await waitFor(() =>
+                expect(screen.getByRole("button", { name: /send challenge/i })).toBeEnabled(),
+            );
+            await user.click(screen.getByRole("button", { name: /send challenge/i }));
+        }
 
-        await user.click(screen.getByRole("button", { name: /send challenge/i }));
-
-        expect(post).toHaveBeenCalledTimes(1);
+        await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
         expect(post).toHaveBeenCalledWith(
             "players/456/challenge",
             expect.objectContaining({
@@ -1210,7 +1218,10 @@ describe("rematch saved settings", () => {
         await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
     });
 
-    it("treats a partial cache entry as unknown until the full record loads", async () => {
+    it.each([
+        ["human", { id: 456, username: "Partial", is_bot: false }, true],
+        ["bot", { id: 456, username: "Partial", ui_class: "bot" }, false],
+    ])("fetches a partial cache entry and sends a %s challenge", async (_label, record, ranked) => {
         const user = userEvent.setup();
         const opponent = controlledOpponent({ id: 456, username: "Partial" });
         jest.mocked(post).mockResolvedValueOnce({ id: 123 });
@@ -1218,26 +1229,42 @@ describe("rematch saved settings", () => {
 
         expect(player_cache.fetch).toHaveBeenCalledWith(456, ["ui_class"]);
         expect(screen.getByRole("button", { name: /send challenge/i })).toBeDisabled();
-        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
         expect(post).not.toHaveBeenCalled();
 
         await act(async () => {
-            opponent.resolve({ id: 456, username: "Partial", is_bot: false });
+            opponent.resolve(record);
         });
 
         await waitFor(() =>
             expect(screen.getByRole("button", { name: /send challenge/i })).toBeEnabled(),
         );
-        expect(screen.getByLabelText("Ranked")).toBeChecked();
+        if (ranked) {
+            expect(screen.getByLabelText("Ranked")).toBeChecked();
+        } else {
+            expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+        }
 
         await user.click(screen.getByRole("button", { name: /send challenge/i }));
 
         expect(post).toHaveBeenCalledWith(
             "players/456/challenge",
             expect.objectContaining({
-                game: expect.objectContaining({ ranked: true }),
+                game: expect.objectContaining({ ranked }),
             }),
         );
+    });
+
+    it("shows a lookup error when the loaded ui_class is unresolved", async () => {
+        const opponent = controlledOpponent({ id: 456, username: "Partial" });
+        render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+
+        await act(async () => {
+            opponent.resolve({ id: 456, username: "Partial", ui_class: "[ERROR]" });
+        });
+
+        expect(await screen.findByText("Could not check this player.")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /send challenge/i })).toBeDisabled();
+        expect(post).not.toHaveBeenCalled();
     });
 
     it("loads the name of an active bot that is not cached yet", async () => {
@@ -1254,35 +1281,6 @@ describe("rematch saved settings", () => {
         });
 
         await waitFor(() => expect(screen.getByRole("heading")).toHaveTextContent("ListedBot"));
-    });
-
-    it("retries an automatic challenge after the opponent lookup fails", async () => {
-        const user = userEvent.setup();
-        const opponent = controlledOpponent();
-        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
-        render(
-            <ChallengeModalBody {...rematchProps("black", true)} autoCreate modal={mockModal} />,
-        );
-
-        await act(async () => {
-            opponent.reject(new Error("network"));
-        });
-
-        expect(await screen.findByText("Could not check this player.")).toBeInTheDocument();
-        expect(post).not.toHaveBeenCalled();
-
-        await user.click(screen.getByRole("button", { name: "Retry" }));
-        await act(async () => {
-            opponent.resolve({ id: 456, username: "LateBot", ui_class: "bot" });
-        });
-
-        await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
-        expect(post).toHaveBeenCalledWith(
-            "players/456/challenge",
-            expect.objectContaining({
-                game: expect.objectContaining({ ranked: false }),
-            }),
-        );
     });
 
     it("does not post after the dialog unmounts", async () => {

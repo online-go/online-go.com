@@ -254,6 +254,21 @@ export function fetch(
     }));
 }
 
+/** `requests` rejects with the parsed JSON body. Older callers used responseJSON. */
+function playerFetchError(err: unknown): string {
+    if (!err || typeof err !== "object") {
+        return "";
+    }
+    const body = err as { error?: unknown; responseJSON?: { error?: unknown } };
+    if (typeof body.error === "string") {
+        return body.error;
+    }
+    if (typeof body.responseJSON?.error === "string") {
+        return body.responseJSON.error;
+    }
+    return "";
+}
+
 const fetch_player = new Batcher<FetchEntry>((fetch_queue) => {
     while (fetch_queue.length > 0) {
         const queue = fetch_queue.slice(0, 100);
@@ -292,17 +307,15 @@ const fetch_player = new Batcher<FetchEntry>((fetch_queue) => {
                 }
             })
             .catch((err) => {
-                const response_error =
-                    err && err.responseJSON && typeof err.responseJSON.error === "string"
-                        ? err.responseJSON.error
-                        : "";
-                const missing = /Player ([0-9]+) not found in cassandra/gi.exec(response_error);
+                const message = playerFetchError(err);
+                const missing = /Player ([0-9]+) not found in cassandra/i.exec(message);
                 if (missing) {
                     const err_player_id = Number(missing[1]);
                     const idx = queue.findIndex((entry) => entry.player_id === err_player_id);
                     if (idx >= 0) {
-                        // create a dummy entry for missing player
-                        delete active_fetches[err_player_id];
+                        // Keep this fetch registered while the placeholder is stored.
+                        // PlayerIcon refetches when there is no icon, and a cleared
+                        // entry would put this id back in the next batch forever.
                         update({
                             id: err_player_id,
                             username: "?player" + err_player_id + "?",
@@ -315,6 +328,7 @@ const fetch_player = new Batcher<FetchEntry>((fetch_queue) => {
                         } catch (e) {
                             console.error(e);
                         }
+                        delete active_fetches[err_player_id];
                         const rest = queue.filter((_, entry_index) => entry_index !== idx);
                         if (rest.length > 0) {
                             fetch_player.soon(...rest);

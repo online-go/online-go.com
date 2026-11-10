@@ -149,10 +149,12 @@ function opponentKind(playerId: number | undefined): "unknown" | "bot" | "human"
     if (!player) {
         return "unknown";
     }
-    if (player.is_bot || player.ui_class?.split(" ").includes("bot")) {
+    const ui_class = player.ui_class;
+    const ui_known = typeof ui_class === "string" && ui_class !== "[ERROR]";
+    if (player.is_bot === true || (ui_known && ui_class.split(" ").includes("bot"))) {
         return "bot";
     }
-    if (player.is_bot === false || typeof player.ui_class === "string") {
+    if (player.is_bot === false || ui_known) {
         return "human";
     }
     return "unknown";
@@ -387,9 +389,13 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                     return;
                 }
                 const kind = opponentKind(playerId);
+                if (kind === "unknown") {
+                    this.setState({ opponent_kind: "unknown", opponent_error: true });
+                    return;
+                }
                 this.setState(
                     (state) => ({
-                        opponent_kind: kind === "unknown" ? state.opponent_kind : kind,
+                        opponent_kind: kind,
                         opponent_error: false,
                         challenge:
                             kind === "bot" && state.challenge.game.ranked

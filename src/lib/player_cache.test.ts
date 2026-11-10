@@ -16,7 +16,7 @@
  */
 
 import { get } from "@/lib/requests";
-import { fetch } from "@/lib/player_cache";
+import { fetch, Subscriber } from "@/lib/player_cache";
 
 jest.mock("@/lib/debug", () => ({
     __esModule: true,
@@ -51,30 +51,43 @@ describe("player_cache.fetch", () => {
         expect(get).toHaveBeenCalledTimes(2);
     });
 
-    it("settles a missing player and still loads the rest of the batch", async () => {
-        jest.mocked(get)
-            .mockRejectedValueOnce({
-                responseJSON: { error: "Player 602 not found in cassandra" },
-            })
-            .mockResolvedValueOnce([
-                { id: 601, username: "one", ui_class: "" },
-                { id: 603, username: "three", ui_class: "bot" },
-            ]);
+    it("does not refetch a missing player when an icon listener asks again", async () => {
+        const calls: string[] = [];
+        jest.mocked(get).mockImplementation((_url: string, params?: { ids?: string }) => {
+            const ids = params?.ids ?? "";
+            calls.push(ids);
+            if (ids.split(".").includes("602")) {
+                return Promise.reject({ error: "Player 602 not found in cassandra" });
+            }
+            return Promise.resolve(
+                ids.split(".").map((id) => ({
+                    id: Number(id),
+                    username: id === "601" ? "one" : "three",
+                    ui_class: id === "603" ? "bot" : "",
+                })),
+            );
+        });
+
+        // Same path as PlayerIcon: a cache update with no icon fetches ["icon"].
+        const subscriber = new Subscriber((player) => {
+            if (!player.icon) {
+                void fetch(player.id, ["icon"]).catch(() => undefined);
+            }
+        });
+        subscriber.on(602);
 
         const first = fetch(601);
         const missing = fetch(602);
         const third = fetch(603);
 
         await flush();
-        await expect(missing).rejects.toMatchObject({
-            responseJSON: { error: "Player 602 not found in cassandra" },
-        });
-
+        await expect(missing).rejects.toEqual({ error: "Player 602 not found in cassandra" });
         await flush();
-        await expect(first).resolves.toMatchObject({ id: 601, username: "one" });
-        await expect(third).resolves.toMatchObject({ id: 603, username: "three", ui_class: "bot" });
+        await flush();
 
-        const ids = jest.mocked(get).mock.calls.map((call) => (call[1] as { ids: string }).ids);
-        expect(ids).toEqual(["601.602.603", "601.603"]);
+        expect(calls).toEqual(["601.602.603", "601.603"]);
+        await expect(first).resolves.toMatchObject({ id: 601, username: "one" });
+        await expect(third).resolves.toMatchObject({ id: 603, ui_class: "bot" });
+        subscriber.off(602);
     });
 });
