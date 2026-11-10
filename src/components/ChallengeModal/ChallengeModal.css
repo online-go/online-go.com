@@ -58,16 +58,18 @@
         }
 
         .rengo-option .controls {
-            width: auto;
-            max-width: 16rem;
             flex-wrap: wrap;
+            /* A wider box pushes Ranked onto the next line. */
+            max-width: 10rem;
         }
 
         .rengo-disabled-reason {
             flex-basis: 100%;
+            min-width: 0;
             font-size: 0.8rem;
             line-height: 1.25rem;
             color: var(--shade1);
+            word-wrap: break-word;
         }
 
         /* we ease this warning in after about a second, in case */
