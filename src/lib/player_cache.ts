@@ -292,32 +292,29 @@ const fetch_player = new Batcher<FetchEntry>((fetch_queue) => {
                 }
             })
             .catch((err) => {
-                if ("error" in err.responseJSON) {
-                    if (/Player ([0-9]+) not found in cassandra/gi.test(err.responseJSON.error)) {
-                        const err_player_id = Number(
-                            (
-                                /Player ([0-9]+) not found in cassandra/gi.exec(
-                                    err.responseJSON.error,
-                                ) as string[]
-                            )[1],
-                        );
+                const response_error =
+                    err && err.responseJSON && typeof err.responseJSON.error === "string"
+                        ? err.responseJSON.error
+                        : "";
+                const missing = /Player ([0-9]+) not found in cassandra/gi.exec(response_error);
+                if (missing) {
+                    const err_player_id = Number(missing[1]);
+                    const idx = queue.findIndex((entry) => entry.player_id === err_player_id);
+                    if (idx >= 0) {
                         // create a dummy entry for missing player
-                        let idx = 0;
-                        for (; idx < 100; idx++) {
-                            if (queue[idx].player_id === err_player_id) {
-                                break;
-                            }
-                        }
-                        const reject = queue[idx].reject;
-                        const player = {
+                        delete active_fetches[err_player_id];
+                        update({
                             id: err_player_id,
                             username: "?player" + err_player_id + "?",
                             ui_class: "provisional",
                             pro: false,
-                        };
-                        update(player);
+                        });
                         debug.error(err);
-                        reject(err);
+                        try {
+                            queue[idx].reject(err);
+                        } catch (e) {
+                            console.error(e);
+                        }
                         return;
                     }
                 }

@@ -136,13 +136,18 @@ function challengedPlayerIsBot(playerId: number | undefined): boolean {
     return !!player?.ui_class?.split(" ").includes("bot");
 }
 
-/** False when a direct opponent is neither cached nor in the active bot list.
- *  Ranked must not be sent until this is true. */
-function opponentBotStatusKnown(playerId: number | undefined): boolean {
+/** "unknown" until the active list or the player cache can answer. */
+function opponentKind(playerId: number | undefined): "unknown" | "bot" | "human" {
     if (playerId === undefined) {
-        return true;
+        return "human";
     }
-    return player_cache.lookup(playerId) !== null || challengedPlayerIsBot(playerId);
+    if (challengedPlayerIsBot(playerId)) {
+        return "bot";
+    }
+    if (player_cache.lookup(playerId)) {
+        return "human";
+    }
+    return "unknown";
 }
 
 // The backend's handicap calculator ignores requested_komi when the handicap
@@ -191,9 +196,7 @@ export class ChallengeModal extends Modal<{}, ChallengeModalProperties, Challeng
 
 export class ChallengeModalBody extends React.Component<ChallengeModalInput, ChallengeModalState> {
     ref: React.RefObject<HTMLDivElement | null> = React.createRef();
-    /** In-flight player fetch started by a submit that did not yet know bot status. */
-    private opponentLookup: Promise<void> | null = null;
-    private opponentFetchSettled = false;
+    private alive = false;
 
     constructor(props: ChallengeModalInput) {
         super(props);
@@ -281,6 +284,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             view_mode: goban_view_mode(),
             hide_preferred_settings_on_portrait: true,
             time_control: this.loadLastTimeControlSettings(),
+            opponent_kind:
+                this.props.mode === "player" ? opponentKind(this.props.playerId) : "human",
+            opponent_error: false,
         };
 
         const state: any = this.state;
@@ -326,15 +332,8 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         }
         // Ranked games against bots are disabled. A rematch still copies the
         // previous game's ranked flag, so clear it here.
-        if (this.props.mode === "player" && challengedPlayerIsBot(this.props.playerId)) {
+        if (this.state.opponent_kind === "bot") {
             state.challenge.game.ranked = false;
-        }
-
-        if (this.props.autoCreate) {
-            setTimeout(() => {
-                this.createChallenge();
-                this.props.modal.close?.();
-            }, 1);
         }
 
         this.props.modal.on("open", () => {
@@ -344,6 +343,64 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             data.unwatch("preferred-game-settings", this.preferredSettingsUpdated);
         });
     }
+
+    componentDidMount() {
+        this.alive = true;
+        if (this.props.mode === "player" && this.state.opponent_kind === "unknown") {
+            this.loadOpponent();
+            return;
+        }
+        this.maybeAutoCreate();
+    }
+
+    componentWillUnmount() {
+        this.alive = false;
+    }
+
+    /** Load a direct opponent that is not cached and not in the active bot list. */
+    loadOpponent = () => {
+        const playerId = this.props.playerId;
+        if (!this.alive || !playerId) {
+            return;
+        }
+        this.setState({ opponent_error: false });
+        player_cache
+            .fetch(playerId)
+            .then(() => {
+                if (!this.alive) {
+                    return;
+                }
+                const kind = opponentKind(playerId);
+                this.setState(
+                    (state) => ({
+                        opponent_kind: kind,
+                        opponent_error: false,
+                        challenge:
+                            kind === "bot" && state.challenge.game.ranked
+                                ? {
+                                      ...state.challenge,
+                                      game: { ...state.challenge.game, ranked: false },
+                                  }
+                                : state.challenge,
+                    }),
+                    () => this.maybeAutoCreate(),
+                );
+            })
+            .catch((err) => {
+                if (!this.alive) {
+                    return;
+                }
+                errorLogger(err);
+                this.setState({ opponent_kind: "unknown", opponent_error: true });
+            });
+    };
+
+    maybeAutoCreate = () => {
+        if (!this.alive || !this.props.autoCreate || this.state.opponent_kind === "unknown") {
+            return;
+        }
+        this.createChallenge();
+    };
 
     rengo_auto_start_input_warning(): boolean {
         return (
@@ -498,7 +555,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             setting.game.rengo = false;
             setting.game.rengo_casual_mode = true;
         }
-        if (this.props.mode === "player" && challengedPlayerIsBot(this.props.playerId)) {
+        if (
+            this.props.mode === "player" &&
+            (this.state.opponent_kind === "bot" || challengedPlayerIsBot(this.props.playerId))
+        ) {
             setting.game.ranked = false;
         }
         this.setState({
@@ -583,7 +643,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         challenge.game.rengo_casual_mode = next.challenge.game.rengo_casual_mode;
 
         // Clear ranked before the ranked komi rule, so a bot rematch keeps its komi.
-        if (this.props.mode === "player" && challengedPlayerIsBot(this.props.playerId)) {
+        if (
+            this.props.mode === "player" &&
+            (this.state.opponent_kind === "bot" || challengedPlayerIsBot(this.props.playerId))
+        ) {
             challenge.game.ranked = false;
         }
 
@@ -598,30 +661,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     }
 
     createChallenge = () => {
-        const playerId = this.props.playerId;
-        // bots_list() and the cache can both be empty when Send Challenge or
-        // autoCreate runs. Wait for the player record so a bot is not sent ranked.
-        if (
-            this.props.mode === "player" &&
-            playerId &&
-            !this.opponentFetchSettled &&
-            !opponentBotStatusKnown(playerId)
-        ) {
-            if (this.opponentLookup) {
-                return;
-            }
-            this.opponentFetchSettled = true;
-            this.opponentLookup = player_cache
-                .fetch(playerId)
-                .then(() => {
-                    this.opponentLookup = null;
-                    this.createChallenge();
-                })
-                .catch((err) => {
-                    this.opponentLookup = null;
-                    this.opponentFetchSettled = false;
-                    errorLogger(err);
-                });
+        if (!this.alive || this.state.opponent_kind === "unknown") {
             return;
         }
 
@@ -1363,7 +1403,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             >
                 {!this.state.forking_game &&
                     this.props.mode !== "computer" &&
-                    !challengedPlayerIsBot(this.props.playerId) &&
+                    this.state.opponent_kind === "human" &&
                     this.rankedSettings()}
                 {!this.state.forking_game && this.boardSizeSettings()}
             </div>
@@ -1940,29 +1980,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         //     this.state.challenge.game.height,
         // );
 
-        if (player_id && !player) {
-            player_cache
-                .fetch(player_id)
-                .then(() => {
-                    this.setState((state) => {
-                        const ranked_against_bot =
-                            this.props.mode === "player" &&
-                            challengedPlayerIsBot(player_id) &&
-                            state.challenge.game.ranked;
-                        return {
-                            player_username_resolved: true,
-                            challenge: ranked_against_bot
-                                ? {
-                                      ...state.challenge,
-                                      game: { ...state.challenge.game, ranked: false },
-                                  }
-                                : state.challenge,
-                        };
-                    });
-                })
-                .catch(errorLogger);
-        }
-
         return (
             <div className="Modal ChallengeModal">
                 <div
@@ -2044,9 +2061,24 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                         </button>
                     )}
                     {!user?.anonymous && mode === "player" && (
-                        <button onClick={this.createChallenge} className="primary">
+                        <button
+                            onClick={this.createChallenge}
+                            className="primary"
+                            disabled={this.state.opponent_kind === "unknown"}
+                        >
                             {_("Send Challenge")}
                         </button>
+                    )}
+                    {mode === "player" && this.state.opponent_error && (
+                        <div className="opponent-lookup-error">
+                            {pgettext(
+                                "A direct challenge could not load the opponent",
+                                "Could not check this player.",
+                            )}{" "}
+                            <button type="button" className="xs" onClick={this.loadOpponent}>
+                                {_("Retry")}
+                            </button>
+                        </div>
                     )}
                     {!user?.anonymous && mode === "open" && (
                         <button

@@ -181,6 +181,9 @@ export type ChallengeModalState = {
     time_control: TimeControl;
     view_mode: ViewMode;
     player_username_resolved?: boolean;
+    /** Direct challenges stay "unknown" until the opponent is known not to be a bot. */
+    opponent_kind: "unknown" | "bot" | "human";
+    opponent_error: boolean;
     show_computer_settings?: boolean;
     initial_state?: {
         black: string;
