@@ -20,6 +20,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
+import { close_all_popovers } from "@/lib/popover";
 import type { GobanController } from "@/lib/GobanController";
 import type { KibitzRoomUser, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
 import { KibitzView, KibitzViewProps } from "./KibitzView";
@@ -136,11 +137,15 @@ jest.mock("./KibitzRoomSettingsPopover", () => ({
     __esModule: true,
     KibitzRoomSettingsPopover: () => null,
 }));
-jest.mock("./KibitzMoreActionsPopover", () => ({
-    __esModule: true,
-    openKibitzMoreActions: jest.fn(),
+jest.mock("@/lib/hooks", () => ({
+    ...jest.requireActual("@/lib/hooks"),
+    useUser: () => ({ id: 1, anonymous: false }),
 }));
-jest.mock("@/lib/hooks", () => ({ useUser: () => ({ id: 1, anonymous: false }) }));
+jest.mock("@/components/GobanThemePicker/GobanThemePicker", () => ({
+    GobanThemePicker: () => null,
+}));
+jest.mock("@/views/Settings/ThemePreferences", () => ({ ThemePreferences: () => null }));
+jest.mock("@/views/Settings/GamePreferences", () => ({ GamePreferences: () => null }));
 
 function fakeController(curMove = 5, lastOfficialMove = 5): GobanController {
     return {
@@ -152,6 +157,8 @@ function fakeController(curMove = 5, lastOfficialMove = 5): GobanController {
         goban: {
             config: { game_id: 100 },
             engine: {
+                config: { black_player_id: 2, white_player_id: 3 },
+                rules: "japanese",
                 players: { black: { id: 1 }, white: { id: 2 } },
                 playerColor: () => "invalid",
                 rengo: false,
@@ -285,9 +292,51 @@ describe("KibitzView", () => {
         expect(screen.queryByTestId(/variation-panel/)).toBeNull();
         expect(screen.getByTestId("left-aside")).toHaveAttribute("data-mini", "no");
         expect(screen.getByTitle("More actions")).toBeInTheDocument();
-        // Room actions live in the More menu, not in a settings gear.
         expect(screen.queryByTitle("Settings")).toBeNull();
     });
+
+    test.each([false, true])(
+        "opens board settings and More options from the actions menu (portrait: %s)",
+        async (isPortrait) => {
+            const originalPosition = preferences.get("label-positioning");
+            const originalResizeObserver = window.ResizeObserver;
+            window.ResizeObserver = class {
+                observe() {}
+                unobserve() {}
+                disconnect() {}
+            };
+            preferences.set("label-positioning", "top-right");
+            const user = userEvent.setup();
+            try {
+                render(<KibitzView {...baseProps({ isPortrait })} />);
+                await user.click(screen.getByTitle("More actions"));
+                await user.click(screen.getByRole("button", { name: "Settings" }));
+
+                expect(screen.getByRole("slider", { name: "Volume" })).toBeInTheDocument();
+                expect(screen.getByText("Theme")).toBeInTheDocument();
+                expect(
+                    screen.getByRole("radiogroup", { name: "Move controls" }),
+                ).toBeInTheDocument();
+                const coordinates = screen.getByRole("combobox", { name: "Coordinates" });
+                expect(coordinates).toHaveValue("top-right");
+                await user.selectOptions(coordinates, "none");
+                expect(preferences.get("label-positioning")).toBe("none");
+                await user.selectOptions(coordinates, "all");
+                expect(preferences.get("label-positioning")).toBe("all");
+
+                await user.click(screen.getByRole("button", { name: "More options" }));
+                expect(screen.getByRole("heading", { name: "Themes & Visuals" })).toBeVisible();
+                expect(screen.getByRole("heading", { name: "Game Preferences" })).toBeVisible();
+                expect(screen.getByTestId("goban-container")).toBeVisible();
+                await user.click(screen.getByRole("button", { name: "Done" }));
+                expect(screen.queryByRole("heading", { name: "Themes & Visuals" })).toBeNull();
+            } finally {
+                close_all_popovers();
+                window.ResizeObserver = originalResizeObserver;
+                preferences.set("label-positioning", originalPosition);
+            }
+        },
+    );
 
     test("draft mode shows the draft panel and the mini board", () => {
         const props = baseProps();

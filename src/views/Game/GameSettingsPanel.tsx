@@ -30,11 +30,13 @@ import { ChatColumnPicker } from "@/components/LayoutSettings/pickers/ChatColumn
 import { MoveControlsPicker } from "@/components/LayoutSettings/pickers/MoveControlsPicker";
 import { ScrollingLayoutPicker } from "@/components/LayoutSettings/pickers/ScrollingLayoutPicker";
 import { useAIReviewEnabled, useZenMode } from "./GameHooks";
-import { useGobanController } from "./goban_context";
+import { useGobanControllerOrNull } from "./goban_context";
 import { openGameKeyboardShortcutsModal } from "./GameKeyboardShortcutsModal";
+import { getGameKeyboardShortcutGroup } from "./game_keyboard_shortcuts";
 import "./GameSidebarPanels.css";
 
 interface GameSettingsPanelProps {
+    kibitz?: boolean;
     /** Called by actions that commit to a final state the user wants to see
      *  applied (zen mode). Toggles that the user is likely to flip
      *  multiple times (coordinates, AI review, volume) don't fire this. */
@@ -48,13 +50,14 @@ interface GameSettingsPanelProps {
 }
 
 export function GameSettingsPanel({
+    kibitz = false,
     onClose,
     compact = false,
     onShowThemeSettings,
 }: GameSettingsPanelProps = {}): React.ReactElement {
-    const goban_controller = useGobanController();
-    const goban = goban_controller.goban;
-    const engine = goban.engine;
+    const controller = useGobanControllerOrNull();
+    const game_controller = kibitz ? null : controller;
+    const goban = game_controller?.goban;
 
     // Phones and tablets have no keyboard to speak of, so the shortcut
     // list is only offered where a mouse or trackpad suggests one is
@@ -63,11 +66,15 @@ export function GameSettingsPanel({
     // Game view uses the same hook to choose the popover placement.
     const touch_only_device = useIsTouchOnlyDevice();
     const showKeyboardShortcuts = () => {
-        openGameKeyboardShortcutsModal();
+        if (kibitz) {
+            openGameKeyboardShortcutsModal([getGameKeyboardShortcutGroup("navigation")]);
+        } else {
+            openGameKeyboardShortcutsModal();
+        }
         onClose?.();
     };
 
-    const ai_review_enabled = useAIReviewEnabled(goban_controller);
+    const ai_review_enabled = useAIReviewEnabled(game_controller);
 
     // Subscribed, so the slider follows volume changes made elsewhere.
     const [volume] = useData("sound.volume.master", sfx.getVolume("master"));
@@ -102,8 +109,8 @@ export function GameSettingsPanel({
     const setVolume = (ev: React.ChangeEvent<HTMLInputElement>) =>
         _setVolume(parseFloat(ev.target.value));
 
-    const review_id: number | undefined = goban.config.review_id;
-    const game_id: number | undefined = Number(goban.config.game_id);
+    const review_id = goban?.config.review_id;
+    const game_id = Number(goban?.config.game_id);
     const openACL = () => {
         if (game_id) {
             openACLModal({ game_id });
@@ -112,21 +119,20 @@ export function GameSettingsPanel({
         }
     };
 
-    const isPrivate = !!engine.config.private;
+    const isPrivate = !!goban?.engine.config.private;
 
     const [chat_enabled, set_chat_enabled] = usePreference("game.chat-enabled");
 
-    const zen_mode = useZenMode(goban_controller);
+    const zen_mode = useZenMode(game_controller);
 
     const [mobile_scroll] = usePreference("goban-view-mobile-scroll");
+    const scrolling = compact && mobile_scroll && !kibitz;
     const move_controls_note_id = React.useId();
 
     const [label_position, setLabelPositionPref] = usePreference("label-positioning");
-    // The preference is the source of truth; the goban needs an explicit
-    // sync call since it doesn't subscribe to this specific preference.
-    const setCoordinates = (pos: LabelPosition) => {
-        setLabelPositionPref(pos);
-        goban.setLabelPosition(pos);
+    const setCoordinates = (position: LabelPosition) => {
+        setLabelPositionPref(position);
+        goban?.setLabelPosition(position);
     };
 
     return (
@@ -184,20 +190,22 @@ export function GameSettingsPanel({
                     />
                 </div>
 
-                <div className="GameSidebarPanel-labeled-row">
-                    <label htmlFor="game-settings-zen-mode">
-                        <i className="fa fa-expand" />
-                        <span>{_("Zen Mode")}</span>
-                    </label>
-                    <Toggle
-                        id="game-settings-zen-mode"
-                        checked={zen_mode}
-                        onChange={() => {
-                            goban_controller.toggleZenMode();
-                            onClose?.();
-                        }}
-                    />
-                </div>
+                {game_controller && (
+                    <div className="GameSidebarPanel-labeled-row">
+                        <label htmlFor="game-settings-zen-mode">
+                            <i className="fa fa-expand" />
+                            <span>{_("Zen Mode")}</span>
+                        </label>
+                        <Toggle
+                            id="game-settings-zen-mode"
+                            checked={zen_mode}
+                            onChange={() => {
+                                game_controller.toggleZenMode();
+                                onClose?.();
+                            }}
+                        />
+                    </div>
+                )}
 
                 <div className="GameSidebarPanel-labeled-row">
                     <label htmlFor="game-settings-coords">
@@ -207,7 +215,7 @@ export function GameSettingsPanel({
                     <select
                         id="game-settings-coords"
                         value={label_position}
-                        onChange={(e) => setCoordinates(e.target.value as LabelPosition)}
+                        onChange={(event) => setCoordinates(event.target.value as LabelPosition)}
                     >
                         <option value="all">{pgettext("Coordinate label position", "All")}</option>
                         <option value="none">
@@ -228,29 +236,33 @@ export function GameSettingsPanel({
                     </select>
                 </div>
 
-                <div className="GameSidebarPanel-labeled-row">
-                    <label htmlFor="game-settings-chat-enabled">
-                        <i className="fa fa-comment" />
-                        <span>{_("Enable chat")}</span>
-                    </label>
-                    <Toggle
-                        id="game-settings-chat-enabled"
-                        checked={chat_enabled}
-                        onChange={(checked) => set_chat_enabled(checked)}
-                    />
-                </div>
+                {game_controller && (
+                    <>
+                        <div className="GameSidebarPanel-labeled-row">
+                            <label htmlFor="game-settings-chat-enabled">
+                                <i className="fa fa-comment" />
+                                <span>{_("Enable chat")}</span>
+                            </label>
+                            <Toggle
+                                id="game-settings-chat-enabled"
+                                checked={chat_enabled}
+                                onChange={(checked) => set_chat_enabled(checked)}
+                            />
+                        </div>
 
-                <div className="GameSidebarPanel-labeled-row">
-                    <label htmlFor="game-settings-ai-review">
-                        <i className="fa fa-desktop" />
-                        <span>{_("Enable AI review")}</span>
-                    </label>
-                    <Toggle
-                        id="game-settings-ai-review"
-                        checked={ai_review_enabled}
-                        onChange={() => goban_controller.toggleAIReview()}
-                    />
-                </div>
+                        <div className="GameSidebarPanel-labeled-row">
+                            <label htmlFor="game-settings-ai-review">
+                                <i className="fa fa-desktop" />
+                                <span>{_("Enable AI review")}</span>
+                            </label>
+                            <Toggle
+                                id="game-settings-ai-review"
+                                checked={ai_review_enabled}
+                                onChange={game_controller.toggleAIReview}
+                            />
+                        </div>
+                    </>
+                )}
 
                 {isPrivate && (
                     <button
@@ -283,15 +295,15 @@ export function GameSettingsPanel({
                 </div>
 
                 <div className="GameSettingsPanel-layout-pickers">
-                    {!compact && <ActionButtonsPicker size="compact" />}
-                    {compact && <ScrollingLayoutPicker size="compact" />}
+                    {!kibitz && !compact && <ActionButtonsPicker size="compact" />}
+                    {!kibitz && compact && <ScrollingLayoutPicker size="compact" />}
                     <MoveControlsPicker
                         size="compact"
                         device={compact ? "phone" : "desktop"}
-                        disabled={compact && mobile_scroll}
-                        describedBy={compact && mobile_scroll ? move_controls_note_id : undefined}
+                        disabled={scrolling}
+                        describedBy={scrolling ? move_controls_note_id : undefined}
                     />
-                    {compact && mobile_scroll && (
+                    {scrolling && (
                         <p
                             className="GameSettingsPanel-move-controls-note"
                             id={move_controls_note_id}
@@ -302,7 +314,7 @@ export function GameSettingsPanel({
                             )}
                         </p>
                     )}
-                    {!compact && <ChatColumnPicker size="compact" />}
+                    {!kibitz && !compact && <ChatColumnPicker size="compact" />}
                     {/* Board alignment only applies to the landscape layout. */}
                     {!compact && <BoardAlignmentPicker size="compact" />}
                 </div>

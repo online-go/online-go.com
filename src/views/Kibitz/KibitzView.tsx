@@ -22,6 +22,8 @@ import { usePreference } from "@/lib/preferences";
 import { GobanController } from "@/lib/GobanController";
 import { popover, PopOver } from "@/lib/popover";
 import { GobanView, generateGobanHook, useGobanViewLayout } from "@/components/GobanView";
+import type { GobanViewRef } from "@/components/GobanView";
+import { GameMoreSettingsPanel } from "@/views/Game/GameMoreSettingsPanel";
 import { KBShortcut } from "@/components/KBShortcut";
 import type { KibitzRoomSummary } from "@/models/kibitz";
 import type { KibitzGobans } from "./useKibitzGobans";
@@ -190,6 +192,8 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         scoreSource?.goban.game_id === room.current_game?.game_id
             ? (gobans.center?.goban ?? null)
             : null;
+    const gobanViewRef = React.useRef<GobanViewRef>(null);
+    const [themeSettingsOpen, setThemeSettingsOpen] = React.useState(false);
     const settingsPopoverRef = React.useRef<PopOver | null>(null);
     const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
     const behindLive = useBehindLive(
@@ -564,6 +568,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
 
     return (
         <GobanView
+            ref={gobanViewRef}
             controller={gobans.center}
             onWheel={onWheel}
             className={`Kibitz${thinHeader ? " Kibitz-thin-header" : ""}`}
@@ -665,6 +670,22 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         gameController={gobans.main}
                         coordinateGoban={coordinateGoban}
                         showPeople={showPeople}
+                    />
+                )}
+            </GobanView.Tab>
+
+            <GobanView.Tab
+                id="kibitz-more-settings"
+                type="takeover"
+                hideFromBar
+                hideCloseButton
+                keepGobanVisible
+                title={_("Settings")}
+                onToggle={setThemeSettingsOpen}
+            >
+                {themeSettingsOpen && (
+                    <GameMoreSettingsPanel
+                        onClose={() => gobanViewRef.current?.setActiveTakeover(null)}
                     />
                 )}
             </GobanView.Tab>
@@ -787,11 +808,13 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                     }
                     const anchor = event.currentTarget;
                     moreActionsPopoverRef.current?.close();
-                    moreActionsPopoverRef.current = openKibitzMoreActions(
-                        anchor,
-                        gobans.main,
-                        roomActions(anchor),
-                    );
+                    moreActionsPopoverRef.current = openKibitzMoreActions(anchor, {
+                        controller: gobans.main,
+                        compact: isPortrait,
+                        onShowThemeSettings: () =>
+                            gobanViewRef.current?.setActiveTakeover("kibitz-more-settings"),
+                        roomActions: roomActions(anchor),
+                    });
                 }}
             />
         </GobanView>
