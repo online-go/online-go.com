@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ChallengeModalBody } from "./ChallengeModal";
 import { post } from "@/lib/requests";
@@ -1049,6 +1049,101 @@ describe("rematch saved settings", () => {
         expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
         expect(screen.getByLabelText("Board Size")).toHaveValue("13x13");
         expect(screen.getByRole("option", { name: "25x25" })).toBeEnabled();
+    });
+
+    function pendingOpponent() {
+        let resolveFetch: (player: {
+            id: number;
+            username: string;
+            ui_class?: string;
+        }) => void = () => {};
+        const pending = new Promise<{ id: number; username: string; ui_class?: string }>(
+            (resolve) => {
+                resolveFetch = resolve;
+            },
+        );
+        let cached: { id: number; username: string; ui_class?: string } | null = null;
+        (player_cache.lookup as jest.Mock).mockImplementation(() => cached);
+        (player_cache.fetch as jest.Mock).mockImplementation(() =>
+            pending.then((player) => {
+                cached = player;
+                return player;
+            }),
+        );
+        return resolveFetch;
+    }
+
+    it("sends an unranked challenge when a bot record is still loading at submit", async () => {
+        const user = userEvent.setup();
+        const resolveFetch = pendingOpponent();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+
+        render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+        expect(post).not.toHaveBeenCalled();
+
+        await act(async () => {
+            resolveFetch({ id: 456, username: "LateBot", ui_class: "bot" });
+        });
+
+        await waitFor(() => expect(post).toHaveBeenCalled());
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ ranked: false, komi_auto: "custom", komi: 0.5 }),
+            }),
+        );
+    });
+
+    it("keeps ranked when a human record is still loading at submit", async () => {
+        const user = userEvent.setup();
+        const resolveFetch = pendingOpponent();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+
+        render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+        expect(post).not.toHaveBeenCalled();
+
+        await act(async () => {
+            resolveFetch({ id: 456, username: "LateHuman", ui_class: "" });
+        });
+
+        await waitFor(() => expect(post).toHaveBeenCalled());
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ ranked: true }),
+            }),
+        );
+    });
+
+    it("waits for a pending bot record before an automatic challenge", async () => {
+        const resolveFetch = pendingOpponent();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+
+        render(
+            <ChallengeModalBody {...rematchProps("black", true)} autoCreate modal={mockModal} />,
+        );
+
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 20));
+        });
+        expect(post).not.toHaveBeenCalled();
+
+        await act(async () => {
+            resolveFetch({ id: 456, username: "LateBot", ui_class: "bot provisional" });
+        });
+
+        await waitFor(() => expect(post).toHaveBeenCalled());
+        expect(post).toHaveBeenCalledTimes(1);
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ ranked: false }),
+            }),
+        );
     });
 
     it("sends a fork but does not save its settings", async () => {

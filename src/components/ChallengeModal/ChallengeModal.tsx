@@ -136,6 +136,15 @@ function challengedPlayerIsBot(playerId: number | undefined): boolean {
     return !!player?.ui_class?.split(" ").includes("bot");
 }
 
+/** False when a direct opponent is neither cached nor in the active bot list.
+ *  Ranked must not be sent until this is true. */
+function opponentBotStatusKnown(playerId: number | undefined): boolean {
+    if (playerId === undefined) {
+        return true;
+    }
+    return player_cache.lookup(playerId) !== null || challengedPlayerIsBot(playerId);
+}
+
 // The backend's handicap calculator ignores requested_komi when the handicap
 // is automatic (<0), so in the UI we keep komi in lockstep: auto handicap =>
 // auto komi.
@@ -182,6 +191,9 @@ export class ChallengeModal extends Modal<{}, ChallengeModalProperties, Challeng
 
 export class ChallengeModalBody extends React.Component<ChallengeModalInput, ChallengeModalState> {
     ref: React.RefObject<HTMLDivElement | null> = React.createRef();
+    /** In-flight player fetch started by a submit that did not yet know bot status. */
+    private opponentLookup: Promise<void> | null = null;
+    private opponentFetchSettled = false;
 
     constructor(props: ChallengeModalInput) {
         super(props);
@@ -586,6 +598,33 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     }
 
     createChallenge = () => {
+        const playerId = this.props.playerId;
+        // bots_list() and the cache can both be empty when Send Challenge or
+        // autoCreate runs. Wait for the player record so a bot is not sent ranked.
+        if (
+            this.props.mode === "player" &&
+            playerId &&
+            !this.opponentFetchSettled &&
+            !opponentBotStatusKnown(playerId)
+        ) {
+            if (this.opponentLookup) {
+                return;
+            }
+            this.opponentFetchSettled = true;
+            this.opponentLookup = player_cache
+                .fetch(playerId)
+                .then(() => {
+                    this.opponentLookup = null;
+                    this.createChallenge();
+                })
+                .catch((err) => {
+                    this.opponentLookup = null;
+                    this.opponentFetchSettled = false;
+                    errorLogger(err);
+                });
+            return;
+        }
+
         const next = this.next();
 
         if (!this.validateBoardSize()) {
