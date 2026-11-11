@@ -45,7 +45,11 @@ import { KibitzKeyboardShortcuts } from "./KibitzKeyboardShortcuts";
 import { PlayerCards } from "@/views/Game/PlayerCards";
 import { KibitzStackedPlayerHeader } from "./KibitzStackedPlayerHeader";
 import { useKibitzThinHeader } from "./kibitzThinHeader";
-import { KibitzMoreActionsRoomActions, openKibitzMoreActions } from "./KibitzMoreActionsPopover";
+import {
+    KibitzContinuationAction,
+    KibitzMoreActionsRoomActions,
+    openKibitzMoreActions,
+} from "./KibitzMoreActionsPopover";
 import { KibitzScoreEstimate } from "./KibitzScoreEstimate";
 import { useKibitzScoreEstimation } from "./useKibitzScoreEstimation";
 import { useKibitzHelp } from "./useKibitzHelp";
@@ -110,6 +114,7 @@ export interface KibitzViewProps {
     };
     /** Room status shown in the header. */
     banner?: React.ReactNode;
+    continuationAction?: KibitzContinuationAction;
 }
 
 // The branch icon, not the tree: the tree is the New variation action, which
@@ -791,6 +796,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         anchor,
                         gobans.main,
                         roomActions(anchor),
+                        props.continuationAction,
                     );
                 }}
             />

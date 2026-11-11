@@ -133,11 +133,19 @@ jest.mock("@/lib/hooks", () => ({
 
 jest.mock("@/lib/translate", () => ({
     __esModule: true,
-    interpolate: (template: string, values: Record<string, string | number>) =>
-        Object.entries(values).reduce(
-            (result, [key, value]) => result.replace(`{{${key}}}`, String(value)),
-            template,
-        ),
+    interpolate: (
+        template: string,
+        values: Record<string, string | number> | Array<string | number>,
+    ) =>
+        Array.isArray(values)
+            ? values.reduce<string>(
+                  (result, value) => result.replace(/%[sd]/, String(value)),
+                  template,
+              )
+            : Object.entries(values).reduce(
+                  (result, [key, value]) => result.replace(`{{${key}}}`, String(value)),
+                  template,
+              ),
     moment: (value: Date | number) => ({
         format: (pattern: string) => {
             const date = typeof value === "number" ? new Date(value) : value;
@@ -330,6 +338,7 @@ describe("KibitzChatPanel variation posts", () => {
     });
 
     beforeEach(() => {
+        window.localStorage.clear();
         mockRoomProxy.channel.markAsRead.mockClear();
         mockRoomProxy.channel.send.mockClear();
         mockRoomProxy.on.mockClear();
@@ -413,6 +422,42 @@ describe("KibitzChatPanel variation posts", () => {
     test("the composer placeholder reads the same in every room, not the room title", () => {
         render(<KibitzChatPanel {...baseProps()} />);
         expect(screen.getByPlaceholderText("Message kibitz")).toBeInTheDocument();
+    });
+
+    test("has no continuation invitation without a matching live room", () => {
+        const { container } = render(<KibitzChatPanel {...baseProps()} />);
+        expect(container.querySelector(".KibitzChatPanel-continuation")).toBeNull();
+    });
+
+    test("dismisses an invitation per room across reloads and shows a later room", () => {
+        const onJoinContinuation = jest.fn();
+        const props = {
+            ...baseProps(),
+            continuationRoom: {
+                id: "continuation-room",
+                channel: "kibitz-continuation-room",
+                title: "Black vs White · #42",
+                kind: "user" as const,
+                viewer_count: 2,
+                current_game_id: 42,
+            },
+            onJoinContinuation,
+        };
+        const first = render(<KibitzChatPanel {...props} />);
+
+        expect(screen.getByText("Continue watching in a separate room")).toBeVisible();
+        fireEvent.click(screen.getByRole("button", { name: "Join" }));
+        expect(onJoinContinuation).toHaveBeenCalledTimes(1);
+        fireEvent.click(screen.getByRole("button", { name: "Dismiss invitation" }));
+        expect(screen.queryByText("Continue watching in a separate room")).toBeNull();
+        first.unmount();
+
+        render(<KibitzChatPanel {...props} />);
+        expect(screen.queryByText("Continue watching in a separate room")).toBeNull();
+
+        const laterRoom = { ...props.continuationRoom, id: "another-continuation-room" };
+        render(<KibitzChatPanel {...props} continuationRoom={laterRoom} />);
+        expect(screen.getByText("Continue watching in a separate room")).toBeVisible();
     });
 
     test("an external mode picks the chat and drops the tab strip", () => {

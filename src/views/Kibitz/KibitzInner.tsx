@@ -35,6 +35,7 @@ import type {
 import { KibitzRoomList } from "./KibitzRoomList";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import { KibitzPresetChangePendingBanner } from "./KibitzPresetChangePendingBanner";
+import { useKibitzContinuation } from "./useKibitzContinuation";
 import type { KibitzController } from "./KibitzController";
 import { KibitzView } from "./KibitzView";
 import {
@@ -461,6 +462,26 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         (accessBlocked && accessBlocked.room_id === roomId) || isSelectedRoomBlocked,
     );
     const resolvedRoom = isBlockedRoom ? null : selectedRoom;
+    const showContinuationError = React.useCallback(() => {
+        toast(
+            <div>
+                {pgettext(
+                    "Error toast when creating a Kibitz continuation room fails",
+                    "Could not create the continuation room. Try again.",
+                )}
+            </div>,
+            5000,
+        );
+    }, []);
+    const continuation = useKibitzContinuation({
+        controller,
+        room: resolvedRoom,
+        canCreate: canOpenCreateRoomFlow,
+        blocked: isBlockedRoom,
+        navigateToRoom,
+        onError: showContinuationError,
+    });
+    const continuationRoom = continuation.continuationRoom;
 
     const resolvedRoomTitle = resolvedRoom?.title;
     React.useEffect(() => {
@@ -1415,6 +1436,15 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                         />
                     ) : undefined
                 }
+                continuationAction={
+                    continuation.visible
+                        ? {
+                              title: continuation.actionTitle,
+                              creating: continuation.creating,
+                              onActivate: continuation.onActivate,
+                          }
+                        : undefined
+                }
                 leftAside={{
                     rooms,
                     activeRoomId: resolvedRoom.id,
@@ -1441,6 +1471,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     room: resolvedRoom,
                     items: stream,
                     variations: displayedVariations,
+                    continuationRoom,
+                    onJoinContinuation: continuationRoom
+                        ? () => navigateToRoom(continuationRoom.id)
+                        : undefined,
                     onOpenVariation: (variationId, focusVariation = false) =>
                         onOpenVariationFromUser(variationId, focusVariation, "chat"),
                     variationColorIndexes,

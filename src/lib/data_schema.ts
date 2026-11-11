@@ -246,6 +246,8 @@ export interface KibitzSchema {
     "left_aside.hidden": boolean;
     /** Show the people column beside the landscape Kibitz chat. */
     people_column: boolean;
+    /** Continuation rooms whose invitation above the chat was dismissed. */
+    dismissed_continuation_rooms: string[];
 }
 
 export interface DataSchema
