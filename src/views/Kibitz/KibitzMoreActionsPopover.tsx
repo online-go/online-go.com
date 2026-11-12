@@ -27,6 +27,7 @@ import { useUser } from "@/lib/hooks";
 import { openReport } from "@/components/Report";
 import { openGameInfoModal } from "@/views/Game/GameInfoModal";
 import { openGameLinkModal } from "@/views/Game/GameLinkModal";
+import { GameSettingsPanel } from "@/views/Game/GameSettingsPanel";
 import "@/views/Game/GameSidebarPanels.css";
 import "./KibitzMoreActionsPopover.css";
 
@@ -59,19 +60,23 @@ export interface KibitzMoreActionsRoomActions {
 }
 
 interface KibitzMoreActionsPopoverProps {
-    /** Null while the room has no live game; the game entries are then
-     *  left out and only the room entries remain. */
+    /** Null while the room has no live game. */
     controller: GobanController | null;
+    compact: boolean;
+    onShowThemeSettings: () => void;
     roomActions?: KibitzMoreActionsRoomActions;
     onClose: () => void;
 }
 
 export function KibitzMoreActionsPopover({
     controller,
+    compact,
+    onShowThemeSettings,
     roomActions,
     onClose,
 }: KibitzMoreActionsPopoverProps): React.ReactElement {
     const user = useUser();
+    const [settings_open, setSettingsOpen] = React.useState(false);
     const goban = controller?.goban ?? null;
     const engine = goban?.engine ?? null;
     const game_id = goban ? Number(goban.config.game_id) : 0;
@@ -101,6 +106,19 @@ export function KibitzMoreActionsPopover({
     const manages_room =
         !!roomActions &&
         (roomActions.canEditRoom || roomActions.canChangeBoard || roomActions.canDeleteRoom);
+
+    if (settings_open) {
+        return (
+            <div className="GamePopover GameSettingsPopover KibitzBoardSettingsPopover">
+                <GameSettingsPanel
+                    kibitz
+                    compact={compact}
+                    onClose={onClose}
+                    onShowThemeSettings={onShowThemeSettings}
+                />
+            </div>
+        );
+    }
 
     // The game's fixed settings head the menu: they are reference, not
     // actions, and the room title only has room for the time control.
@@ -132,6 +150,16 @@ export function KibitzMoreActionsPopover({
                         {settings.map((setting) => setting.trim()).join(" \u00b7 ")}
                     </div>
                 )}
+                <button
+                    type="button"
+                    className="GameSidebarPanel-item"
+                    onClick={() => setSettingsOpen(true)}
+                >
+                    <i className="fa fa-gear" aria-hidden="true" />
+                    <span>
+                        {pgettext("Kibitz board preferences in the More actions menu", "Settings")}
+                    </span>
+                </button>
                 {goban && engine && controller && (
                     <>
                         <button
@@ -242,19 +270,12 @@ export function KibitzMoreActionsPopover({
 /** Opens the popover under `button`. */
 export function openKibitzMoreActions(
     button: HTMLElement,
-    controller: GobanController | null,
-    roomActions?: KibitzMoreActionsRoomActions,
+    options: Omit<KibitzMoreActionsPopoverProps, "onClose">,
 ): PopOver {
     let instance: PopOver | null = null;
     const close = () => instance?.close();
     instance = popover({
-        elt: (
-            <KibitzMoreActionsPopover
-                controller={controller}
-                roomActions={roomActions}
-                onClose={close}
-            />
-        ),
+        elt: <KibitzMoreActionsPopover {...options} onClose={close} />,
         below: button,
         minWidth: 220,
     });

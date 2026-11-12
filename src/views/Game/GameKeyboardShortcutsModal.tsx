@@ -18,14 +18,20 @@
 import * as React from "react";
 import { _ } from "@/lib/translate";
 import { openModal, Modal } from "@/components/Modal";
-import { GAME_KEYBOARD_SHORTCUT_GROUPS, shortcutKeyNames } from "./game_keyboard_shortcuts";
+import {
+    GAME_KEYBOARD_SHORTCUT_GROUPS,
+    GameKeyboardShortcutGroup,
+    shortcutKeyNames,
+} from "./game_keyboard_shortcuts";
 import "./GameKeyboardShortcutsModal.css";
 
 interface Events {}
 
-interface GameKeyboardShortcutsModalProperties {}
+interface GameKeyboardShortcutsModalProperties {
+    groups?: GameKeyboardShortcutGroup[];
+}
 
-/** Lists every keyboard shortcut that the Game page binds. */
+/** Lists the keyboard shortcuts for the current board view. */
 export class GameKeyboardShortcutsModal extends Modal<
     Events,
     GameKeyboardShortcutsModalProperties,
@@ -42,7 +48,7 @@ export class GameKeyboardShortcutsModal extends Modal<
                     <h2>{_("Keyboard shortcuts")}</h2>
                 </div>
                 <div className="body">
-                    {GAME_KEYBOARD_SHORTCUT_GROUPS.map((group) => (
+                    {(this.props.groups ?? GAME_KEYBOARD_SHORTCUT_GROUPS).map((group) => (
                         <section key={group.title()} className="shortcut-group">
                             <h3>{group.title()}</h3>
                             {group.note && <p className="shortcut-note">{group.note()}</p>}
@@ -78,6 +84,6 @@ export class GameKeyboardShortcutsModal extends Modal<
     }
 }
 
-export function openGameKeyboardShortcutsModal(): void {
-    openModal(<GameKeyboardShortcutsModal fastDismiss />);
+export function openGameKeyboardShortcutsModal(groups?: GameKeyboardShortcutGroup[]): void {
+    openModal(<GameKeyboardShortcutsModal fastDismiss groups={groups} />);
 }
