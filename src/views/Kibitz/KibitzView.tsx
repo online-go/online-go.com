@@ -199,8 +199,18 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const { onExitVariation, onRoomsOpened, roomSettings } = props;
     const onCreateVariation = React.useCallback(() => {
         stopEstimate();
-        (props.onCreateVariation ?? props.leftAside.onCreateVariation)?.();
-    }, [props.onCreateVariation, props.leftAside.onCreateVariation, stopEstimate]);
+        if (gobans.centerMode === "variation" && props.onBranchFromVariation) {
+            props.onBranchFromVariation();
+        } else {
+            (props.onCreateVariation ?? props.leftAside.onCreateVariation)?.();
+        }
+    }, [
+        gobans.centerMode,
+        props.onBranchFromVariation,
+        props.onCreateVariation,
+        props.leftAside.onCreateVariation,
+        stopEstimate,
+    ]);
     const onBranchFromVariation = React.useCallback(() => {
         stopEstimate();
         props.onBranchFromVariation?.();

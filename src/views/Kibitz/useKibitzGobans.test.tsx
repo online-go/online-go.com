@@ -33,7 +33,12 @@ jest.mock("@/lib/GobanController", () => {
                 config,
                 engine: {
                     move_tree: null,
-                    cur_move: { id: 1, move_number: 0, getMoveStringToThisPoint: () => "" },
+                    cur_move: {
+                        id: 1,
+                        move_number: 0,
+                        trunk: true,
+                        getMoveStringToThisPoint: () => "",
+                    },
                     jumpTo: jest.fn(),
                     followPath: jest.fn(),
                     setLastOfficialMove: jest.fn(),
@@ -453,6 +458,8 @@ describe("useKibitzGobans", () => {
         );
         expect(instances).toHaveLength(3);
         expect((instances[1] as { destroy: jest.Mock }).destroy).toHaveBeenCalled();
+        expect((instances[0] as { destroy: jest.Mock }).destroy).not.toHaveBeenCalled();
+        expect(restoreMainBoardToOfficialTail).not.toHaveBeenCalled();
     });
 
     test("a draft branched from a variation composes every variation on the board", () => {

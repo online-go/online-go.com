@@ -281,8 +281,10 @@ view through `kibitzTelemetry.ts`; the schema, switch and queries are in
 variations and the secondary pane. The secondary pane (`collapsed`,
 `variation_id`, `variation_source_*`, `variation_draft_nonce`) fully
 determines what the center shows; `deriveKibitzCenterMode` maps it to
-`main | draft | variation`. The panel for a posted variation
-offers "New variation from here", which starts a new draft using that
+`main | draft | variation`. On the main board, a new variation uses the
+official trunk and starts at the move displayed when the action is selected.
+Opening the draft leaves the main board at that position. On a posted
+variation, "+ Variation" and "New variation from here" start a draft using that
 variation as its source, opening at the move the reader was looking at
 (`variation_draft_base_path`) rather than at the end of the line. The draft
 board is composed with every variation that was visible on the board it came
