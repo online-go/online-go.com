@@ -105,7 +105,16 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
     }, [goban_controller]);
 
     React.useEffect(() => {
-        if (!userIsPlayer && !data.get("user").is_moderator) {
+        const user = data.get("user");
+        if (
+            user.is_moderator &&
+            !props.review_id &&
+            props.game_id &&
+            inGameModChannel(props.game_id)
+        ) {
+            // A moderator who joined anonymously stays out of the public chat.
+            goban_controller.setSelectedChatLog("hidden");
+        } else if (!userIsPlayer && !user.is_moderator) {
             goban_controller.setSelectedChatLog("main");
         } else {
             goban_controller.setSelectedChatLog(defaultChatMode);
