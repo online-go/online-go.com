@@ -341,10 +341,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             state.challenge.game = applyBotRanked(state.challenge.game);
             state.challenge.game.disable_analysis = false;
         }
-        // Ranked games against bots are disabled. A rematch still copies the
-        // previous game's ranked flag, so clear it here.
-        if (this.state.opponent_kind === "bot") {
-            state.challenge.game.ranked = false;
+        // A direct bot opponent derives ranked the same way computer mode does.
+        if (this.isDirectBotOpponent()) {
+            state.challenge.game = applyBotRanked(state.challenge.game);
         }
 
         this.props.modal.on("open", () => {
@@ -398,10 +397,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                         opponent_kind: kind,
                         opponent_error: false,
                         challenge:
-                            kind === "bot" && state.challenge.game.ranked
+                            kind === "bot"
                                 ? {
                                       ...state.challenge,
-                                      game: { ...state.challenge.game, ranked: false },
+                                      game: applyBotRanked(state.challenge.game),
                                   }
                                 : state.challenge,
                     }),
@@ -429,6 +428,20 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         this.autoCreated = true;
         this.createChallenge();
     };
+
+    /** A direct challenge whose opponent is already known to be a bot. */
+    isDirectBotOpponent(): boolean {
+        return (
+            this.props.mode === "player" &&
+            (this.state.opponent_kind === "bot" || challengedPlayerIsBot(this.props.playerId))
+        );
+    }
+
+    /** Computer mode and a direct bot opponent derive `ranked` from the
+     *  settings. The Ranked checkbox stays hidden in both cases. */
+    usesBotRanked(): boolean {
+        return this.props.mode === "computer" || this.isDirectBotOpponent();
+    }
 
     rengo_auto_start_input_warning(): boolean {
         return (
@@ -583,11 +596,8 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             setting.game.rengo = false;
             setting.game.rengo_casual_mode = true;
         }
-        if (
-            this.props.mode === "player" &&
-            (this.state.opponent_kind === "bot" || challengedPlayerIsBot(this.props.playerId))
-        ) {
-            setting.game.ranked = false;
+        if (this.isDirectBotOpponent()) {
+            setting.game.ranked = applyBotRanked(setting.game).ranked;
         }
         this.setState({
             challenge: setting,
@@ -670,12 +680,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         challenge.game.rengo = next.challenge.game.rengo;
         challenge.game.rengo_casual_mode = next.challenge.game.rengo_casual_mode;
 
-        // Clear ranked before the ranked komi rule, so a bot rematch keeps its komi.
-        if (
-            this.props.mode === "player" &&
-            (this.state.opponent_kind === "bot" || challengedPlayerIsBot(this.props.playerId))
-        ) {
-            challenge.game.ranked = false;
+        // Derive ranked before the ranked komi rule. Unusual settings stay
+        // unranked, so a bot rematch keeps its custom komi.
+        if (this.isDirectBotOpponent()) {
+            challenge.game.ranked = applyBotRanked(challenge.game).ranked;
         }
 
         if (challenge.game.ranked) {
@@ -899,7 +907,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     update_private = (isPrivate: boolean) =>
         this.update_game_settings((prev) => {
             const next = { ...prev, private: isPrivate };
-            if (this.props.mode === "computer") {
+            if (this.usesBotRanked()) {
                 return applyBotRanked(next);
             }
             return { ...next, ranked: false };
@@ -961,7 +969,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     update_board_width = (width: number | null) =>
         this.update_game_settings((prev) => {
             const next = { ...prev, width: width };
-            if (this.props.mode === "computer") {
+            if (this.usesBotRanked()) {
                 return applyBotRanked(next);
             }
             return next;
@@ -970,7 +978,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     update_board_height = (height: number | null) =>
         this.update_game_settings((prev) => {
             const next = { ...prev, height: height };
-            if (this.props.mode === "computer") {
+            if (this.usesBotRanked()) {
                 return applyBotRanked(next);
             }
             return next;
@@ -985,7 +993,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     update_handicap = (handicap: number) =>
         this.update_game_settings((prev) => {
             const next = coerceKomiForAutoHandicap({ ...prev, handicap: handicap });
-            if (this.props.mode === "computer") {
+            if (this.usesBotRanked()) {
                 return applyBotRanked(next);
             }
             return next;
@@ -1016,7 +1024,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             return {
                 challenge: {
                     ...prev.challenge,
-                    game: this.props.mode === "computer" ? applyBotRanked(nextGame) : nextGame,
+                    game: this.usesBotRanked() ? applyBotRanked(nextGame) : nextGame,
                 },
             };
         });
@@ -1334,8 +1342,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     handicapSettings = () => {
         const game = this.gameState();
-        // In bot mode, users can pick any handicap; ranked auto-flips to false.
-        const restrict_ranked_only = game.ranked && this.props.mode !== "computer";
+        // Computer mode and a direct bot opponent can pick any handicap;
+        // ranked flips off when the handicap is outside the ranked range.
+        const restrict_ranked_only = game.ranked && !this.usesBotRanked();
         return (
             <div className="form-group" id="challenge.game.handicap-group">
                 <label className="control-label">{_("Handicap")}</label>
@@ -1372,8 +1381,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     komiSettings = () => {
         const game = this.gameState();
-        // In bot mode, users can pick custom komi; ranked auto-flips to false.
-        const restrict_ranked_only = game.ranked && this.props.mode !== "computer";
+        // Computer mode and a direct bot opponent can pick custom komi;
+        // ranked flips off when komi is not automatic.
+        const restrict_ranked_only = game.ranked && !this.usesBotRanked();
         // Auto handicap forces auto komi - the backend handicap calculator
         // ignores requested_komi in the auto-handicap branch.
         const auto_handicap = game.handicap < 0;
@@ -1440,8 +1450,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     boardSizeSettings = () => {
         const conf = this.state.conf;
-        const enable_custom_board_sizes =
-            this.props.mode === "computer" || !this.state.challenge.game.ranked;
+        const enable_custom_board_sizes = this.usesBotRanked() || !this.state.challenge.game.ranked;
 
         return (
             <>

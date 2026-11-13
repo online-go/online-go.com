@@ -923,7 +923,55 @@ describe("rematch saved settings", () => {
         expect(savedKeys).not.toContain("time_control.speed");
     });
 
-    it("hides Ranked and sends an unranked rematch when the opponent is a bot", async () => {
+    function standardBotRematch(): ChallengeModalProperties {
+        const props = rematchProps("black", true);
+        return {
+            ...props,
+            config: {
+                ...props.config!,
+                challenge: {
+                    ...props.config!.challenge,
+                    game: {
+                        ...props.config!.challenge.game,
+                        ranked: true,
+                        width: 19,
+                        height: 19,
+                        handicap: 0,
+                        komi_auto: "automatic",
+                        private: false,
+                    },
+                },
+            },
+        };
+    }
+
+    it("a bot rematch with standard settings sends ranked: true and does not render the Ranked checkbox", async () => {
+        const user = userEvent.setup();
+        (bots_list as jest.Mock).mockReturnValue([{ id: 456, username: "TestBot" }]);
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+
+        render(<ChallengeModalBody {...standardBotRematch()} modal={mockModal} />);
+
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({
+                    ranked: true,
+                    width: 19,
+                    height: 19,
+                    handicap: 0,
+                    komi_auto: "automatic",
+                    private: false,
+                }),
+            }),
+        );
+    });
+
+    it("hides Ranked and keeps a custom-komi rematch unranked when the opponent is a bot", async () => {
         const user = userEvent.setup();
         (bots_list as jest.Mock).mockReturnValue([{ id: 456, username: "TestBot" }]);
         jest.mocked(post).mockResolvedValueOnce({ id: 123 });
@@ -984,7 +1032,7 @@ describe("rematch saved settings", () => {
         },
     );
 
-    it("does not apply ranked from a preferred setting against a bot", async () => {
+    it("hides Ranked and sends a ranked challenge for a normal preferred setting against a bot", async () => {
         const user = userEvent.setup();
         (bots_list as jest.Mock).mockReturnValue([{ id: 456, username: "TestBot" }]);
         jest.mocked(post).mockResolvedValueOnce({ id: 123 });
@@ -1031,6 +1079,78 @@ describe("rematch saved settings", () => {
         expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
         expect(screen.getByLabelText("Board Size")).toHaveValue("13x13");
         expect(screen.getByRole("option", { name: "25x25" })).toBeEnabled();
+        expect(
+            document.querySelector<HTMLOptionElement>("#challenge-handicap option[value='10']"),
+        ).toBeEnabled();
+        expect(
+            document.querySelector<HTMLOptionElement>("#challenge-komi option[value='custom']"),
+        ).toBeEnabled();
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({
+                    ranked: true,
+                    width: 13,
+                    height: 13,
+                    handicap: 0,
+                    komi_auto: "automatic",
+                    private: false,
+                }),
+            }),
+        );
+    });
+
+    it("lets a bot challenge use a high handicap or private game without staying ranked", async () => {
+        const user = userEvent.setup();
+        (bots_list as jest.Mock).mockReturnValue([{ id: 456, username: "TestBot" }]);
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+
+        render(<ChallengeModalBody {...standardBotRematch()} modal={mockModal} />);
+
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+        const handicap = document.querySelector<HTMLSelectElement>("#challenge-handicap")!;
+        expect(handicap.querySelector("option[value='10']")).toBeEnabled();
+
+        await user.selectOptions(handicap, "10");
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ handicap: 10, ranked: false }),
+            }),
+        );
+    });
+
+    it("sends ranked: false for a private bot challenge and ranked: true after Private is cleared", async () => {
+        const user = userEvent.setup();
+        (bots_list as jest.Mock).mockReturnValue([{ id: 456, username: "TestBot" }]);
+        jest.mocked(post).mockResolvedValue({ id: 123 });
+
+        render(<ChallengeModalBody {...standardBotRematch()} modal={mockModal} />);
+
+        await user.click(screen.getByLabelText("Private"));
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenLastCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ private: true, ranked: false }),
+            }),
+        );
+
+        await user.click(screen.getByLabelText("Private"));
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenLastCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ private: false, ranked: true }),
+            }),
+        );
     });
 
     type CachedOpponent = { id: number; username: string; ui_class?: string; is_bot?: boolean };
@@ -1081,7 +1201,38 @@ describe("rematch saved settings", () => {
         expect(post).not.toHaveBeenCalled();
     });
 
-    it("sends an unranked challenge after the loaded player is a bot", async () => {
+    it("sends a ranked challenge after the loaded player is a bot with standard settings", async () => {
+        const user = userEvent.setup();
+        const opponent = controlledOpponent();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        render(<ChallengeModalBody {...standardBotRematch()} modal={mockModal} />);
+
+        expect(screen.getByRole("button", { name: /send challenge/i })).toBeDisabled();
+
+        await act(async () => {
+            opponent.resolve({ id: 456, username: "LateBot", ui_class: "bot" });
+        });
+
+        await waitFor(() =>
+            expect(screen.getByRole("button", { name: /send challenge/i })).toBeEnabled(),
+        );
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({
+                    ranked: true,
+                    komi_auto: "automatic",
+                    private: false,
+                }),
+            }),
+        );
+    });
+
+    it("sends an unranked custom-komi challenge after the loaded player is a bot", async () => {
         const user = userEvent.setup();
         const opponent = controlledOpponent();
         jest.mocked(post).mockResolvedValueOnce({ id: 123 });
