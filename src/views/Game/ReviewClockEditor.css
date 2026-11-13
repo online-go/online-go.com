@@ -1,0 +1,28 @@
+.ReviewClockEditor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25em;
+    padding: 0.25em 0.5em;
+}
+
+.ReviewClockEditor-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.ReviewClockEditor-color {
+    min-width: 3.5em;
+}
+
+.ReviewClockEditor-time {
+    width: 6em;
+}
+
+.ReviewClockEditor-count {
+    width: 4.5em;
+}
+
+.ReviewClockEditor-time.invalid {
+    outline: 1px solid red;
+}

@@ -48,6 +48,7 @@ import { GobanAnalyzeButtonBar } from "@/components/GobanAnalyzeButtonBar/GobanA
 import { EstimateScore } from "./fragments";
 import { PeerReviewFeedbackPanel } from "./PeerReviewFeedbackPanel";
 import { PeerReviewRequest } from "./PeerReviewRequest";
+import { ReviewClockEditor } from "./ReviewClockEditor";
 import "./PlayControls.css";
 
 const MAX_SEALING_LOCATIONS_TO_LIST = 5;
@@ -525,6 +526,11 @@ export function ReviewControls({ review_id }: ReviewControlsProps) {
                             onChange={updateMoveText}
                         ></textarea>
                     </div>
+
+                    <ReviewClockEditor
+                        goban={goban}
+                        editable={review_controller_id === data.get("user").id}
+                    />
 
                     <div style={{ padding: "0.5em" }}>
                         <div className="input-group">
