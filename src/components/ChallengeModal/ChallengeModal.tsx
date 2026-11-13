@@ -100,9 +100,26 @@ function isRankedBotBoardSize(width: number | null, height: number | null): bool
     );
 }
 
+/** A fork copies a position. An empty object is not a position. */
+function hasInitialPosition(initial_state: unknown): boolean {
+    return (
+        typeof initial_state === "object" &&
+        initial_state !== null &&
+        Object.keys(initial_state).length > 0
+    );
+}
+
 function computeBotRanked(
-    game: Pick<GameInput, "private" | "width" | "height" | "handicap" | "komi_auto">,
+    game: Pick<
+        GameInput,
+        "private" | "width" | "height" | "handicap" | "komi_auto" | "initial_state"
+    >,
 ): boolean {
+    // Ranked and handicap are hidden for a fork, so the position stays unranked
+    // after automatic handicap turns komi back to automatic.
+    if (hasInitialPosition(game.initial_state)) {
+        return false;
+    }
     return (
         !game.private &&
         isRankedBotBoardSize(game.width, game.height) &&
@@ -345,6 +362,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         if (this.isDirectBotOpponent()) {
             state.challenge.game = applyBotRanked(state.challenge.game);
         }
+        // A fork hides Ranked. Do this after komi normalization and bot ranking.
+        if (hasInitialPosition(this.props.initialState)) {
+            state.challenge.game.ranked = false;
+        }
 
         this.props.modal.on("open", () => {
             data.watch("preferred-game-settings", this.preferredSettingsUpdated);
@@ -380,9 +401,15 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         if (!this.alive || !playerId) {
             return;
         }
+        // A cached "[ERROR]" or undefined ui_class is not a result. Retry must
+        // ask the cache to load the player again. The first load omits that
+        // option so a normal fetch stays a two-argument call.
+        const refresh = this.state.opponent_error;
         this.setState({ opponent_error: false });
-        player_cache
-            .fetch(playerId, ["ui_class"])
+        const pending = refresh
+            ? player_cache.fetch(playerId, ["ui_class"], { refresh: true })
+            : player_cache.fetch(playerId, ["ui_class"]);
+        pending
             .then(() => {
                 if (!this.alive) {
                     return;
@@ -393,17 +420,22 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                     return;
                 }
                 this.setState(
-                    (state) => ({
-                        opponent_kind: kind,
-                        opponent_error: false,
-                        challenge:
+                    (state) => {
+                        const game =
                             kind === "bot"
-                                ? {
-                                      ...state.challenge,
-                                      game: applyBotRanked(state.challenge.game),
-                                  }
-                                : state.challenge,
-                    }),
+                                ? applyBotRanked(state.challenge.game)
+                                : state.challenge.game;
+                        return {
+                            opponent_kind: kind,
+                            opponent_error: false,
+                            challenge: {
+                                ...state.challenge,
+                                game: hasInitialPosition(this.props.initialState)
+                                    ? { ...game, ranked: false }
+                                    : game,
+                            },
+                        };
+                    },
                     () => this.maybeAutoCreate(),
                 );
             })
@@ -681,8 +713,15 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         challenge.game.rengo_casual_mode = next.challenge.game.rengo_casual_mode;
 
         // Derive ranked before the ranked komi rule. Unusual settings stay
-        // unranked, so a bot rematch keeps its custom komi.
-        if (this.isDirectBotOpponent()) {
+        // unranked, so a bot rematch keeps its custom komi. A fork stays
+        // unranked as well: Ranked is hidden, and automatic handicap has
+        // already turned its komi back to automatic.
+        if (
+            hasInitialPosition(this.props.initialState) ||
+            hasInitialPosition(challenge.game.initial_state)
+        ) {
+            challenge.game.ranked = false;
+        } else if (this.isDirectBotOpponent()) {
             challenge.game.ranked = applyBotRanked(challenge.game).ranked;
         }
 

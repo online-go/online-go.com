@@ -204,9 +204,32 @@ export function fetch_by_username(
     }
 }
 
+function cachedFieldValue(entry: PlayerCacheEntry, field: string): unknown {
+    return (entry as unknown as Record<string, unknown>)[field];
+}
+
+/** `undefined` is not a stored value: the key can exist and still be empty.
+ *  `[ERROR]` means the server omitted the field. It satisfies a later fetch
+ *  so a listener does not request it again on every update. `refresh` asks
+ *  for that field again. */
+function fieldSatisfiesFetch(entry: PlayerCacheEntry, field: string, refresh: boolean): boolean {
+    if (!(field in entry)) {
+        return false;
+    }
+    const value = cachedFieldValue(entry, field);
+    if (value === undefined) {
+        return false;
+    }
+    if (value === "[ERROR]") {
+        return !refresh;
+    }
+    return true;
+}
+
 export function fetch(
     player_id?: number,
     required_fields?: Array<string>,
+    options?: { refresh?: boolean },
 ): Promise<PlayerCacheEntry> {
     if (!player_id) {
         console.error("Attempted to fetch invalid player id: ", player_id);
@@ -214,13 +237,14 @@ export function fetch(
     }
 
     const missing_fields: string[] = [];
+    const refresh = options?.refresh === true;
 
     if (player_id in cache) {
         let have_cached_copy = true;
 
         if (required_fields) {
             for (const f of required_fields) {
-                if (!(f in cache[player_id])) {
+                if (!fieldSatisfiesFetch(cache[player_id], f, refresh)) {
                     missing_fields.push(f);
                     have_cached_copy = false;
                     break;
@@ -293,7 +317,9 @@ const fetch_player = new Batcher<FetchEntry>((fetch_queue) => {
                     update(player);
                     if (required_fields) {
                         for (const field of required_fields) {
-                            if (!(field in cache[player.id])) {
+                            // `true` so an undefined value is stored as [ERROR] and
+                            // does not count as a successful field on the next fetch.
+                            if (!fieldSatisfiesFetch(cache[player.id], field, true)) {
                                 debug.warn("Required field ", field, " was not resolved by fetch");
                                 (cache[player.id] as any)[field] = "[ERROR]";
                             }

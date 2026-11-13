@@ -16,7 +16,7 @@
  */
 
 import { get } from "@/lib/requests";
-import { fetch, Subscriber } from "@/lib/player_cache";
+import { fetch, Subscriber, update } from "@/lib/player_cache";
 
 jest.mock("@/lib/debug", () => ({
     __esModule: true,
@@ -89,5 +89,28 @@ describe("player_cache.fetch", () => {
         await expect(first).resolves.toMatchObject({ id: 601, username: "one" });
         await expect(third).resolves.toMatchObject({ id: 603, ui_class: "bot" });
         subscriber.off(602);
+    });
+
+    it("refetches ui_class when the cached value is [ERROR] or undefined", async () => {
+        update({ id: 702, username: "Partial", ui_class: undefined });
+        jest.mocked(get).mockResolvedValueOnce([{ id: 702, username: "Partial", ui_class: "" }]);
+        const missing = fetch(702, ["ui_class"]);
+        await flush();
+        await expect(missing).resolves.toMatchObject({ id: 702, ui_class: "" });
+
+        jest.mocked(get).mockResolvedValueOnce([{ id: 701, username: "Broken" }]);
+        const broken = fetch(701, ["ui_class"]);
+        await flush();
+        await expect(broken).resolves.toMatchObject({ ui_class: "[ERROR]" });
+
+        const callsAfterError = jest.mocked(get).mock.calls.length;
+        await expect(fetch(701, ["ui_class"])).resolves.toMatchObject({ ui_class: "[ERROR]" });
+        expect(jest.mocked(get).mock.calls.length).toBe(callsAfterError);
+
+        jest.mocked(get).mockResolvedValueOnce([{ id: 701, username: "Broken", ui_class: "bot" }]);
+        const refreshed = fetch(701, ["ui_class"], { refresh: true });
+        await flush();
+        await expect(refreshed).resolves.toMatchObject({ ui_class: "bot" });
+        expect(jest.mocked(get).mock.calls.length).toBe(callsAfterError + 1);
     });
 });
