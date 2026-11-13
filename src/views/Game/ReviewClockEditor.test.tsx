@@ -53,7 +53,7 @@ function setRow(color: "black" | "white", fields: { time?: string; count?: strin
 
 test("the controller sets a player's time left", () => {
     const { goban, setClock } = reviewBoard();
-    render(<ReviewClockEditor goban={goban} editable={true} />);
+    render(<ReviewClockEditor goban={goban} />);
 
     const row = setRow("white", { time: "1:30" });
     fireEvent.click(row.querySelector(".ReviewClockEditor-set")!);
@@ -63,7 +63,7 @@ test("the controller sets a player's time left", () => {
 
 test("hours, minutes and seconds are all understood", () => {
     const { goban, setClock } = reviewBoard();
-    render(<ReviewClockEditor goban={goban} editable={true} />);
+    render(<ReviewClockEditor goban={goban} />);
 
     fireEvent.click(setRow("black", { time: "1:02:03" }).querySelector(".ReviewClockEditor-set")!);
     fireEvent.click(setRow("black", { time: "45" }).querySelector(".ReviewClockEditor-set")!);
@@ -74,7 +74,7 @@ test("hours, minutes and seconds are all understood", () => {
 
 test("byo-yomi periods put the clock in overtime", () => {
     const { goban, setClock } = reviewBoard(BYOYOMI);
-    render(<ReviewClockEditor goban={goban} editable={true} />);
+    render(<ReviewClockEditor goban={goban} />);
 
     const row = setRow("black", { time: "0:30", count: "3" });
     fireEvent.click(row.querySelector(".ReviewClockEditor-set")!);
@@ -95,7 +95,7 @@ test("canadian stones put the clock in overtime", () => {
         stones_per_period: 5,
         pause_on_weekends: false,
     });
-    render(<ReviewClockEditor goban={goban} editable={true} />);
+    render(<ReviewClockEditor goban={goban} />);
 
     const row = setRow("black", { time: "4:20", count: "4" });
     fireEvent.click(row.querySelector(".ReviewClockEditor-set")!);
@@ -109,7 +109,7 @@ test("canadian stones put the clock in overtime", () => {
 
 test("without an overtime system there is no count to fill in", () => {
     const { goban } = reviewBoard();
-    render(<ReviewClockEditor goban={goban} editable={true} />);
+    render(<ReviewClockEditor goban={goban} />);
     expect(
         screen.getByTestId("review-clock-black").querySelector(".ReviewClockEditor-count"),
     ).toBeNull();
@@ -117,7 +117,7 @@ test("without an overtime system there is no count to fill in", () => {
 
 test("clearing removes the clock", () => {
     const { goban, setClock } = reviewBoard();
-    render(<ReviewClockEditor goban={goban} editable={true} />);
+    render(<ReviewClockEditor goban={goban} />);
 
     fireEvent.click(
         screen.getByTestId("review-clock-black").querySelector(".ReviewClockEditor-clear")!,
@@ -128,7 +128,7 @@ test("clearing removes the clock", () => {
 
 test("a time that can't be read is not sent", () => {
     const { goban, setClock } = reviewBoard();
-    render(<ReviewClockEditor goban={goban} editable={true} />);
+    render(<ReviewClockEditor goban={goban} />);
 
     const row = setRow("black", { time: "soon" });
     fireEvent.click(row.querySelector(".ReviewClockEditor-set")!);
@@ -144,7 +144,7 @@ test("the fields show the clocks of the node being viewed", () => {
         period_time_left: 30000,
         periods_left: 3,
     };
-    render(<ReviewClockEditor goban={goban} editable={true} />);
+    render(<ReviewClockEditor goban={goban} />);
     const time = () =>
         screen
             .getByTestId("review-clock-black")
@@ -164,15 +164,9 @@ test("the fields show the clocks of the node being viewed", () => {
     ).toBe("3");
 });
 
-test("viewers see no editor", () => {
-    const { goban } = reviewBoard();
-    const { container } = render(<ReviewClockEditor goban={goban} editable={false} />);
-    expect(container).toBeEmptyDOMElement();
-});
-
 test("unrelated review updates keep what is being typed; a clock change refreshes it", () => {
     const { goban } = reviewBoard();
-    render(<ReviewClockEditor goban={goban} editable={true} />);
+    render(<ReviewClockEditor goban={goban} />);
     const time = () =>
         screen
             .getByTestId("review-clock-black")

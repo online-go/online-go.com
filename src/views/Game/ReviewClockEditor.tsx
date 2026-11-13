@@ -18,20 +18,11 @@
 import * as React from "react";
 import { clockTimeLeft, Goban, JGOFPlayerClock, MoveTree } from "goban";
 import { _, pgettext } from "@/lib/translate";
-import { clockTimeSettings } from "@/components/Clock";
+import { clockTimeSystem } from "@/components/Clock";
 import "./ReviewClockEditor.css";
 
-interface ReviewClockEditorProps {
-    goban: Goban;
-    /** Only the review's controller may set clocks */
-    editable: boolean;
-}
-
 /** Lets a review's controller set or clear each player's clock on the current node */
-export function ReviewClockEditor({
-    goban,
-    editable,
-}: ReviewClockEditorProps): React.ReactElement | null {
+export function ReviewClockEditor({ goban }: { goban: Goban }): React.ReactElement {
     const [node, setNode] = React.useState<MoveTree>(goban.engine.cur_move);
     // Clocks change on the node in place; this re-renders so a row whose
     // clock changed starts over from the new value (rows are keyed on it).
@@ -48,11 +39,7 @@ export function ReviewClockEditor({
         };
     }, [goban]);
 
-    if (!editable) {
-        return null;
-    }
-
-    const system = clockTimeSettings(goban)?.system;
+    const system = clockTimeSystem(goban);
     const overtime = system === "byoyomi" || system === "canadian" ? system : undefined;
 
     return (

@@ -242,6 +242,13 @@ describe("demo time control", () => {
         expect(jest.mocked(patch).mock.calls[0][1]).not.toHaveProperty("time_control");
     });
 
+    test("a demo whose SGF has its own time settings keeps them read-only", async () => {
+        await act(async () => {
+            render(<GameInfoModal {...modalProps(demo)} creatorId={77} sgfTimeSettings={true} />);
+        });
+        expect(screen.queryByLabelText("Use a time control")).toBeNull();
+    });
+
     test("reviews of games keep a read-only time control", async () => {
         mockGet.mockResolvedValue({ creator: 77 });
         await renderModal({ game_id: 123, review_id: 456 });

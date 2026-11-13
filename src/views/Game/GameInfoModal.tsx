@@ -46,6 +46,8 @@ interface GameInfoModalProperties {
     white: GobanEnginePlayerEntry;
     annulled: boolean;
     creatorId: number;
+    /** The board's SGF sets its own time control, which a demo's can't override */
+    sgfTimeSettings?: boolean;
 }
 
 const NO_TIME_CONTROL = {
@@ -539,7 +541,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                         </dd>
                         <dt>{_("Time Control")}</dt>
                         <dd>
-                            {editable && review_id && !config.game_id
+                            {editable && review_id && !config.game_id && !this.props.sgfTimeSettings
                                 ? this.renderDemoTimeControl()
                                 : time_control_description}
                         </dd>
@@ -580,6 +582,7 @@ export function openGameInfoModal(
     white: GobanEnginePlayerEntry,
     annulled: boolean,
     creator_id: number,
+    sgf_time_settings: boolean,
 ): void {
     openModal(
         <GameInfoModal
@@ -588,6 +591,7 @@ export function openGameInfoModal(
             white={white}
             annulled={annulled}
             creatorId={creator_id}
+            sgfTimeSettings={sgf_time_settings}
             fastDismiss
         />,
     );

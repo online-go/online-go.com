@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { clockTimeLeft, Goban, JGOFPlayerClock, JGOFTimeControl, MoveTree } from "goban";
+import { clockTimeLeft, Goban, JGOFPlayerClock, JGOFTimeControlSystem, MoveTree } from "goban";
 import { pgettext } from "@/lib/translate";
 import { prettyTime } from "./Clock";
 import "./SGFClock.css";
@@ -78,7 +78,7 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
         return null;
     }
 
-    const system = clockTimeSettings(goban)?.system;
+    const system = clockTimeSystem(goban);
     const time_left = clockTimeLeft(player_clock);
 
     let clock_className = "Clock SGFClock " + color;
@@ -123,10 +123,10 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
     );
 }
 
-/** The time settings per-move clocks are read against: an uploaded SGF's own, else the game's */
-export function clockTimeSettings(goban: Goban): JGOFTimeControl | undefined {
-    const time_control = goban.engine.sgf_time_settings ?? goban.engine.time_control;
-    return time_control?.system === "none" ? undefined : time_control;
+/** The time system per-move clocks are read against: an uploaded SGF's own, else the game's */
+export function clockTimeSystem(goban: Goban): JGOFTimeControlSystem | undefined {
+    const system = (goban.engine.sgf_time_settings ?? goban.engine.time_control)?.system;
+    return system === "none" ? undefined : system;
 }
 
 /**
@@ -139,7 +139,7 @@ export function hasMoveClocks(goban: Goban): boolean {
     if (goban.review_id) {
         return true;
     }
-    if (!clockTimeSettings(goban)) {
+    if (!clockTimeSystem(goban)) {
         return false;
     }
     const last = goban.engine.last_official_move;

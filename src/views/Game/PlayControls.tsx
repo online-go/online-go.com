@@ -527,10 +527,9 @@ export function ReviewControls({ review_id }: ReviewControlsProps) {
                         ></textarea>
                     </div>
 
-                    <ReviewClockEditor
-                        goban={goban}
-                        editable={review_controller_id === data.get("user").id}
-                    />
+                    {review_controller_id === user.id && !in_pushed_analysis && (
+                        <ReviewClockEditor goban={goban} />
+                    )}
 
                     <div style={{ padding: "0.5em" }}>
                         <div className="input-group">
