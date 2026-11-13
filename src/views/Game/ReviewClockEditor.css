@@ -26,3 +26,7 @@
 .ReviewClockEditor-time.invalid {
     outline: 1px solid red;
 }
+
+.ReviewClockEditor-row.inherited input {
+    opacity: 0.6;
+}

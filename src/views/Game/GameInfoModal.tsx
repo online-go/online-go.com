@@ -265,22 +265,26 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
         const time_control = this.demoTimeControl();
         return (
             <>
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={!!time_control}
-                        onChange={this.toggleDemoTimeControl}
-                    />{" "}
-                    {_("Use a time control")}
-                </label>
+                <dd>
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={!!time_control}
+                            onChange={this.toggleDemoTimeControl}
+                        />{" "}
+                        {_("Use a time control")}
+                    </label>
+                </dd>
                 {time_control && (
-                    <TimeControlPicker
-                        timeControl={time_control}
-                        onChange={(tc) => this.setState({ demo_time_control: tc })}
-                        forceSystem={false}
-                        boardWidth={config.width || 19}
-                        boardHeight={config.height || 19}
-                    />
+                    <div className="demo-time-control">
+                        <TimeControlPicker
+                            timeControl={time_control}
+                            onChange={(tc) => this.setState({ demo_time_control: tc })}
+                            forceSystem={false}
+                            boardWidth={config.width || 19}
+                            boardHeight={config.height || 19}
+                        />
+                    </div>
                 )}
             </>
         );
@@ -540,11 +544,11 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                                 : _("Analysis and conditional moves enabled")}
                         </dd>
                         <dt>{_("Time Control")}</dt>
-                        <dd>
-                            {editable && review_id && !config.game_id && !this.props.sgfTimeSettings
-                                ? this.renderDemoTimeControl()
-                                : time_control_description}
-                        </dd>
+                        {editable && review_id && !config.game_id && !this.props.sgfTimeSettings ? (
+                            this.renderDemoTimeControl()
+                        ) : (
+                            <dd>{time_control_description}</dd>
+                        )}
                         {config.disable_vacation && (
                             <>
                                 <dt>{_("Vacation")}</dt>

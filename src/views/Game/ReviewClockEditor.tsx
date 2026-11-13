@@ -21,11 +21,14 @@ import { _, pgettext } from "@/lib/translate";
 import { clockTimeSystem } from "@/components/Clock";
 import "./ReviewClockEditor.css";
 
-/** Lets a review's controller set or clear each player's clock on the current node */
+/**
+ * Lets a review's controller set or clear each player's clock on the current
+ * node. The fields start from the node's own clock, or else from the last
+ * clock set earlier in the line. A valid edit is set on the node at once.
+ */
 export function ReviewClockEditor({ goban }: { goban: Goban }): React.ReactElement {
     const [node, setNode] = React.useState<MoveTree>(goban.engine.cur_move);
-    // Clocks change on the node in place; this re-renders so a row whose
-    // clock changed starts over from the new value (rows are keyed on it).
+    // Clocks change on the node in place; this re-renders so the rows see it.
     const [, setVersion] = React.useState(0);
 
     React.useEffect(() => {
@@ -46,10 +49,11 @@ export function ReviewClockEditor({ goban }: { goban: Goban }): React.ReactEleme
         <div className="ReviewClockEditor">
             {(["black", "white"] as const).map((color) => (
                 <ClockRow
-                    key={`${color}-${node.id}-${JSON.stringify(node[`${color}_clock`] ?? null)}`}
+                    key={`${color}-${node.id}`}
                     goban={goban}
                     color={color}
                     clock={node[`${color}_clock`]}
+                    lastClock={lastClock(node.parent, color)}
                     overtime={overtime}
                 />
             ))}
@@ -60,60 +64,64 @@ export function ReviewClockEditor({ goban }: { goban: Goban }): React.ReactEleme
 interface ClockRowProps {
     goban: Goban;
     color: "black" | "white";
+    /** The clock set on the current node */
     clock: JGOFPlayerClock | undefined;
+    /** The last clock set earlier in the line, shown when the node has none */
+    lastClock: JGOFPlayerClock | undefined;
     overtime: "byoyomi" | "canadian" | undefined;
 }
 
-function ClockRow({ goban, color, clock, overtime }: ClockRowProps): React.ReactElement {
-    const [time, setTime] = React.useState(clock ? formatDuration(clockTimeLeft(clock)) : "");
-    const [count, setCount] = React.useState(
-        clock && !clock.main_time ? `${clock.periods_left ?? clock.moves_left ?? ""}` : "",
-    );
-    const [invalid, setInvalid] = React.useState(false);
+interface ClockFields {
+    time: string;
+    count: string;
+}
 
-    const save = () => {
-        const time_left = parseDuration(time);
-        const periods = count.trim() === "" ? undefined : parseInt(count);
-        if (time_left === null || (periods !== undefined && (isNaN(periods) || periods < 0))) {
-            setInvalid(true);
-            return;
+function ClockRow({ goban, color, clock, lastClock, overtime }: ClockRowProps): React.ReactElement {
+    const shown = clock ?? lastClock;
+    const [fields, setFields] = React.useState<ClockFields>(() => clockFields(shown));
+    // The clock this row set last, so it can tell its own change from one made elsewhere
+    const sent = React.useRef<string | null>(null);
+    const clock_json = JSON.stringify(clock ?? null);
+    const shown_json = JSON.stringify(shown ?? null);
+
+    React.useEffect(() => {
+        if (clock_json !== sent.current) {
+            sent.current = null;
+            setFields(clockFields(shown));
         }
-        setInvalid(false);
+    }, [clock_json, shown_json]);
 
-        if (overtime === "byoyomi" && periods !== undefined) {
-            goban.setReviewNodeClock(color, {
-                main_time: 0,
-                period_time_left: time_left,
-                periods_left: periods,
-            });
-        } else if (overtime === "canadian" && periods !== undefined) {
-            goban.setReviewNodeClock(color, {
-                main_time: 0,
-                block_time_left: time_left,
-                moves_left: periods,
-            });
-        } else {
-            goban.setReviewNodeClock(color, { main_time: time_left });
+    const edit = (next: ClockFields) => {
+        setFields(next);
+        const new_clock = buildClock(next, overtime);
+        if (new_clock && JSON.stringify(new_clock) !== clock_json) {
+            sent.current = JSON.stringify(new_clock);
+            goban.setReviewNodeClock(color, new_clock);
         }
     };
 
+    const invalid = fields.time.trim() !== "" && !buildClock(fields, overtime);
+
     return (
-        <div className="ReviewClockEditor-row" data-testid={`review-clock-${color}`}>
+        <div
+            className={"ReviewClockEditor-row" + (clock ? "" : " inherited")}
+            data-testid={`review-clock-${color}`}
+        >
             <span className="ReviewClockEditor-color">
                 {color === "black" ? _("Black") : _("White")}
             </span>
             <input
                 className={"ReviewClockEditor-time" + (invalid ? " invalid" : "")}
-                value={time}
+                value={fields.time}
                 placeholder={pgettext("Review clock editor: time left, e.g. 1:30", "Time left")}
-                onChange={(ev) => setTime(ev.target.value)}
+                onChange={(ev) => edit({ ...fields, time: ev.target.value })}
             />
             {overtime && (
                 <input
                     className="ReviewClockEditor-count"
                     type="number"
                     min={0}
-                    value={count}
+                    value={fields.count}
                     placeholder={
                         overtime === "byoyomi"
                             ? pgettext("Review clock editor: byo-yomi periods left", "Periods")
@@ -122,20 +130,60 @@ function ClockRow({ goban, color, clock, overtime }: ClockRowProps): React.React
                                   "Stones",
                               )
                     }
-                    onChange={(ev) => setCount(ev.target.value)}
+                    onChange={(ev) => edit({ ...fields, count: ev.target.value })}
                 />
             )}
-            <button className="xs ReviewClockEditor-set" onClick={save}>
-                {pgettext("Set the clock on this move", "Set")}
-            </button>
             <button
                 className="xs ReviewClockEditor-clear"
+                disabled={!clock}
                 onClick={() => goban.setReviewNodeClock(color, null)}
             >
                 {pgettext("Remove the clock from this move", "Clear")}
             </button>
         </div>
     );
+}
+
+/** The last clock for `color` on `node` or the nodes before it */
+function lastClock(node: MoveTree | null, color: "black" | "white"): JGOFPlayerClock | undefined {
+    for (let cur = node; cur; cur = cur.parent) {
+        const clock = cur[`${color}_clock`];
+        if (clock) {
+            return clock;
+        }
+    }
+    return undefined;
+}
+
+function clockFields(clock: JGOFPlayerClock | undefined): ClockFields {
+    return {
+        time: clock ? formatDuration(clockTimeLeft(clock)) : "",
+        count: clock && !clock.main_time ? `${clock.periods_left ?? clock.moves_left ?? ""}` : "",
+    };
+}
+
+/** The clock the fields describe, or null if they don't describe a valid one */
+function buildClock(
+    fields: ClockFields,
+    overtime: "byoyomi" | "canadian" | undefined,
+): JGOFPlayerClock | null {
+    const time_left = parseDuration(fields.time);
+    const count = fields.count.trim();
+    const periods = count === "" ? undefined : Number(count);
+    if (
+        time_left === null ||
+        (periods !== undefined && (!Number.isInteger(periods) || periods < 0))
+    ) {
+        return null;
+    }
+
+    if (overtime === "byoyomi" && periods !== undefined) {
+        return { main_time: 0, period_time_left: time_left, periods_left: periods };
+    }
+    if (overtime === "canadian" && periods !== undefined) {
+        return { main_time: 0, block_time_left: time_left, moves_left: periods };
+    }
+    return { main_time: time_left };
 }
 
 /** Reads `h:mm:ss`, `m:ss` or plain seconds into milliseconds */

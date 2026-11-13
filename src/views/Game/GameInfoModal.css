@@ -55,6 +55,35 @@
         width: 70%;
     }
 
+    .demo-time-control {
+        width: 100%;
+
+        .form-group {
+            align-items: center;
+            margin: 0.2rem 0;
+            line-height: 24pt;
+        }
+
+        .control-label {
+            width: 30%;
+            padding-right: 0;
+            line-height: 1.2;
+        }
+
+        .controls {
+            flex-grow: 0;
+            width: 70%;
+            padding-left: 1rem;
+            box-sizing: border-box;
+        }
+
+        select,
+        input {
+            width: 12.8rem;
+            max-width: 100%;
+        }
+    }
+
     .disable-vacation-warning {
         color: var(--warning-fg);
         font-weight: bold;

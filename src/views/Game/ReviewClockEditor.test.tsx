@@ -55,8 +55,7 @@ test("the controller sets a player's time left", () => {
     const { goban, setClock } = reviewBoard();
     render(<ReviewClockEditor goban={goban} />);
 
-    const row = setRow("white", { time: "1:30" });
-    fireEvent.click(row.querySelector(".ReviewClockEditor-set")!);
+    setRow("white", { time: "1:30" });
 
     expect(setClock).toHaveBeenCalledWith("white", { main_time: 90000 });
 });
@@ -65,8 +64,8 @@ test("hours, minutes and seconds are all understood", () => {
     const { goban, setClock } = reviewBoard();
     render(<ReviewClockEditor goban={goban} />);
 
-    fireEvent.click(setRow("black", { time: "1:02:03" }).querySelector(".ReviewClockEditor-set")!);
-    fireEvent.click(setRow("black", { time: "45" }).querySelector(".ReviewClockEditor-set")!);
+    setRow("black", { time: "1:02:03" });
+    setRow("black", { time: "45" });
 
     expect(setClock).toHaveBeenNthCalledWith(1, "black", { main_time: 3723000 });
     expect(setClock).toHaveBeenNthCalledWith(2, "black", { main_time: 45000 });
@@ -76,10 +75,9 @@ test("byo-yomi periods put the clock in overtime", () => {
     const { goban, setClock } = reviewBoard(BYOYOMI);
     render(<ReviewClockEditor goban={goban} />);
 
-    const row = setRow("black", { time: "0:30", count: "3" });
-    fireEvent.click(row.querySelector(".ReviewClockEditor-set")!);
+    setRow("black", { time: "0:30", count: "3" });
 
-    expect(setClock).toHaveBeenCalledWith("black", {
+    expect(setClock).toHaveBeenLastCalledWith("black", {
         main_time: 0,
         period_time_left: 30000,
         periods_left: 3,
@@ -97,10 +95,9 @@ test("canadian stones put the clock in overtime", () => {
     });
     render(<ReviewClockEditor goban={goban} />);
 
-    const row = setRow("black", { time: "4:20", count: "4" });
-    fireEvent.click(row.querySelector(".ReviewClockEditor-set")!);
+    setRow("black", { time: "4:20", count: "4" });
 
-    expect(setClock).toHaveBeenCalledWith("black", {
+    expect(setClock).toHaveBeenLastCalledWith("black", {
         main_time: 0,
         block_time_left: 260000,
         moves_left: 4,
@@ -117,6 +114,7 @@ test("without an overtime system there is no count to fill in", () => {
 
 test("clearing removes the clock", () => {
     const { goban, setClock } = reviewBoard();
+    goban.engine.cur_move.black_clock = { main_time: 60000 };
     render(<ReviewClockEditor goban={goban} />);
 
     fireEvent.click(
@@ -131,7 +129,6 @@ test("a time that can't be read is not sent", () => {
     render(<ReviewClockEditor goban={goban} />);
 
     const row = setRow("black", { time: "soon" });
-    fireEvent.click(row.querySelector(".ReviewClockEditor-set")!);
 
     expect(setClock).not.toHaveBeenCalled();
     expect(row.querySelector(".ReviewClockEditor-time")).toHaveClass("invalid");
@@ -144,6 +141,7 @@ test("the fields show the clocks of the node being viewed", () => {
         period_time_left: 30000,
         periods_left: 3,
     };
+    goban.engine.jumpTo(goban.engine.move_tree);
     render(<ReviewClockEditor goban={goban} />);
     const time = () =>
         screen
@@ -183,4 +181,40 @@ test("unrelated review updates keep what is being typed; a clock change refreshe
         goban.emit("review.updated");
     });
     expect(time().value).toBe("1:15");
+});
+
+test("a node without a clock starts from the last clock set before it", () => {
+    const { goban, setClock } = reviewBoard(BYOYOMI);
+    const first = goban.engine.move_tree.trunk_next!;
+    first.black_clock = { main_time: 0, period_time_left: 30000, periods_left: 3 };
+    act(() => {
+        goban.engine.jumpTo(first.trunk_next!);
+    });
+    render(<ReviewClockEditor goban={goban} />);
+
+    const row = screen.getByTestId("review-clock-black");
+    expect(row.querySelector<HTMLInputElement>(".ReviewClockEditor-time")!.value).toBe("0:30");
+    expect(row.querySelector<HTMLInputElement>(".ReviewClockEditor-count")!.value).toBe("3");
+    expect(row).toHaveClass("inherited");
+    expect(row.querySelector(".ReviewClockEditor-clear")).toBeDisabled();
+    expect(setClock).not.toHaveBeenCalled();
+});
+
+test("setting the clock while typing keeps the field as typed", () => {
+    const { goban, setClock } = reviewBoard();
+    setClock.mockImplementation((color, clock) => {
+        goban.engine.cur_move.applyClocks({ [`${color}_clock`]: clock });
+        goban.emit("review.updated");
+    });
+    render(<ReviewClockEditor goban={goban} />);
+    const time = screen
+        .getByTestId("review-clock-black")
+        .querySelector<HTMLInputElement>(".ReviewClockEditor-time")!;
+
+    setRow("black", { time: "1:2" });
+
+    expect(goban.engine.cur_move.black_clock).toEqual({ main_time: 62000 });
+    expect(time.isConnected).toBe(true);
+    expect(time.value).toBe("1:2");
+    expect(screen.getByTestId("review-clock-black")).not.toHaveClass("inherited");
 });
