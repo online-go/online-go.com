@@ -25,24 +25,30 @@ import "./ReviewClockEditor.css";
  * Lets a review's controller set or clear each player's clock on the current
  * node. The fields start from the node's own clock, or else from the last
  * clock set earlier in the line. A valid edit is set on the node at once.
+ * Nothing is shown while the review has no time control.
  */
-export function ReviewClockEditor({ goban }: { goban: Goban }): React.ReactElement {
+export function ReviewClockEditor({ goban }: { goban: Goban }): React.ReactElement | null {
     const [node, setNode] = React.useState<MoveTree>(goban.engine.cur_move);
-    // Clocks change on the node in place; this re-renders so the rows see it.
+    // Clocks and the time control change in place; this re-renders so the rows see it.
     const [, setVersion] = React.useState(0);
 
     React.useEffect(() => {
         const onCurMove = (move: MoveTree) => setNode(move);
-        const onReviewUpdated = () => setVersion((v) => v + 1);
+        const refresh = () => setVersion((v) => v + 1);
         goban.on("cur_move", onCurMove);
-        goban.on("review.updated", onReviewUpdated);
+        goban.on("review.updated", refresh);
+        goban.on("load", refresh);
         return () => {
             goban.off("cur_move", onCurMove);
-            goban.off("review.updated", onReviewUpdated);
+            goban.off("review.updated", refresh);
+            goban.off("load", refresh);
         };
     }, [goban]);
 
     const system = clockTimeSystem(goban);
+    if (!system) {
+        return null;
+    }
     const overtime = system === "byoyomi" || system === "canadian" ? system : undefined;
 
     return (

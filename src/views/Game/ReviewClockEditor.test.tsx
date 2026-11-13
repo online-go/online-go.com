@@ -12,7 +12,14 @@ import * as React from "react";
 import { GobanController } from "@/lib/GobanController";
 import { ReviewClockEditor } from "./ReviewClockEditor";
 
-function reviewBoard(time_control?: object) {
+const ABSOLUTE = {
+    system: "absolute",
+    speed: "live",
+    total_time: 600,
+    pause_on_weekends: false,
+};
+
+function reviewBoard(time_control: object | null = ABSOLUTE) {
     const goban = new GobanController({
         review_id: 77,
         width: 9,
@@ -110,6 +117,12 @@ test("without an overtime system there is no count to fill in", () => {
     expect(
         screen.getByTestId("review-clock-black").querySelector(".ReviewClockEditor-count"),
     ).toBeNull();
+});
+
+test("a review without a time control has no clocks to edit", () => {
+    const { goban } = reviewBoard(null);
+    const { container } = render(<ReviewClockEditor goban={goban} />);
+    expect(container).toBeEmptyDOMElement();
 });
 
 test("clearing removes the clock", () => {
