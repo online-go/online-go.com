@@ -41,9 +41,9 @@ test("a byo-yomi record in overtime shows the period time and periods left", () 
                 2,
                 1000,
                 undefined,
-                { clock: { main_time: 0, periods_left: 3, period_time_left: 30000 } },
+                { black_clock: { main_time: 0, periods_left: 3, period_time_left: 30000 } },
             ],
-            [6, 6, 1000, undefined, { clock: { main_time: 512000 } }],
+            [6, 6, 1000, undefined, { white_clock: { main_time: 512000 } }],
         ],
     });
     goban.engine.jumpTo(goban.engine.move_tree.trunk_next!);
@@ -70,7 +70,7 @@ test("a canadian record in overtime shows the block time and stones left", () =>
                 2,
                 1000,
                 undefined,
-                { clock: { main_time: 0, moves_left: 4, block_time_left: 260000 } },
+                { black_clock: { main_time: 0, moves_left: 4, block_time_left: 260000 } },
             ],
         ],
     });
@@ -92,8 +92,8 @@ test("the final position of a finished game shows the clocks at the end", () => 
             pause_on_weekends: false,
         },
         moves: [
-            [2, 2, 1000, undefined, { clock: { main_time: 250000 } }],
-            [6, 6, 1000, undefined, { clock: { main_time: 240000 } }],
+            [2, 2, 1000, undefined, { black_clock: { main_time: 250000 } }],
+            [6, 6, 1000, undefined, { white_clock: { main_time: 240000 } }],
         ],
         final_clock: { black: { main_time: 0 }, white: { main_time: 240000 } },
     });
@@ -111,13 +111,13 @@ test("the final position of a finished game shows the clocks at the end", () => 
 
 test("a clock set on the current review node shows without navigating", () => {
     const goban = finishedGame({
-        moves: [[2, 2, 1000, undefined, { clock: { main_time: 512000 } }]],
+        moves: [[2, 2, 1000, undefined, { black_clock: { main_time: 512000 } }]],
     });
     const { container } = render(<SGFClock goban={goban} color="black" />);
     expect(container.querySelector(".main-time")).toHaveTextContent("8:32");
 
     act(() => {
-        goban.engine.cur_move.applyClockUpdate({ black: { main_time: 90000 } });
+        goban.engine.cur_move.applyClocks({ black_clock: { main_time: 90000 } });
         goban.emit("review.updated");
     });
     expect(container.querySelector(".main-time")).toHaveTextContent("1:30");

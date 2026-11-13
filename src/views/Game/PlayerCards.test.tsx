@@ -360,7 +360,7 @@ describe("which clock the card shows", () => {
         const { container } = renderCard({
             phase: "finished",
             time_control: FISCHER,
-            moves: [[2, 2, 1000, undefined, { clock: { main_time: 250000 } }]],
+            moves: [[2, 2, 1000, undefined, { black_clock: { main_time: 250000 } }]],
         });
         expect(container.querySelector(".SGFClock")).toHaveTextContent("4:10");
     });
@@ -385,7 +385,7 @@ describe("which clock the card shows", () => {
             } as any);
             const goban = gameController.goban;
             goban.engine.place(2, 2);
-            goban.engine.cur_move.applyClockUpdate({ black: { main_time: 90000 } });
+            goban.engine.cur_move.applyClocks({ black_clock: { main_time: 90000 } });
             goban.engine.setAsCurrentReviewMove();
 
             const { container, unmount } = render(
@@ -404,7 +404,7 @@ describe("which clock the card shows", () => {
         const { container } = renderCard({
             phase: "play",
             time_control: FISCHER,
-            moves: [[2, 2, 1000, undefined, { clock: { main_time: 250000 } }]],
+            moves: [[2, 2, 1000, undefined, { black_clock: { main_time: 250000 } }]],
         });
         expect(container.querySelector(".SGFClock")).toBeNull();
     });

@@ -179,7 +179,7 @@ test("unrelated review updates keep what is being typed; a clock change refreshe
     expect(time().value).toBe("1:2");
 
     act(() => {
-        goban.engine.cur_move.applyClockUpdate({ black: { main_time: 75000 } });
+        goban.engine.cur_move.applyClocks({ black_clock: { main_time: 75000 } });
         goban.emit("review.updated");
     });
     expect(time().value).toBe("1:15");
