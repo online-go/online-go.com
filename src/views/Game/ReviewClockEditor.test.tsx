@@ -169,3 +169,24 @@ test("viewers see no editor", () => {
     const { container } = render(<ReviewClockEditor goban={goban} editable={false} />);
     expect(container).toBeEmptyDOMElement();
 });
+
+test("unrelated review updates keep what is being typed; a clock change refreshes it", () => {
+    const { goban } = reviewBoard();
+    render(<ReviewClockEditor goban={goban} editable={true} />);
+    const time = () =>
+        screen
+            .getByTestId("review-clock-black")
+            .querySelector<HTMLInputElement>(".ReviewClockEditor-time")!;
+
+    setRow("black", { time: "1:2" });
+    act(() => {
+        goban.emit("review.updated");
+    });
+    expect(time().value).toBe("1:2");
+
+    act(() => {
+        goban.engine.cur_move.applyClockUpdate({ black: { main_time: 75000 } });
+        goban.emit("review.updated");
+    });
+    expect(time().value).toBe("1:15");
+});

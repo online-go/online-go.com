@@ -130,10 +130,15 @@ export function clockTimeSettings(goban: Goban): JGOFTimeControl | undefined {
 }
 
 /**
- * Whether there are per-move clocks to show: the game has time settings
- * and a clock was recorded on its official line or at its end.
+ * Whether to show per-move clocks rather than the live clock. Reviews and
+ * demos always do, since their controller can set clocks on any node at any
+ * time; SGFClock shows nothing until one is found. Games need time settings
+ * and a clock recorded on their official line or at their end.
  */
 export function hasMoveClocks(goban: Goban): boolean {
+    if (goban.review_id) {
+        return true;
+    }
     if (!clockTimeSettings(goban)) {
         return false;
     }

@@ -374,6 +374,32 @@ describe("which clock the card shows", () => {
         expect(container.querySelector(".SGFClock")).toBeNull();
     });
 
+    test("a clock set on a demo's review node shows, with or without a time control", () => {
+        for (const time_control of [FISCHER, undefined]) {
+            data.set("user", TEST_USER);
+            const gameController = new GobanController({
+                review_id: 999,
+                width: 9,
+                height: 9,
+                ...(time_control ? { time_control } : {}),
+            } as any);
+            const goban = gameController.goban;
+            goban.engine.place(2, 2);
+            goban.engine.cur_move.applyClockUpdate({ black: { main_time: 90000 } });
+            goban.engine.setAsCurrentReviewMove();
+
+            const { container, unmount } = render(
+                <Router>
+                    <GobanControllerContext.Provider value={gameController}>
+                        <PlayerCard goban={goban} {...BASE_PROPS} color="black" />
+                    </GobanControllerContext.Provider>
+                </Router>,
+            );
+            expect(container.querySelector(".SGFClock")).toHaveTextContent("1:30");
+            unmount();
+        }
+    });
+
     test("a game in progress keeps the live clock", () => {
         const { container } = renderCard({
             phase: "play",

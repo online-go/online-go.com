@@ -33,7 +33,9 @@ export function ReviewClockEditor({
     editable,
 }: ReviewClockEditorProps): React.ReactElement | null {
     const [node, setNode] = React.useState<MoveTree>(goban.engine.cur_move);
-    const [version, setVersion] = React.useState(0);
+    // Clocks change on the node in place; this re-renders so a row whose
+    // clock changed starts over from the new value (rows are keyed on it).
+    const [, setVersion] = React.useState(0);
 
     React.useEffect(() => {
         const onCurMove = (move: MoveTree) => setNode(move);
@@ -57,7 +59,7 @@ export function ReviewClockEditor({
         <div className="ReviewClockEditor">
             {(["black", "white"] as const).map((color) => (
                 <ClockRow
-                    key={`${color}-${node.id}-${version}`}
+                    key={`${color}-${node.id}-${JSON.stringify(node[`${color}_clock`] ?? null)}`}
                     goban={goban}
                     color={color}
                     clock={node[`${color}_clock`]}
