@@ -18,3 +18,9 @@
 .SGFClock {
     opacity: 0.85;
 }
+
+.SGFClock .paused-label {
+    margin-left: 0.4em;
+    font-size: 0.8em;
+    text-transform: uppercase;
+}

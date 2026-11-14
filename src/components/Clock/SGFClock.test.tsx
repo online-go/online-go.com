@@ -128,3 +128,78 @@ test("a game with no recorded clocks shows nothing", () => {
     const { container } = render(<SGFClock goban={goban} color="black" />);
     expect(container).toBeEmptyDOMElement();
 });
+
+describe("demo board running clock", () => {
+    function demoBoard() {
+        const goban = new GobanController({
+            review_id: 77,
+            width: 9,
+            height: 9,
+            time_control: BYOYOMI,
+            moves: [
+                [2, 2, 1000, undefined, { black_clock: { main_time: 512000 } }],
+                [6, 6, 1000, undefined, { white_clock: { main_time: 500000 } }],
+            ],
+        } as any).goban;
+        goban.engine.jumpTo(goban.engine.last_official_move);
+        return goban;
+    }
+
+    afterEach(() => {
+        jest.useRealTimers();
+        jest.restoreAllMocks();
+    });
+
+    test("on the live move a running clock counts down", () => {
+        jest.useFakeTimers();
+        const goban = demoBoard();
+        let main_time = 590000;
+        jest.spyOn(goban, "getReviewClock").mockImplementation(() => ({
+            clock: { main_time },
+            on_move: true,
+            running: true,
+        }));
+        const { container } = render(<SGFClock goban={goban} color="black" />);
+        expect(container.querySelector(".main-time")).toHaveTextContent("9:50");
+
+        main_time = 589000;
+        act(() => {
+            jest.advanceTimersByTime(1000);
+        });
+        expect(container.querySelector(".main-time")).toHaveTextContent("9:49");
+    });
+
+    test("a paused clock shows Paused", () => {
+        const goban = demoBoard();
+        jest.spyOn(goban, "getReviewClock").mockReturnValue({
+            clock: { main_time: 590000 },
+            on_move: true,
+            running: false,
+        });
+        const { container } = render(<SGFClock goban={goban} color="black" />);
+        expect(container).toHaveTextContent("Paused");
+        expect(container.querySelector(".SGFClock")).toHaveClass("paused");
+    });
+
+    test("away from the live move the stored clock shows", () => {
+        const goban = demoBoard();
+        jest.spyOn(goban, "getReviewClock").mockReturnValue({
+            clock: { main_time: 590000 },
+            on_move: true,
+            running: true,
+        });
+        act(() => {
+            goban.engine.jumpTo(goban.engine.move_tree.trunk_next!);
+        });
+        const { container } = render(<SGFClock goban={goban} color="black" />);
+        expect(container.querySelector(".main-time")).toHaveTextContent("8:32");
+    });
+
+    test("a board never started looks as today", () => {
+        const goban = demoBoard();
+        jest.spyOn(goban, "getReviewClock").mockReturnValue(null);
+        const { container } = render(<SGFClock goban={goban} color="black" />);
+        expect(container.querySelector(".main-time")).toHaveTextContent("8:32");
+        expect(container).not.toHaveTextContent("Paused");
+    });
+});

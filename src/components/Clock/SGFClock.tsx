@@ -16,7 +16,14 @@
  */
 
 import * as React from "react";
-import { clockTimeLeft, Goban, JGOFPlayerClock, JGOFTimeControlSystem, MoveTree } from "goban";
+import {
+    clockTimeLeft,
+    findClock,
+    Goban,
+    JGOFPlayerClock,
+    JGOFTimeControlSystem,
+    MoveTree,
+} from "goban";
 import { pgettext } from "@/lib/translate";
 import { prettyTime } from "./Clock";
 import "./SGFClock.css";
@@ -69,11 +76,27 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
         };
     }, [goban]);
 
-    const player_clock = React.useMemo(
+    const stored_clock = React.useMemo(
         () => (curMove ? clockAtMove(goban, curMove, color) : null),
         [goban, curMove, color, review_version],
     );
 
+    // A demo board's running clock, shown on its live move
+    const live =
+        curMove && goban && curMove.id === goban.engine.last_official_move?.id
+            ? goban.getReviewClock(color)
+            : null;
+    const ticking = !!live?.running && live.on_move;
+    const [, setTick] = React.useState(0);
+    React.useEffect(() => {
+        if (!ticking) {
+            return;
+        }
+        const interval = setInterval(() => setTick((t) => t + 1), 1000);
+        return () => clearInterval(interval);
+    }, [ticking]);
+
+    const player_clock = live?.clock ?? stored_clock;
     if (!curMove || !goban || !player_clock) {
         return null;
     }
@@ -84,6 +107,9 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
     let clock_className = "Clock SGFClock " + color;
     if (player_clock.main_time <= 0) {
         clock_className += " in-overtime";
+    }
+    if (live && !live.running) {
+        clock_className += " paused";
     }
     if (className) {
         clock_className += " " + className;
@@ -119,6 +145,12 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
                     <span className="period-moves boxed">{player_clock.moves_left}</span>
                 </span>
             )}
+
+            {live && !live.running && (
+                <span className="paused-label">
+                    {pgettext("Demo board clock is paused", "Paused")}
+                </span>
+            )}
         </span>
     );
 }
@@ -145,8 +177,8 @@ export function hasMoveClocks(goban: Goban): boolean {
     const last = goban.engine.last_official_move;
     return (
         !!goban.engine.config.final_clock ||
-        !!findClockForColor(last, "black") ||
-        !!findClockForColor(last, "white")
+        !!findClock(last, "black") ||
+        !!findClock(last, "white")
     );
 }
 
@@ -168,27 +200,5 @@ function clockAtMove(
     ) {
         return final_clock[color];
     }
-    return findClockForColor(move, color);
-}
-
-/**
- * Walk backward through the move tree to find the most recent clock value
- * for the given color. BL/WL can both appear on the same node, so each
- * color has its own field (black_clock / white_clock).
- */
-function findClockForColor(
-    move: MoveTree | null,
-    color: "black" | "white",
-): JGOFPlayerClock | null {
-    const field = color === "black" ? "black_clock" : "white_clock";
-    let current: MoveTree | null = move;
-
-    while (current) {
-        if (current[field]) {
-            return current[field];
-        }
-        current = current.parent;
-    }
-
-    return null;
+    return findClock(move, color) ?? null;
 }
