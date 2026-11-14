@@ -20,7 +20,8 @@ import * as data from "@/lib/data";
 import { _, moment } from "@/lib/translate";
 import { get, post, patch, del } from "@/lib/requests";
 import { openModal, Modal, ModalConstructorInput } from "@/components/Modal";
-import { timeControlDescription } from "@/components/TimeControl";
+import { TimeControl, TimeControlPicker, timeControlDescription } from "@/components/TimeControl";
+import { recallTimeControlSettings } from "@/components/TimeControl/TimeControlUpdates";
 import { Player } from "@/components/Player";
 import { handicapText } from "@/components/GameAcceptModal";
 import {
@@ -45,11 +46,22 @@ interface GameInfoModalProperties {
     white: GobanEnginePlayerEntry;
     annulled: boolean;
     creatorId: number;
+    /** The board's SGF sets its own time control, which a demo's can't override */
+    sgfTimeSettings?: boolean;
 }
+
+const NO_TIME_CONTROL = {
+    system: "none",
+    time_control: "none",
+    speed: "correspondence",
+    pause_on_weekends: false,
+};
 
 interface GameInfoModalState {
     komi: string;
     creatorId: number;
+    /** A demo's time control as being edited; undefined until it is touched */
+    demo_time_control?: TimeControl | null;
     tournament_id?: number;
     tournament_name?: string;
     ladder_id?: number;
@@ -143,6 +155,13 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                 settings["white_player_pro"] = !!config.players?.white.pro;
             }
 
+            const demo_time_control = this.state.demo_time_control;
+            if (demo_time_control !== undefined) {
+                settings["time_control"] = demo_time_control
+                    ? { ...demo_time_control, time_control: demo_time_control.system }
+                    : NO_TIME_CONTROL;
+            }
+
             patch(`reviews/${review_id}`, settings)
                 .then(() => {
                     this.close();
@@ -225,6 +244,51 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
         this.props.config.komi = parseFloat(ev.target.value);
         //this.forceUpdate();
     };
+    /** The demo's time control as currently shown: the edit in progress, else its own */
+    demoTimeControl(): TimeControl | null {
+        if (this.state.demo_time_control !== undefined) {
+            return this.state.demo_time_control;
+        }
+        const time_control = this.props.config.time_control as TimeControl | undefined;
+        return time_control && time_control.system !== "none" ? time_control : null;
+    }
+    toggleDemoTimeControl = () => {
+        const config = this.props.config;
+        this.setState({
+            demo_time_control: this.demoTimeControl()
+                ? null
+                : recallTimeControlSettings("live", "byoyomi", config.width, config.height),
+        });
+    };
+    renderDemoTimeControl() {
+        const config = this.props.config;
+        const time_control = this.demoTimeControl();
+        return (
+            <>
+                <dd>
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={!!time_control}
+                            onChange={this.toggleDemoTimeControl}
+                        />{" "}
+                        {_("Use a time control")}
+                    </label>
+                </dd>
+                {time_control && (
+                    <div className="demo-time-control">
+                        <TimeControlPicker
+                            timeControl={time_control}
+                            onChange={(tc) => this.setState({ demo_time_control: tc })}
+                            forceSystem={false}
+                            boardWidth={config.width || 19}
+                            boardHeight={config.height || 19}
+                        />
+                    </div>
+                )}
+            </>
+        );
+    }
     updateRules = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         this.props.config.rules = ev.target.value as GobanEngineRules;
         this.forceUpdate();
@@ -480,7 +544,11 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, GameIn
                                 : _("Analysis and conditional moves enabled")}
                         </dd>
                         <dt>{_("Time Control")}</dt>
-                        <dd>{time_control_description}</dd>
+                        {editable && review_id && !config.game_id && !this.props.sgfTimeSettings ? (
+                            this.renderDemoTimeControl()
+                        ) : (
+                            <dd>{time_control_description}</dd>
+                        )}
                         {config.disable_vacation && (
                             <>
                                 <dt>{_("Vacation")}</dt>
@@ -518,6 +586,7 @@ export function openGameInfoModal(
     white: GobanEnginePlayerEntry,
     annulled: boolean,
     creator_id: number,
+    sgf_time_settings: boolean,
 ): void {
     openModal(
         <GameInfoModal
@@ -526,6 +595,7 @@ export function openGameInfoModal(
             white={white}
             annulled={annulled}
             creatorId={creator_id}
+            sgfTimeSettings={sgf_time_settings}
             fastDismiss
         />,
     );

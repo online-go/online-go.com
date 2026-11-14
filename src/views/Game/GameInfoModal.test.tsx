@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import type { GobanConfig } from "goban";
 import { Modal } from "@/components/Modal";
-import { get } from "@/lib/requests";
+import { get, patch } from "@/lib/requests";
 import { GameInfoModal } from "./GameInfoModal";
 
-jest.mock("@/lib/requests", () => ({ get: jest.fn() }));
+jest.mock("@/lib/requests", () => ({ get: jest.fn(), patch: jest.fn(() => Promise.resolve()) }));
 jest.mock("@/lib/data", () => ({ get: () => ({ id: 77, is_moderator: false }) }));
 jest.mock("@/components/Player", () => ({
     Player: ({ user }: { user: number | { id: number; name?: string } }) => (
@@ -31,7 +31,35 @@ jest.mock("@/components/Player", () => ({
         </span>
     ),
 }));
-jest.mock("@/components/TimeControl", () => ({ timeControlDescription: () => "" }));
+jest.mock("@/components/TimeControl", () => ({
+    timeControlDescription: () => "",
+    TimeControlPicker: ({ onChange }: { onChange: (tc: object) => void }) => (
+        <button
+            onClick={() =>
+                onChange({
+                    system: "byoyomi",
+                    speed: "live",
+                    main_time: 600,
+                    period_time: 30,
+                    periods: 5,
+                    pause_on_weekends: false,
+                })
+            }
+        >
+            pick byo-yomi
+        </button>
+    ),
+}));
+jest.mock("@/components/TimeControl/TimeControlUpdates", () => ({
+    recallTimeControlSettings: () => ({
+        system: "fischer",
+        speed: "live",
+        initial_time: 120,
+        time_increment: 30,
+        max_time: 300,
+        pause_on_weekends: false,
+    }),
+}));
 jest.mock("@/components/GameAcceptModal", () => ({ handicapText: () => "None" }));
 
 jest.mock("@/lib/misc", () => ({
@@ -148,4 +176,82 @@ test("does not fetch a game record for a standalone review", async () => {
     });
     expect(mockGet).not.toHaveBeenCalled();
     expect(creatorField()).toHaveTextContent("Player 77");
+});
+
+describe("demo time control", () => {
+    const demo = { game_id: 0, review_id: 456 };
+
+    beforeEach(() => jest.mocked(patch).mockClear());
+
+    async function renderModal(config: GobanConfig) {
+        await act(async () => {
+            render(<GameInfoModal {...modalProps(config)} creatorId={77} />);
+        });
+    }
+
+    test("a demo's owner can give it a time control", async () => {
+        await renderModal(demo);
+
+        fireEvent.click(screen.getByLabelText("Use a time control"));
+        fireEvent.click(screen.getByText("pick byo-yomi"));
+        fireEvent.click(screen.getByText("Save"));
+
+        expect(jest.mocked(patch)).toHaveBeenCalledWith(
+            "reviews/456",
+            expect.objectContaining({
+                time_control: {
+                    system: "byoyomi",
+                    time_control: "byoyomi",
+                    speed: "live",
+                    main_time: 600,
+                    period_time: 30,
+                    periods: 5,
+                    pause_on_weekends: false,
+                },
+            }),
+        );
+    });
+
+    test("turning the time control off sends none", async () => {
+        await renderModal({
+            ...demo,
+            time_control: {
+                system: "fischer",
+                speed: "live",
+                initial_time: 120,
+                time_increment: 30,
+                max_time: 300,
+                pause_on_weekends: false,
+            },
+        });
+
+        fireEvent.click(screen.getByLabelText("Use a time control"));
+        fireEvent.click(screen.getByText("Save"));
+
+        expect(jest.mocked(patch)).toHaveBeenCalledWith(
+            "reviews/456",
+            expect.objectContaining({
+                time_control: expect.objectContaining({ system: "none", time_control: "none" }),
+            }),
+        );
+    });
+
+    test("saving without touching the time control leaves it alone", async () => {
+        await renderModal(demo);
+        fireEvent.click(screen.getByText("Save"));
+        expect(jest.mocked(patch).mock.calls[0][1]).not.toHaveProperty("time_control");
+    });
+
+    test("a demo whose SGF has its own time settings keeps them read-only", async () => {
+        await act(async () => {
+            render(<GameInfoModal {...modalProps(demo)} creatorId={77} sgfTimeSettings={true} />);
+        });
+        expect(screen.queryByLabelText("Use a time control")).toBeNull();
+    });
+
+    test("reviews of games keep a read-only time control", async () => {
+        mockGet.mockResolvedValue({ creator: 77 });
+        await renderModal({ game_id: 123, review_id: 456 });
+        expect(screen.queryByLabelText("Use a time control")).toBeNull();
+    });
 });

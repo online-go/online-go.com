@@ -326,3 +326,86 @@ test("clicking the rengo team count opens the team modal with the current player
 
     expect(openRengoTeamModal).toHaveBeenCalledWith("black", [alice, bob, carol]);
 });
+
+describe("which clock the card shows", () => {
+    const FISCHER = {
+        system: "fischer",
+        speed: "live",
+        initial_time: 300,
+        time_increment: 10,
+        max_time: 600,
+        pause_on_weekends: false,
+    };
+
+    function renderCard(config: object) {
+        data.set("user", TEST_USER);
+        const gameController = new GobanController({ game_id: 123457, ...config } as any);
+        // Scoring a finished game needs goscorer, which this test environment doesn't load.
+        const side = { total: 0, stones: 0, territory: 0, prisoners: 0, handicap: 0, komi: 0 };
+        jest.spyOn(gameController.goban.engine, "computeScore").mockReturnValue({
+            black: { ...side, scoring_positions: "" },
+            white: { ...side, scoring_positions: "" },
+        } as any);
+        const props = { goban: gameController.goban, ...BASE_PROPS, color: "black" as const };
+        return render(
+            <Router>
+                <GobanControllerContext.Provider value={gameController}>
+                    <PlayerCard {...props} />
+                </GobanControllerContext.Provider>
+            </Router>,
+        );
+    }
+
+    test("a finished game with recorded clocks shows the per-move clock", () => {
+        const { container } = renderCard({
+            phase: "finished",
+            time_control: FISCHER,
+            moves: [[2, 2, 1000, undefined, { black_clock: { main_time: 250000 } }]],
+        });
+        expect(container.querySelector(".SGFClock")).toHaveTextContent("4:10");
+    });
+
+    test("a finished game without recorded clocks shows no clock", () => {
+        const { container } = renderCard({
+            phase: "finished",
+            time_control: FISCHER,
+            moves: [[2, 2, 1000]],
+        });
+        expect(container.querySelector(".SGFClock")).toBeNull();
+    });
+
+    test("a clock set on a demo's review node shows, with or without a time control", () => {
+        for (const time_control of [FISCHER, undefined]) {
+            data.set("user", TEST_USER);
+            const gameController = new GobanController({
+                review_id: 999,
+                width: 9,
+                height: 9,
+                ...(time_control ? { time_control } : {}),
+            } as any);
+            const goban = gameController.goban;
+            goban.engine.place(2, 2);
+            goban.engine.cur_move.applyClocks({ black_clock: { main_time: 90000 } });
+            goban.engine.setAsCurrentReviewMove();
+
+            const { container, unmount } = render(
+                <Router>
+                    <GobanControllerContext.Provider value={gameController}>
+                        <PlayerCard goban={goban} {...BASE_PROPS} color="black" />
+                    </GobanControllerContext.Provider>
+                </Router>,
+            );
+            expect(container.querySelector(".SGFClock")).toHaveTextContent("1:30");
+            unmount();
+        }
+    });
+
+    test("a game in progress keeps the live clock", () => {
+        const { container } = renderCard({
+            phase: "play",
+            time_control: FISCHER,
+            moves: [[2, 2, 1000, undefined, { black_clock: { main_time: 250000 } }]],
+        });
+        expect(container.querySelector(".SGFClock")).toBeNull();
+    });
+});

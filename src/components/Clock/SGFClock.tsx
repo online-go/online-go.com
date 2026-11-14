@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { Goban, JGOFPlayerClock, JGOFTimeControl, MoveTree } from "goban";
+import { clockTimeLeft, Goban, JGOFPlayerClock, JGOFTimeControlSystem, MoveTree } from "goban";
 import { pgettext } from "@/lib/translate";
 import { prettyTime } from "./Clock";
 import "./SGFClock.css";
@@ -56,38 +56,32 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
         };
     }, [goban]);
 
+    // A clock set on the current review node changes the node in place.
+    const [review_version, setReviewVersion] = React.useState(0);
+    React.useEffect(() => {
+        if (!goban) {
+            return;
+        }
+        const onReviewUpdated = () => setReviewVersion((v) => v + 1);
+        goban.on("review.updated", onReviewUpdated);
+        return () => {
+            goban.off("review.updated", onReviewUpdated);
+        };
+    }, [goban]);
+
     const player_clock = React.useMemo(
-        () => (curMove ? findClockForColor(curMove, color) : null),
-        [curMove, color],
+        () => (curMove ? clockAtMove(goban, curMove, color) : null),
+        [goban, curMove, color, review_version],
     );
 
     if (!curMove || !goban || !player_clock) {
         return null;
     }
 
-    const time_settings: JGOFTimeControl | undefined = goban.engine.sgf_time_settings;
-
-    // SGF BL/WL provides a single remaining-time value (converted to
-    // milliseconds by the parser) stored as main_time. During overtime
-    // (byoyomi/canadian), this value IS the period/block time remaining
-    // — the SGF format doesn't separate main time from overtime time.
-    // Therefore period_time_left and block_time_left are never populated
-    // for SGF-sourced clocks. OB/OW, when present, provide periods_left
-    // (byoyomi) or moves_left (canadian).
-
-    const has_time = player_clock.main_time > 0;
-    const has_overtime_info = player_clock.periods_left != null || player_clock.moves_left != null;
-
-    if (!has_time && !has_overtime_info) {
-        return null;
-    }
-
-    const system = time_settings?.system;
+    const system = clockTimeSystem(goban);
+    const time_left = clockTimeLeft(player_clock);
 
     let clock_className = "Clock SGFClock " + color;
-    // Note: in-overtime rarely triggers for SGF data because BL/WL
-    // records remaining period/block time as a positive main_time
-    // value even during overtime. It only fires when time hits zero.
     if (player_clock.main_time <= 0) {
         clock_className += " in-overtime";
     }
@@ -97,12 +91,10 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
 
     return (
         <span className={clock_className}>
-            {has_time && (
-                <span className="main-time boxed">
-                    {prettyTime(player_clock.main_time)}
-                    {system === "absolute" && <span className="absolute-time">+0</span>}
-                </span>
-            )}
+            <span className="main-time boxed">
+                {prettyTime(time_left)}
+                {system === "absolute" && <span className="absolute-time">+0</span>}
+            </span>
 
             {system === "byoyomi" && player_clock.periods_left != null && (
                 <div className="byo-yomi-container">
@@ -129,6 +121,54 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
             )}
         </span>
     );
+}
+
+/** The time system per-move clocks are read against: an uploaded SGF's own, else the game's */
+export function clockTimeSystem(goban: Goban): JGOFTimeControlSystem | undefined {
+    const system = (goban.engine.sgf_time_settings ?? goban.engine.time_control)?.system;
+    return system === "none" ? undefined : system;
+}
+
+/**
+ * Whether to show per-move clocks rather than the live clock. Reviews and
+ * demos always do, since their controller can set clocks on any node at any
+ * time; SGFClock shows nothing until one is found. Games need time settings
+ * and a clock recorded on their official line or at their end.
+ */
+export function hasMoveClocks(goban: Goban): boolean {
+    if (goban.review_id) {
+        return true;
+    }
+    if (!clockTimeSystem(goban)) {
+        return false;
+    }
+    const last = goban.engine.last_official_move;
+    return (
+        !!goban.engine.config.final_clock ||
+        !!findClockForColor(last, "black") ||
+        !!findClockForColor(last, "white")
+    );
+}
+
+/**
+ * The clock to show for a color at a move. At the end of a finished game
+ * this is what the clocks read when it ended, which charges the player on
+ * move for the think the game ended on.
+ */
+function clockAtMove(
+    goban: Goban,
+    move: MoveTree,
+    color: "black" | "white",
+): JGOFPlayerClock | null {
+    const final_clock = goban.engine.config.final_clock;
+    if (
+        final_clock &&
+        goban.engine.phase === "finished" &&
+        move.id === goban.engine.last_official_move.id
+    ) {
+        return final_clock[color];
+    }
+    return findClockForColor(move, color);
 }
 
 /**

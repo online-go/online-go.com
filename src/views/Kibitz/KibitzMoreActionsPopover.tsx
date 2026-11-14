@@ -172,6 +172,7 @@ export function KibitzMoreActionsPopover({
                                     engine.players.white,
                                     controller.annulled,
                                     controller.creator_id || goban.review_owner_id || 0,
+                                    !!engine.sgf_time_settings,
                                 ),
                             )}
                         >
