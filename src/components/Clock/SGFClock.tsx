@@ -23,6 +23,7 @@ import {
     JGOFPlayerClock,
     JGOFTimeControlSystem,
     MoveTree,
+    reviewTimeControl,
 } from "goban";
 import { pgettext } from "@/lib/translate";
 import { prettyTime } from "./Clock";
@@ -157,8 +158,7 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
 
 /** The time system per-move clocks are read against: an uploaded SGF's own, else the game's */
 export function clockTimeSystem(goban: Goban): JGOFTimeControlSystem | undefined {
-    const system = (goban.engine.sgf_time_settings ?? goban.engine.time_control)?.system;
-    return system === "none" ? undefined : system;
+    return reviewTimeControl(goban.engine)?.system;
 }
 
 /**
