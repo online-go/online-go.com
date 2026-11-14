@@ -132,6 +132,11 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
         const notification = this.props.notification;
 
         switch (notification.type) {
+            case "kibitzGameWatched":
+                return Number.isSafeInteger(notification.game_id) && notification.game_id > 0
+                    ? `/game/${notification.game_id}`
+                    : null;
+
             case "gameStarted":
             case "gameEnded":
             case "timecop":
@@ -300,6 +305,11 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                     </div>
                 );
             }
+
+            case "kibitzGameWatched":
+                return (
+                    <div>{pgettext("Kibitz notification", "Your game was watched in Kibitz.")}</div>
+                );
 
             case "timecop": {
                 const now = Date.now() / 1000;
