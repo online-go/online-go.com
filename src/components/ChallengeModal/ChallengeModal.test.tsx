@@ -16,11 +16,12 @@
  */
 
 import * as React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ChallengeModalBody } from "./ChallengeModal";
 import { post } from "@/lib/requests";
 import * as data from "@/lib/data";
+import * as player_cache from "@/lib/player_cache";
 import {
     ChallengeDetails,
     ChallengeModalProperties,
@@ -90,8 +91,8 @@ jest.mock("@/lib/data", () => ({
 }));
 
 jest.mock("@/lib/player_cache", () => ({
-    lookup: () => ({ id: 456, username: "opponent" }),
-    fetch: () => Promise.resolve({ id: 456, username: "opponent" }),
+    lookup: jest.fn(() => ({ id: 456, username: "opponent", ui_class: "" })),
+    fetch: jest.fn(() => Promise.resolve({ id: 456, username: "opponent" })),
 }));
 
 jest.mock("@/lib/requests", () => ({
@@ -840,6 +841,12 @@ describe("ChallengeModalBody", () => {
 describe("rematch saved settings", () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        (bots_list as jest.Mock).mockReturnValue([]);
+        (player_cache.lookup as jest.Mock).mockReturnValue({
+            id: 456,
+            username: "opponent",
+            ui_class: "",
+        });
         mockPreferredSettings = [];
         mockDataValues.clear();
         mockDataValues.set("user", { id: 123, ranking: 10, anonymous: false });
@@ -867,7 +874,10 @@ describe("rematch saved settings", () => {
         });
     });
 
-    function rematchProps(color: "black" | "white" | "automatic"): ChallengeModalProperties {
+    function rematchProps(
+        color: "black" | "white" | "automatic",
+        ranked = false,
+    ): ChallengeModalProperties {
         return {
             ...defaultProps,
             mode: "player" as const,
@@ -884,7 +894,7 @@ describe("rematch saved settings", () => {
                     challenger_color: color,
                     game: {
                         ...defaultProps.config!.challenge.game,
-                        ranked: false,
+                        ranked,
                         komi_auto: "custom",
                         komi: 0.5,
                     },
@@ -913,6 +923,595 @@ describe("rematch saved settings", () => {
         expect(savedKeys).not.toContain("time_control.speed");
     });
 
+    function standardBotRematch(): ChallengeModalProperties {
+        const props = rematchProps("black", true);
+        return {
+            ...props,
+            config: {
+                ...props.config!,
+                challenge: {
+                    ...props.config!.challenge,
+                    game: {
+                        ...props.config!.challenge.game,
+                        ranked: true,
+                        width: 19,
+                        height: 19,
+                        handicap: 0,
+                        komi_auto: "automatic",
+                        private: false,
+                    },
+                },
+            },
+        };
+    }
+
+    it("a bot rematch with standard settings sends ranked: true and does not render the Ranked checkbox", async () => {
+        const user = userEvent.setup();
+        (bots_list as jest.Mock).mockReturnValue([{ id: 456, username: "TestBot" }]);
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+
+        render(<ChallengeModalBody {...standardBotRematch()} modal={mockModal} />);
+
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({
+                    ranked: true,
+                    width: 19,
+                    height: 19,
+                    handicap: 0,
+                    komi_auto: "automatic",
+                    private: false,
+                }),
+            }),
+        );
+    });
+
+    it("hides Ranked and keeps a custom-komi rematch unranked when the opponent is a bot", async () => {
+        const user = userEvent.setup();
+        (bots_list as jest.Mock).mockReturnValue([{ id: 456, username: "TestBot" }]);
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+
+        render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({
+                    ranked: false,
+                    komi_auto: "custom",
+                    komi: 0.5,
+                }),
+            }),
+        );
+    });
+
+    it("shows Ranked for a rematch against a person", () => {
+        (bots_list as jest.Mock).mockReturnValue([{ id: 999, username: "OtherBot" }]);
+        render(<ChallengeModalBody {...rematchProps("white", true)} modal={mockModal} />);
+
+        expect(screen.getByLabelText("Ranked")).toBeEnabled();
+        expect(screen.getByLabelText("Ranked")).toBeChecked();
+    });
+
+    it.each([
+        ["ui_class", { id: 456, username: "OfflineBot", ui_class: "bot provisional" }],
+        ["is_bot", { id: 456, username: "ProfileBot", is_bot: true }],
+    ])(
+        "hides Ranked when a cached opponent is a bot via %s and is not in the active list",
+        async (_mark, player) => {
+            const user = userEvent.setup();
+            (bots_list as jest.Mock).mockReturnValue([]);
+            (player_cache.lookup as jest.Mock).mockReturnValue(player);
+            jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+
+            render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+
+            expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+
+            await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+            expect(post).toHaveBeenCalledWith(
+                "players/456/challenge",
+                expect.objectContaining({
+                    game: expect.objectContaining({
+                        ranked: false,
+                        komi_auto: "custom",
+                        komi: 0.5,
+                    }),
+                }),
+            );
+        },
+    );
+
+    it("hides Ranked and sends a ranked challenge for a normal preferred setting against a bot", async () => {
+        const user = userEvent.setup();
+        (bots_list as jest.Mock).mockReturnValue([{ id: 456, username: "TestBot" }]);
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        mockPreferredSettings = [
+            {
+                initialized: false,
+                min_ranking: -1000,
+                max_ranking: 1000,
+                challenger_color: "white",
+                rengo_auto_start: 0,
+                game: {
+                    name: "Ranked template",
+                    rules: "japanese",
+                    ranked: true,
+                    width: 13,
+                    height: 13,
+                    handicap: 0,
+                    komi_auto: "automatic",
+                    disable_analysis: false,
+                    initial_state: null,
+                    private: false,
+                    rengo: false,
+                    rengo_casual_mode: true,
+                    time_control_parameters: {
+                        system: "byoyomi",
+                        speed: "live",
+                        main_time: 1200,
+                        period_time: 30,
+                        periods: 5,
+                        pause_on_weekends: false,
+                    },
+                },
+            },
+        ];
+
+        render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "25x25" })).toBeEnabled();
+
+        await user.click(screen.getByText("Preferred settings (1)"));
+        await user.click(screen.getByText(/Ranked template/));
+
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+        expect(screen.getByLabelText("Board Size")).toHaveValue("13x13");
+        expect(screen.getByRole("option", { name: "25x25" })).toBeEnabled();
+        expect(
+            document.querySelector<HTMLOptionElement>("#challenge-handicap option[value='10']"),
+        ).toBeEnabled();
+        expect(
+            document.querySelector<HTMLOptionElement>("#challenge-komi option[value='custom']"),
+        ).toBeEnabled();
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({
+                    ranked: true,
+                    width: 13,
+                    height: 13,
+                    handicap: 0,
+                    komi_auto: "automatic",
+                    private: false,
+                }),
+            }),
+        );
+    });
+
+    it("sends ranked: false when a bot challenge uses an unusual board size", async () => {
+        const user = userEvent.setup();
+        (bots_list as jest.Mock).mockReturnValue([{ id: 456, username: "TestBot" }]);
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+
+        render(<ChallengeModalBody {...standardBotRematch()} modal={mockModal} />);
+
+        await user.selectOptions(screen.getByLabelText("Board Size"), "25x25");
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({
+                    width: 25,
+                    height: 25,
+                    ranked: false,
+                }),
+            }),
+        );
+    });
+
+    it("lets a bot challenge use a high handicap or private game without staying ranked", async () => {
+        const user = userEvent.setup();
+        (bots_list as jest.Mock).mockReturnValue([{ id: 456, username: "TestBot" }]);
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+
+        render(<ChallengeModalBody {...standardBotRematch()} modal={mockModal} />);
+
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+        const handicap = document.querySelector<HTMLSelectElement>("#challenge-handicap")!;
+        expect(handicap.querySelector("option[value='10']")).toBeEnabled();
+
+        await user.selectOptions(handicap, "10");
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ handicap: 10, ranked: false }),
+            }),
+        );
+    });
+
+    it("sends ranked: false for a private bot challenge and ranked: true after Private is cleared", async () => {
+        const user = userEvent.setup();
+        (bots_list as jest.Mock).mockReturnValue([{ id: 456, username: "TestBot" }]);
+        jest.mocked(post).mockResolvedValue({ id: 123 });
+
+        render(<ChallengeModalBody {...standardBotRematch()} modal={mockModal} />);
+
+        await user.click(screen.getByLabelText("Private"));
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenLastCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ private: true, ranked: false }),
+            }),
+        );
+
+        await user.click(screen.getByLabelText("Private"));
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenLastCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ private: false, ranked: true }),
+            }),
+        );
+    });
+
+    type CachedOpponent = { id: number; username: string; ui_class?: string; is_bot?: boolean };
+
+    function controlledOpponent(initial: CachedOpponent | null = null) {
+        let cached: CachedOpponent | null = initial;
+        const waiters: Array<{
+            resolve: (player: CachedOpponent) => void;
+            reject: (err: Error) => void;
+        }> = [];
+        (player_cache.lookup as jest.Mock).mockImplementation(() => cached);
+        (player_cache.fetch as jest.Mock).mockImplementation(
+            () =>
+                new Promise((resolve, reject) => {
+                    waiters.push({
+                        resolve: (player) => {
+                            cached = player;
+                            resolve(player);
+                        },
+                        reject,
+                    });
+                }),
+        );
+        return {
+            resolve(player: CachedOpponent) {
+                const waiter = waiters.shift();
+                if (!waiter) {
+                    throw new Error("no player fetch is waiting");
+                }
+                waiter.resolve(player);
+            },
+            reject(err = new Error("network")) {
+                const waiter = waiters.shift();
+                if (!waiter) {
+                    throw new Error("no player fetch is waiting");
+                }
+                waiter.reject(err);
+            },
+        };
+    }
+
+    it("disables Send Challenge while the opponent is still loading", () => {
+        controlledOpponent();
+        render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+
+        expect(screen.getByRole("button", { name: /send challenge/i })).toBeDisabled();
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+        expect(post).not.toHaveBeenCalled();
+    });
+
+    it("sends a ranked challenge after the loaded player is a bot with standard settings", async () => {
+        const user = userEvent.setup();
+        const opponent = controlledOpponent();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        render(<ChallengeModalBody {...standardBotRematch()} modal={mockModal} />);
+
+        expect(screen.getByRole("button", { name: /send challenge/i })).toBeDisabled();
+
+        await act(async () => {
+            opponent.resolve({ id: 456, username: "LateBot", ui_class: "bot" });
+        });
+
+        await waitFor(() =>
+            expect(screen.getByRole("button", { name: /send challenge/i })).toBeEnabled(),
+        );
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({
+                    ranked: true,
+                    komi_auto: "automatic",
+                    private: false,
+                }),
+            }),
+        );
+    });
+
+    it("sends an unranked custom-komi challenge after the loaded player is a bot", async () => {
+        const user = userEvent.setup();
+        const opponent = controlledOpponent();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+
+        await act(async () => {
+            opponent.resolve({ id: 456, username: "LateBot", ui_class: "bot" });
+        });
+
+        await waitFor(() =>
+            expect(screen.getByRole("button", { name: /send challenge/i })).toBeEnabled(),
+        );
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledTimes(1);
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ ranked: false, komi_auto: "custom", komi: 0.5 }),
+            }),
+        );
+    });
+
+    it("keeps ranked after the loaded player is a human", async () => {
+        const user = userEvent.setup();
+        const opponent = controlledOpponent();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+
+        await act(async () => {
+            opponent.resolve({ id: 456, username: "LateHuman", ui_class: "" });
+        });
+
+        await waitFor(() =>
+            expect(screen.getByRole("button", { name: /send challenge/i })).toBeEnabled(),
+        );
+        expect(screen.getByLabelText("Ranked")).toBeChecked();
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ ranked: true }),
+            }),
+        );
+    });
+
+    it.each([
+        ["manual", false],
+        ["automatic", true],
+    ])("retries a %s challenge after the opponent lookup fails", async (_label, automatic) => {
+        const user = userEvent.setup();
+        const opponent = controlledOpponent();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        render(
+            <ChallengeModalBody
+                {...rematchProps("black", true)}
+                autoCreate={automatic}
+                modal={mockModal}
+            />,
+        );
+
+        await act(async () => {
+            opponent.reject(new Error("network"));
+        });
+
+        expect(await screen.findByText("Could not check this player.")).toBeInTheDocument();
+        expect(post).not.toHaveBeenCalled();
+
+        await user.click(screen.getByRole("button", { name: "Retry" }));
+        await act(async () => {
+            opponent.resolve({ id: 456, username: "LateBot", ui_class: "bot" });
+        });
+
+        if (!automatic) {
+            await waitFor(() =>
+                expect(screen.getByRole("button", { name: /send challenge/i })).toBeEnabled(),
+            );
+            await user.click(screen.getByRole("button", { name: /send challenge/i }));
+        }
+
+        await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ ranked: false }),
+            }),
+        );
+    });
+
+    it("waits to auto-create until the opponent is known", async () => {
+        const opponent = controlledOpponent();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        render(
+            <ChallengeModalBody {...rematchProps("black", true)} autoCreate modal={mockModal} />,
+        );
+
+        await act(async () => {
+            await Promise.resolve();
+        });
+        expect(post).not.toHaveBeenCalled();
+
+        await act(async () => {
+            opponent.resolve({ id: 456, username: "LateBot", ui_class: "bot provisional" });
+        });
+
+        await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ ranked: false }),
+            }),
+        );
+    });
+
+    it("auto-creates a known opponent only once", async () => {
+        (bots_list as jest.Mock).mockReturnValue([]);
+        (player_cache.lookup as jest.Mock).mockReturnValue({
+            id: 456,
+            username: "CachedBot",
+            ui_class: "bot",
+        });
+        jest.mocked(post).mockResolvedValue({ id: 123 });
+
+        render(
+            <React.StrictMode>
+                <ChallengeModalBody {...rematchProps("black", true)} autoCreate modal={mockModal} />
+            </React.StrictMode>,
+        );
+
+        await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
+    });
+
+    it.each([
+        ["human", { id: 456, username: "Partial", is_bot: false }, true],
+        ["bot", { id: 456, username: "Partial", ui_class: "bot" }, false],
+    ])("fetches a partial cache entry and sends a %s challenge", async (_label, record, ranked) => {
+        const user = userEvent.setup();
+        const opponent = controlledOpponent({ id: 456, username: "Partial" });
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+
+        expect(player_cache.fetch).toHaveBeenCalledWith(456, ["ui_class"]);
+        expect(screen.getByRole("button", { name: /send challenge/i })).toBeDisabled();
+        expect(post).not.toHaveBeenCalled();
+
+        await act(async () => {
+            opponent.resolve(record);
+        });
+
+        await waitFor(() =>
+            expect(screen.getByRole("button", { name: /send challenge/i })).toBeEnabled(),
+        );
+        if (ranked) {
+            expect(screen.getByLabelText("Ranked")).toBeChecked();
+        } else {
+            expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+        }
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ ranked }),
+            }),
+        );
+    });
+
+    it("shows a lookup error when the loaded ui_class is unresolved", async () => {
+        const opponent = controlledOpponent({ id: 456, username: "Partial" });
+        render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+
+        await act(async () => {
+            opponent.resolve({ id: 456, username: "Partial", ui_class: "[ERROR]" });
+        });
+
+        expect(await screen.findByText("Could not check this player.")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /send challenge/i })).toBeDisabled();
+        expect(post).not.toHaveBeenCalled();
+    });
+
+    it("refetches an unresolved player on Retry and then enables Send", async () => {
+        const user = userEvent.setup();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        let cached: CachedOpponent | null = null;
+        (player_cache.lookup as jest.Mock).mockImplementation(() => cached);
+        (player_cache.fetch as jest.Mock).mockImplementation(
+            (_id: number, _fields: string[], options?: { refresh?: boolean }) => {
+                if (options?.refresh) {
+                    cached = { id: 456, username: "Recovered", ui_class: "" };
+                    return Promise.resolve(cached);
+                }
+                cached = { id: 456, username: "Partial", ui_class: "[ERROR]" };
+                return Promise.resolve(cached);
+            },
+        );
+
+        render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+
+        expect(await screen.findByText("Could not check this player.")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /send challenge/i })).toBeDisabled();
+
+        await user.click(screen.getByRole("button", { name: "Retry" }));
+
+        await waitFor(() =>
+            expect(screen.getByRole("button", { name: /send challenge/i })).toBeEnabled(),
+        );
+        expect(screen.queryByText("Could not check this player.")).not.toBeInTheDocument();
+        expect(player_cache.fetch).toHaveBeenLastCalledWith(456, ["ui_class"], { refresh: true });
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ ranked: true }),
+            }),
+        );
+    });
+
+    it("loads the name of an active bot that is not cached yet", async () => {
+        const opponent = controlledOpponent();
+        (bots_list as jest.Mock).mockReturnValue([{ id: 456, username: "ListedBot" }]);
+        render(<ChallengeModalBody {...rematchProps("black", true)} modal={mockModal} />);
+
+        expect(screen.getByRole("heading")).toHaveTextContent("...");
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /send challenge/i })).toBeEnabled();
+
+        await act(async () => {
+            opponent.resolve({ id: 456, username: "ListedBot", ui_class: "bot" });
+        });
+
+        await waitFor(() => expect(screen.getByRole("heading")).toHaveTextContent("ListedBot"));
+    });
+
+    it("does not post after the dialog unmounts", async () => {
+        const opponent = controlledOpponent();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        const view = render(
+            <ChallengeModalBody {...rematchProps("black", true)} autoCreate modal={mockModal} />,
+        );
+        view.unmount();
+
+        opponent.resolve({ id: 456, username: "LateBot", ui_class: "bot" });
+        await act(async () => {
+            await Promise.resolve();
+            await new Promise((resolve) => setTimeout(resolve, 20));
+        });
+
+        expect(post).not.toHaveBeenCalled();
+    });
+
     it("sends a fork but does not save its settings", async () => {
         const user = userEvent.setup();
         jest.mocked(post).mockResolvedValueOnce({ id: 123 });
@@ -936,6 +1535,56 @@ describe("rematch saved settings", () => {
         );
         const savedKeys = jest.mocked(data.set).mock.calls.map((call) => call[0]);
         expect(savedKeys.filter((key) => /^(challenge|time_control)\./.test(key))).toEqual([]);
+    });
+
+    it("keeps a forked bot game unranked after komi is normalized and the opponent loads", async () => {
+        const user = userEvent.setup();
+        const opponent = controlledOpponent();
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        const forkState = {
+            komi: 0.5,
+            moves: [],
+            width: 19,
+            height: 19,
+            initial_player: "white",
+        };
+
+        render(
+            <ChallengeModalBody
+                mode="player"
+                playerId={456}
+                initialState={forkState}
+                modal={mockModal}
+            />,
+        );
+
+        expect(screen.queryByLabelText("Ranked")).not.toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /send challenge/i })).toBeDisabled();
+
+        await act(async () => {
+            opponent.resolve({ id: 456, username: "ForkBot", ui_class: "bot" });
+        });
+
+        await waitFor(() =>
+            expect(screen.getByRole("button", { name: /send challenge/i })).toBeEnabled(),
+        );
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({
+                    initial_state: forkState,
+                    ranked: false,
+                    width: 19,
+                    height: 19,
+                    handicap: -1,
+                    komi_auto: "automatic",
+                    private: false,
+                }),
+            }),
+        );
     });
 });
 

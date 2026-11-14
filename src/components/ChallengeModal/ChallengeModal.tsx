@@ -100,9 +100,26 @@ function isRankedBotBoardSize(width: number | null, height: number | null): bool
     );
 }
 
+/** A fork copies a position. An empty object is not a position. */
+function hasInitialPosition(initial_state: unknown): boolean {
+    return (
+        typeof initial_state === "object" &&
+        initial_state !== null &&
+        Object.keys(initial_state).length > 0
+    );
+}
+
 function computeBotRanked(
-    game: Pick<GameInput, "private" | "width" | "height" | "handicap" | "komi_auto">,
+    game: Pick<
+        GameInput,
+        "private" | "width" | "height" | "handicap" | "komi_auto" | "initial_state"
+    >,
 ): boolean {
+    // Ranked and handicap are hidden for a fork, so the position stays unranked
+    // after automatic handicap turns komi back to automatic.
+    if (hasInitialPosition(game.initial_state)) {
+        return false;
+    }
     return (
         !game.private &&
         isRankedBotBoardSize(game.width, game.height) &&
@@ -116,6 +133,48 @@ function computeBotRanked(
 // left alone - picking unusual values just flips `ranked` to false.
 function applyBotRanked(game: GameInput): GameInput {
     return { ...game, ranked: computeBotRanked(game) };
+}
+
+/** A direct challenge, including a rematch, is against a bot when that
+ *  player is on the active bot list, or the player cache already marks
+ *  them as a bot. The list is empty for an offline bot and until it loads.
+ *  Game records carry `ui_class` ("bot"); a full profile carries `is_bot`. */
+function challengedPlayerIsBot(playerId: number | undefined): boolean {
+    if (playerId === undefined) {
+        return false;
+    }
+    if (bots_list().some((bot) => bot.id === playerId)) {
+        return true;
+    }
+    const player = player_cache.lookup(playerId);
+    if (player?.is_bot) {
+        return true;
+    }
+    return !!player?.ui_class?.split(" ").includes("bot");
+}
+
+/** A cache entry counts only when it carries is_bot or ui_class. A username
+ *  alone, as chat and autocomplete store, is still unknown. */
+function opponentKind(playerId: number | undefined): "unknown" | "bot" | "human" {
+    if (playerId === undefined) {
+        return "human";
+    }
+    if (bots_list().some((bot) => bot.id === playerId)) {
+        return "bot";
+    }
+    const player = player_cache.lookup(playerId);
+    if (!player) {
+        return "unknown";
+    }
+    const ui_class = player.ui_class;
+    const ui_known = typeof ui_class === "string" && ui_class !== "[ERROR]";
+    if (player.is_bot === true || (ui_known && ui_class.split(" ").includes("bot"))) {
+        return "bot";
+    }
+    if (player.is_bot === false || ui_known) {
+        return "human";
+    }
+    return "unknown";
 }
 
 // The backend's handicap calculator ignores requested_komi when the handicap
@@ -164,6 +223,8 @@ export class ChallengeModal extends Modal<{}, ChallengeModalProperties, Challeng
 
 export class ChallengeModalBody extends React.Component<ChallengeModalInput, ChallengeModalState> {
     ref: React.RefObject<HTMLDivElement | null> = React.createRef();
+    private alive = false;
+    private autoCreated = false;
 
     constructor(props: ChallengeModalInput) {
         super(props);
@@ -251,6 +312,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             view_mode: goban_view_mode(),
             hide_preferred_settings_on_portrait: true,
             time_control: this.loadLastTimeControlSettings(),
+            opponent_kind:
+                this.props.mode === "player" ? opponentKind(this.props.playerId) : "human",
+            opponent_error: false,
         };
 
         const state: any = this.state;
@@ -294,12 +358,13 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             state.challenge.game = applyBotRanked(state.challenge.game);
             state.challenge.game.disable_analysis = false;
         }
-
-        if (this.props.autoCreate) {
-            setTimeout(() => {
-                this.createChallenge();
-                this.props.modal.close?.();
-            }, 1);
+        // A direct bot opponent derives ranked the same way computer mode does.
+        if (this.isDirectBotOpponent()) {
+            state.challenge.game = applyBotRanked(state.challenge.game);
+        }
+        // A fork hides Ranked. Do this after komi normalization and bot ranking.
+        if (hasInitialPosition(this.props.initialState)) {
+            state.challenge.game.ranked = false;
         }
 
         this.props.modal.on("open", () => {
@@ -308,6 +373,106 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         this.props.modal.on("close", () => {
             data.unwatch("preferred-game-settings", this.preferredSettingsUpdated);
         });
+    }
+
+    componentDidMount() {
+        this.alive = true;
+        const playerId = this.props.playerId;
+        const cached = playerId ? player_cache.lookup(playerId) : null;
+        // Also fetch a known bot that is not cached, so the title is not stuck on "...".
+        if (
+            this.props.mode === "player" &&
+            playerId &&
+            (!cached || this.state.opponent_kind === "unknown")
+        ) {
+            this.loadOpponent();
+            return;
+        }
+        this.maybeAutoCreate();
+    }
+
+    componentWillUnmount() {
+        this.alive = false;
+    }
+
+    /** Load a direct opponent that is not cached and not in the active bot list. */
+    loadOpponent = () => {
+        const playerId = this.props.playerId;
+        if (!this.alive || !playerId) {
+            return;
+        }
+        // A cached "[ERROR]" or undefined ui_class is not a result. Retry must
+        // ask the cache to load the player again. The first load omits that
+        // option so a normal fetch stays a two-argument call.
+        const refresh = this.state.opponent_error;
+        this.setState({ opponent_error: false });
+        const pending = refresh
+            ? player_cache.fetch(playerId, ["ui_class"], { refresh: true })
+            : player_cache.fetch(playerId, ["ui_class"]);
+        pending
+            .then(() => {
+                if (!this.alive) {
+                    return;
+                }
+                const kind = opponentKind(playerId);
+                if (kind === "unknown") {
+                    this.setState({ opponent_kind: "unknown", opponent_error: true });
+                    return;
+                }
+                this.setState(
+                    (state) => {
+                        const game =
+                            kind === "bot"
+                                ? applyBotRanked(state.challenge.game)
+                                : state.challenge.game;
+                        return {
+                            opponent_kind: kind,
+                            opponent_error: false,
+                            challenge: {
+                                ...state.challenge,
+                                game: hasInitialPosition(this.props.initialState)
+                                    ? { ...game, ranked: false }
+                                    : game,
+                            },
+                        };
+                    },
+                    () => this.maybeAutoCreate(),
+                );
+            })
+            .catch((err) => {
+                if (!this.alive) {
+                    return;
+                }
+                errorLogger(err);
+                this.setState({ opponent_error: true }, () => this.maybeAutoCreate());
+            });
+    };
+
+    maybeAutoCreate = () => {
+        if (
+            !this.alive ||
+            this.autoCreated ||
+            !this.props.autoCreate ||
+            this.state.opponent_kind === "unknown"
+        ) {
+            return;
+        }
+        this.autoCreated = true;
+        this.createChallenge();
+    };
+
+    /** A direct challenge whose opponent is already known to be a bot. */
+    isDirectBotOpponent(): boolean {
+        return (
+            this.props.mode === "player" &&
+            (this.state.opponent_kind === "bot" || challengedPlayerIsBot(this.props.playerId))
+        );
+    }
+
+    /** Computer mode and a direct bot opponent derive `ranked` from the
+     *  settings. The Ranked checkbox stays hidden in both cases. */
+    usesBotRanked(): boolean {
+        return this.props.mode === "computer" || this.isDirectBotOpponent();
     }
 
     rengo_auto_start_input_warning(): boolean {
@@ -463,6 +628,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             setting.game.rengo = false;
             setting.game.rengo_casual_mode = true;
         }
+        if (this.isDirectBotOpponent()) {
+            setting.game.ranked = applyBotRanked(setting.game).ranked;
+        }
         this.setState({
             challenge: setting,
             time_control: JSON.parse(JSON.stringify(setting.game.time_control_parameters)),
@@ -544,6 +712,19 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         challenge.game.rengo = next.challenge.game.rengo;
         challenge.game.rengo_casual_mode = next.challenge.game.rengo_casual_mode;
 
+        // Derive ranked before the ranked komi rule. Unusual settings stay
+        // unranked, so a bot rematch keeps its custom komi. A fork stays
+        // unranked as well: Ranked is hidden, and automatic handicap has
+        // already turned its komi back to automatic.
+        if (
+            hasInitialPosition(this.props.initialState) ||
+            hasInitialPosition(challenge.game.initial_state)
+        ) {
+            challenge.game.ranked = false;
+        } else if (this.isDirectBotOpponent()) {
+            challenge.game.ranked = applyBotRanked(challenge.game).ranked;
+        }
+
         if (challenge.game.ranked) {
             challenge.game.komi_auto = "automatic";
         }
@@ -555,6 +736,10 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     }
 
     createChallenge = () => {
+        if (!this.alive || this.state.opponent_kind === "unknown") {
+            return;
+        }
+
         const next = this.next();
 
         if (!this.validateBoardSize()) {
@@ -761,7 +946,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     update_private = (isPrivate: boolean) =>
         this.update_game_settings((prev) => {
             const next = { ...prev, private: isPrivate };
-            if (this.props.mode === "computer") {
+            if (this.usesBotRanked()) {
                 return applyBotRanked(next);
             }
             return { ...next, ranked: false };
@@ -823,7 +1008,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     update_board_width = (width: number | null) =>
         this.update_game_settings((prev) => {
             const next = { ...prev, width: width };
-            if (this.props.mode === "computer") {
+            if (this.usesBotRanked()) {
                 return applyBotRanked(next);
             }
             return next;
@@ -832,7 +1017,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     update_board_height = (height: number | null) =>
         this.update_game_settings((prev) => {
             const next = { ...prev, height: height };
-            if (this.props.mode === "computer") {
+            if (this.usesBotRanked()) {
                 return applyBotRanked(next);
             }
             return next;
@@ -847,7 +1032,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
     update_handicap = (handicap: number) =>
         this.update_game_settings((prev) => {
             const next = coerceKomiForAutoHandicap({ ...prev, handicap: handicap });
-            if (this.props.mode === "computer") {
+            if (this.usesBotRanked()) {
                 return applyBotRanked(next);
             }
             return next;
@@ -878,7 +1063,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             return {
                 challenge: {
                     ...prev.challenge,
-                    game: this.props.mode === "computer" ? applyBotRanked(nextGame) : nextGame,
+                    game: this.usesBotRanked() ? applyBotRanked(nextGame) : nextGame,
                 },
             };
         });
@@ -1196,8 +1381,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     handicapSettings = () => {
         const game = this.gameState();
-        // In bot mode, users can pick any handicap; ranked auto-flips to false.
-        const restrict_ranked_only = game.ranked && this.props.mode !== "computer";
+        // Computer mode and a direct bot opponent can pick any handicap;
+        // ranked flips off when the handicap is outside the ranked range.
+        const restrict_ranked_only = game.ranked && !this.usesBotRanked();
         return (
             <div className="form-group" id="challenge.game.handicap-group">
                 <label className="control-label">{_("Handicap")}</label>
@@ -1234,8 +1420,9 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     komiSettings = () => {
         const game = this.gameState();
-        // In bot mode, users can pick custom komi; ranked auto-flips to false.
-        const restrict_ranked_only = game.ranked && this.props.mode !== "computer";
+        // Computer mode and a direct bot opponent can pick custom komi;
+        // ranked flips off when komi is not automatic.
+        const restrict_ranked_only = game.ranked && !this.usesBotRanked();
         // Auto handicap forces auto komi - the backend handicap calculator
         // ignores requested_komi in the auto-handicap branch.
         const auto_handicap = game.handicap < 0;
@@ -1293,6 +1480,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             >
                 {!this.state.forking_game &&
                     this.props.mode !== "computer" &&
+                    this.state.opponent_kind === "human" &&
                     this.rankedSettings()}
                 {!this.state.forking_game && this.boardSizeSettings()}
             </div>
@@ -1301,8 +1489,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
     boardSizeSettings = () => {
         const conf = this.state.conf;
-        const enable_custom_board_sizes =
-            this.props.mode === "computer" || !this.state.challenge.game.ranked;
+        const enable_custom_board_sizes = this.usesBotRanked() || !this.state.challenge.game.ranked;
 
         return (
             <>
@@ -1869,13 +2056,6 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         //     this.state.challenge.game.height,
         // );
 
-        if (player_id && !player) {
-            player_cache
-                .fetch(player_id)
-                .then(() => this.setState({ player_username_resolved: true }))
-                .catch(errorLogger);
-        }
-
         return (
             <div className="Modal ChallengeModal">
                 <div
@@ -1957,9 +2137,24 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
                         </button>
                     )}
                     {!user?.anonymous && mode === "player" && (
-                        <button onClick={this.createChallenge} className="primary">
+                        <button
+                            onClick={this.createChallenge}
+                            className="primary"
+                            disabled={this.state.opponent_kind === "unknown"}
+                        >
                             {_("Send Challenge")}
                         </button>
+                    )}
+                    {mode === "player" && this.state.opponent_error && (
+                        <div className="opponent-lookup-error">
+                            {pgettext(
+                                "A direct challenge could not load the opponent",
+                                "Could not check this player.",
+                            )}{" "}
+                            <button type="button" className="xs" onClick={this.loadOpponent}>
+                                {_("Retry")}
+                            </button>
+                        </div>
                     )}
                     {!user?.anonymous && mode === "open" && (
                         <button
