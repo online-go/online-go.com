@@ -29,25 +29,37 @@ const useEstimate = generateGobanHook(
     ["score_estimate"],
 );
 
+/**
+ * The score beside the board. `scoreText` replaces the estimator result when
+ * the score bar is on, and the exit button shows only while estimating.
+ */
 export function KibitzScoreEstimate({
     controller,
+    scoreText,
+    estimating = true,
 }: {
     controller: GobanController;
+    scoreText?: string | null;
+    estimating?: boolean;
 }): React.ReactElement {
     const estimate = useEstimate(controller.goban);
     return (
         <div className="KibitzScoreEstimate">
             <span role="status">
-                {estimate?.winner
-                    ? interpolate(_("{{winner}} by {{score}}"), {
-                          winner: estimate.winner,
-                          score: estimate.amount.toFixed(1),
-                      })
-                    : _("Estimating...")}
+                {scoreText
+                    ? scoreText
+                    : estimate?.winner
+                      ? interpolate(_("{{winner}} by {{score}}"), {
+                            winner: estimate.winner,
+                            score: estimate.amount.toFixed(1),
+                        })
+                      : _("Estimating...")}
             </span>
-            <button className="sm primary bold" onClick={controller.stopEstimatingScore}>
-                {_("Back to Board")}
-            </button>
+            {estimating && (
+                <button className="sm primary bold" onClick={controller.stopEstimatingScore}>
+                    {_("Back to Board")}
+                </button>
+            )}
         </div>
     );
 }

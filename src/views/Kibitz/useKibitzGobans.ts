@@ -290,6 +290,7 @@ export function useKibitzGobans({
         const controller = new GobanController({
             ...baseConfig(latest.current.currentGame),
             board_div: document.createElement("div"),
+            evaluation_bar: true,
             interactive: true,
             mode: "analyze",
             connect_to_chat: true,
@@ -445,6 +446,7 @@ export function useKibitzGobans({
                 ? { phase: "play" as const, removed: undefined, score: undefined }
                 : {}),
             board_div: document.createElement("div"),
+            evaluation_bar: true,
             interactive: true,
             connect_to_chat: false,
             game_id: useMainTrunk ? undefined : (targetGameId ?? undefined),
