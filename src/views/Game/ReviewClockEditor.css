@@ -30,3 +30,16 @@
 .ReviewClockEditor-row.inherited input {
     opacity: 0.6;
 }
+
+.ReviewClockEditor-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.ReviewClockEditor-record {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25em;
+    margin: 0;
+}
