@@ -295,6 +295,27 @@ describe("demo board clock controls", () => {
         expect(setRunning).toHaveBeenLastCalledWith(false);
     });
 
+    test("Resume also turns Record on", () => {
+        const { goban } = reviewBoard();
+        jest.spyOn(goban, "setReviewClockRunning").mockImplementation(() => {});
+        jest.spyOn(goban, "reviewClockRunning").mockReturnValue(false);
+        render(<ReviewClockEditor goban={goban} />);
+
+        fireEvent.click(screen.getByRole("button", { name: /Resume/ }));
+        expect(goban.review_record_moves).toBe(true);
+        expect(screen.getByRole("checkbox", { name: /Record/ })).toBeChecked();
+    });
+
+    test("Pause leaves Record as it is", () => {
+        const { goban } = reviewBoard();
+        jest.spyOn(goban, "setReviewClockRunning").mockImplementation(() => {});
+        jest.spyOn(goban, "reviewClockRunning").mockReturnValue(true);
+        render(<ReviewClockEditor goban={goban} />);
+
+        fireEvent.click(screen.getByRole("button", { name: /Pause/ }));
+        expect(goban.review_record_moves).toBe(false);
+    });
+
     test("Record starts off and toggles review_record_moves", () => {
         const { goban } = reviewBoard();
         render(<ReviewClockEditor goban={goban} />);

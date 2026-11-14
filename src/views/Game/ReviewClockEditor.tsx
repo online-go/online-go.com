@@ -175,28 +175,37 @@ function ClockRow({ goban, color, clock, lastClock, overtime }: ClockRowProps): 
 }
 
 /**
- * A demo board's clock controls: pause or resume the running clock, record
- * stones played at the live move as game moves, and take the last one back.
+ * A demo board's clock controls: pause or resume the running clock (resuming
+ * also turns Record on), record stones played at the live move as game moves,
+ * and take the last one back.
  * The goban's state comes back with the review log, so this reads it on each
  * render (ReviewClockEditor re-renders on every review update).
  */
 function DemoClockControls({ goban }: { goban: Goban }): React.ReactElement {
     const [record, setRecord] = React.useState(goban.review_record_moves);
     const running = goban.reviewClockRunning();
-    const toggleRecord = () => {
-        goban.review_record_moves = !record;
-        setRecord(!record);
+    const setRecording = (on: boolean) => {
+        goban.review_record_moves = on;
+        setRecord(on);
+    };
+    // Whoever starts the clock is recording the game, so their stones should
+    // be game moves; without Record nothing they play would be timed
+    const toggleClock = () => {
+        if (!running) {
+            setRecording(true);
+        }
+        goban.setReviewClockRunning(!running);
     };
 
     return (
         <div className="ReviewClockEditor-controls">
-            <button className="xs" onClick={() => goban.setReviewClockRunning(!running)}>
+            <button className="xs" onClick={toggleClock}>
                 {running
                     ? pgettext("Stop the demo board clock", "Pause")
                     : pgettext("Start the demo board clock", "Resume")}
             </button>
             <label className="ReviewClockEditor-record">
-                <input type="checkbox" checked={record} onChange={toggleRecord} />
+                <input type="checkbox" checked={record} onChange={() => setRecording(!record)} />
                 {pgettext("Record stones played at the last game move as game moves", "Record")}
             </label>
             {record && goban.engine.last_official_move.parent && (
