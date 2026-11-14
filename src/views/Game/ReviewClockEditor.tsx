@@ -89,20 +89,31 @@ function ClockRow({ goban, color, clock, lastClock, overtime }: ClockRowProps): 
     const [fields, setFields] = React.useState<ClockFields>(() => clockFields(shown));
     // The clock this row set last, so it can tell its own change from one made elsewhere
     const sent = React.useRef<string | null>(null);
+    // Set by typing; only a changed field is sent (see commit)
+    const dirty = React.useRef(false);
     const clock_json = JSON.stringify(clock ?? null);
     const shown_json = JSON.stringify(shown ?? null);
 
     React.useEffect(() => {
         if (clock_json !== sent.current) {
             sent.current = null;
+            dirty.current = false;
             setFields(clockFields(shown));
         }
     }, [clock_json, shown_json]);
 
-    const edit = (next: ClockFields) => setFields(next);
-    // Sent only on Enter or blur: on a running demo clock every value sent
-    // restarts the countdown for everyone watching
+    // Only a field the controller has changed is sent: the fields start from a
+    // rounded or inherited clock, and on a running demo clock every value sent
+    // restarts the countdown for everyone watching. Sent on Enter or blur.
+    const edit = (next: ClockFields) => {
+        dirty.current = true;
+        setFields(next);
+    };
     const commit = () => {
+        if (!dirty.current) {
+            return;
+        }
+        dirty.current = false;
         const new_clock = buildClock(fields, overtime);
         if (new_clock && JSON.stringify(new_clock) !== clock_json) {
             sent.current = JSON.stringify(new_clock);

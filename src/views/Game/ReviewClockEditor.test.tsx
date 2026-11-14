@@ -250,6 +250,20 @@ describe("committing an edit", () => {
         expect(setClock).toHaveBeenCalledWith("black", { main_time: 582000 });
     });
 
+    test("focusing and leaving a field without typing sends nothing", () => {
+        const { goban, setClock } = reviewBoard();
+        goban.engine.cur_move.parent!.black_clock = { main_time: 589401 };
+        render(<ReviewClockEditor goban={goban} />);
+        const input = screen
+            .getByTestId("review-clock-black")
+            .querySelector(".ReviewClockEditor-time")!;
+
+        fireEvent.focus(input);
+        fireEvent.blur(input);
+        fireEvent.keyDown(input, { key: "Enter" });
+        expect(setClock).not.toHaveBeenCalled();
+    });
+
     test("Enter sends the value", () => {
         const { goban, setClock } = reviewBoard();
         render(<ReviewClockEditor goban={goban} />);
