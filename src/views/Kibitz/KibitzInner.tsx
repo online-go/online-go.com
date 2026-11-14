@@ -922,6 +922,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         }
     }, [controller, secondaryPane.variation_id]);
     const onCreateVariation = React.useCallback(() => {
+        const main = gobans.main?.goban;
+        const viewedPath =
+            centerMode === "main" && main && main.game_id === currentGameId
+                ? main.engine.cur_move.getMoveStringToThisPoint()
+                : undefined;
         void startVariationAfterDiscardConfirm({
             confirmDiscardDraft,
             getSnapshot: getCurrentGameBaseSnapshotForVariation,
@@ -935,14 +940,17 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                         gameId: snapshot.gameId,
                     },
                     snapshot.config.move_tree,
-                    snapshot.movePath,
+                    viewedPath ?? snapshot.movePath,
                     moveTreeIdAsNumber(snapshot.moveTreeId),
                 ),
         });
     }, [
+        centerMode,
         confirmDiscardDraft,
         controller,
+        currentGameId,
         getCurrentGameBaseSnapshotForVariation,
+        gobans.main,
         showCurrentGameBaseNotReadyToast,
     ]);
     // Opening a variation from the chat or the list while a draft has

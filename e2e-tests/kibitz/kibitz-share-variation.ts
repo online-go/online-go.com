@@ -48,11 +48,28 @@ export const kibitzShareVariationTest = async ({
     // The New variation action is a no-op, with a transient toast, until the
     // watcher's main board has a usable trunk, and it is not disabled while
     // that is true. Retry until the draft panel appears.
-    const newVariationButton = watcherPage.locator('.GobanView-tab-button[title="New variation"]');
+    const newVariationButton = variationList.getByRole("button", {
+        name: "Variation",
+        exact: true,
+    });
     await expect(newVariationButton).toBeVisible({ timeout: 15000 });
     console.log("[kibitz share-variation] starting a draft");
 
     const draftPanel = watcherPage.locator(".KibitzVariationPanel.draft");
+    const moveNumber = watcherPage.locator(".MoveNumberControl");
+    await expect(moveNumber).toHaveText(/Move 4\b/, { timeout: 15000 });
+    await watcherPage.getByTitle("Previous move", { exact: true }).click();
+    await expect(moveNumber).toHaveText(/Move 3\b/);
+    await newVariationButton.click();
+    await expect(draftPanel).toBeVisible();
+    await expect(moveNumber).toHaveText(/Move 3\b/);
+
+    await draftPanel.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(draftPanel).toBeHidden();
+    await expect(moveNumber).toHaveText(/Move 3\b/);
+    await watcherPage.getByTitle("Next move", { exact: true }).click();
+    await expect(moveNumber).toHaveText(/Move 4\b/);
+
     await expect(async () => {
         await newVariationButton.click();
         await expect(draftPanel).toBeVisible({ timeout: 1000 });
@@ -63,7 +80,6 @@ export const kibitzShareVariationTest = async ({
     // The draft must start from the live game's current position, the four
     // prelude moves. Checking that here keeps a wrong base from being read
     // later as "the variation did not load".
-    const moveNumber = watcherPage.locator(".MoveNumberControl");
     await expect(moveNumber).toHaveText(/Move 4/, { timeout: 15000 });
     await expect(
         watcherPage.locator("#kibitz-move-tree-container svg text", { hasText: /^4$/ }),
@@ -77,6 +93,8 @@ export const kibitzShareVariationTest = async ({
     console.log("[kibitz share-variation] placing analysis stone at C3");
     await clickOnGobanIntersection(watcherPage, "C3", "9x9", draftGoban);
     await expect(moveNumber).toHaveText(/Move 5/, { timeout: 15000 });
+    await clickOnGobanIntersection(watcherPage, "C4", "9x9", draftGoban);
+    await expect(moveNumber).toHaveText(/Move 6\b/);
 
     // Post it. The name field is optional.
     const postVariationButton = await expectOGSClickableByName(watcherPage, /^Post variation$/);
@@ -96,14 +114,18 @@ export const kibitzShareVariationTest = async ({
         timeout: 15000,
     });
 
-    // Four prelude moves plus the C3 stone. A board that reset to the base
+    // Four prelude moves plus two draft stones. A board that reset to the base
     // would read Move 4 or Move 0.
-    await expect(moveNumber).toHaveText(/Move 5/, { timeout: 15000 });
-    console.log("[kibitz share-variation] posted variation shows Move 5");
+    await expect(moveNumber).toHaveText(/Move 6\b/, { timeout: 15000 });
 
     // And the move tree carries the node, anchored so 15 cannot match.
     await expect(
         watcherPage.locator("#kibitz-move-tree-container svg text", { hasText: /^5$/ }),
     ).toHaveCount(1, { timeout: 15000 });
-    console.log("[kibitz share-variation] variation move (5) present in move tree");
+
+    await watcherPage.getByTitle("Previous move", { exact: true }).click();
+    await expect(moveNumber).toHaveText(/Move 5\b/);
+    await newVariationButton.click();
+    await expect(draftPanel).toBeVisible();
+    await expect(moveNumber).toHaveText(/Move 5\b/);
 };

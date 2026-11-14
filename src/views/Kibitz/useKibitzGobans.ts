@@ -524,14 +524,14 @@ export function useKibitzGobans({
                     restore.selectionKey === secondarySelectionKey
                         ? findNodeByMovePath(controller, restore.path)
                         : null;
-                if (mode === "draft" && pane.variation_draft_base_path) {
+                if (mode === "draft" && pane.variation_draft_base_path !== undefined) {
                     controller.goban.engine.followPath(0, pane.variation_draft_base_path);
                 } else if (restoreNode) {
                     controller.goban.engine.jumpTo(restoreNode);
                 } else if (focusEndpoint) {
                     controller.goban.engine.jumpTo(focusEndpoint);
                 }
-            } else if (mode === "draft" && pane.variation_source_move_path) {
+            } else if (mode === "draft" && pane.variation_source_move_path !== undefined) {
                 controller.goban.engine.followPath(0, pane.variation_source_move_path);
             }
             controller.setAnalyzeTool("stone", "alternate");
@@ -563,7 +563,9 @@ export function useKibitzGobans({
             compose();
         }
 
-        if (!pane.chat_variation) {
+        // A draft started by placing a stone must clear that local move from
+        // the main board. An explicit draft on the trunk leaves it in place.
+        if (!pane.chat_variation && (mode === "variation" || !main.goban.engine.cur_move.trunk)) {
             restoreMainBoardToOfficialTail(main);
         }
         return () => {
