@@ -131,8 +131,8 @@ test("a game with no recorded clocks shows nothing", () => {
     expect(container).toBeEmptyDOMElement();
 });
 
-describe("demo board running clock", () => {
-    function demoBoard(config = {}) {
+describe("a review's running clock", () => {
+    function reviewBoard(config = {}) {
         const goban = new GobanController({
             ...config,
             review_id: 77,
@@ -155,7 +155,7 @@ describe("demo board running clock", () => {
 
     test("on the live move a running clock counts down", () => {
         jest.useFakeTimers();
-        const goban = demoBoard();
+        const goban = reviewBoard();
         let main_time = 590000;
         jest.spyOn(goban, "getReviewClock").mockImplementation(() => ({
             clock: { main_time },
@@ -173,7 +173,7 @@ describe("demo board running clock", () => {
     });
 
     test("a paused clock shows Paused", () => {
-        const goban = demoBoard();
+        const goban = reviewBoard();
         jest.spyOn(goban, "getReviewClock").mockReturnValue({
             clock: { main_time: 590000 },
             on_move: true,
@@ -189,7 +189,7 @@ describe("demo board running clock", () => {
         ["in stone removal", { stone_removal: true } as const],
         ["once the game is over", undefined],
     ])("the player on move has no turn clock %s", (_, pause_state) => {
-        const goban = demoBoard({ game_id: 5 });
+        const goban = reviewBoard({ game_id: 5 });
         jest.spyOn(goban, "getReviewClock").mockReturnValue({
             clock: { main_time: 590000 },
             on_move: true,
@@ -201,7 +201,7 @@ describe("demo board running clock", () => {
     });
 
     test("a clock stopped at the end of the game says nothing", () => {
-        const goban = demoBoard({ game_id: 5 });
+        const goban = reviewBoard({ game_id: 5 });
         jest.spyOn(goban, "getReviewClock").mockReturnValue({
             clock: { main_time: 590000 },
             on_move: true,
@@ -213,7 +213,7 @@ describe("demo board running clock", () => {
     });
 
     test("away from the live move the stored clock shows", () => {
-        const goban = demoBoard();
+        const goban = reviewBoard();
         jest.spyOn(goban, "getReviewClock").mockReturnValue({
             clock: { main_time: 590000 },
             on_move: true,
@@ -227,7 +227,7 @@ describe("demo board running clock", () => {
     });
 
     test("a board never started looks as today", () => {
-        const goban = demoBoard();
+        const goban = reviewBoard();
         jest.spyOn(goban, "getReviewClock").mockReturnValue(null);
         const { container } = render(<SGFClock goban={goban} color="black" />);
         expect(container.querySelector(".main-time")).toHaveTextContent("8:32");

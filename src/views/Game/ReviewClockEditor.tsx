@@ -103,7 +103,7 @@ function ClockRow({ goban, color, clock, lastClock, overtime }: ClockRowProps): 
     }, [clock_json, shown_json]);
 
     // Only a field the controller has changed is sent: the fields start from a
-    // rounded or inherited clock, and on a running demo clock every value sent
+    // rounded or inherited clock, and on a running clock every value sent
     // restarts the countdown for everyone watching. Sent on Enter or blur.
     const edit = (next: ClockFields) => {
         dirty.current = true;
