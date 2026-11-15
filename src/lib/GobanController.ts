@@ -34,7 +34,7 @@ import {
 import { EventEmitter } from "eventemitter3";
 import { sfx, SFXSprite, ValidSound } from "@/lib/sfx";
 import { AudioClockEvent } from "goban";
-import { _, current_language } from "@/lib/translate";
+import { _, current_language, pgettext } from "@/lib/translate";
 import { disableTouchAction, enableTouchAction } from "@/views/Game/touch_actions";
 import { browserHistory } from "@/lib/ogsHistory";
 import { errorAlerter, ignore } from "@/lib/misc";
@@ -103,22 +103,45 @@ export interface PreparedAnalysisSnapshot {
     }>;
 }
 
+/**
+ * The server drops a game chat message whose JSON body is longer than this
+ * (`chat_message_size_limit` in ogs/services/_shared/lib/config.ts).
+ */
+const CHAT_MESSAGE_SIZE_LIMIT = 16384;
+
+/**
+ * Copies the marks of a node for a shared line. Transient marks (for example
+ * the variation move numbers, which goban writes for the whole line onto each
+ * new node) and cleared marks are left out: the receiving board draws its own
+ * transient marks, and with them the size of a line grows with the square of
+ * its length.
+ */
 function cloneMoveTreeMarks(node: MoveTree): MoveTreeJson["marks"] {
     const marks: MoveTreeJson["marks"] = [];
 
     node.foreachMarkedPosition((x, y) => {
         const source = node.getMarks(x, y);
         const cloned: MarkInterface = {};
+        let has_mark = false;
 
         for (const key in source) {
             const value = source[key];
 
-            if (value !== undefined) {
-                cloned[key] = value;
+            if (
+                key.startsWith("transient_") ||
+                value === undefined ||
+                value === false ||
+                value === ""
+            ) {
+                continue;
             }
+            cloned[key] = value;
+            has_mark = true;
         }
 
-        marks.push({ x, y, marks: cloned });
+        if (has_mark) {
+            marks.push({ x, y, marks: cloned });
+        }
     });
 
     return marks.length > 0 ? marks : undefined;
@@ -1038,6 +1061,16 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     shareAnalysis = () => {
         const prepared = this.prepareAnalysisSnapshot();
         if (prepared.is_duplicate) {
+            return;
+        }
+
+        if (JSON.stringify(prepared.analysis).length > CHAT_MESSAGE_SIZE_LIMIT) {
+            void alert.fire(
+                pgettext(
+                    "Error shown when a shared game variation is larger than the server accepts",
+                    "This variation is too large to share. Make it shorter, or remove some drawings, marks or comments.",
+                ),
+            );
             return;
         }
 
