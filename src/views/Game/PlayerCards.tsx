@@ -264,7 +264,12 @@ export function PlayerCard({
                     />
                 ) : (
                     hasMoveClocks(goban) && (
-                        <SGFClock goban={goban} color={color} className="in-game-clock" />
+                        <SGFClock
+                            goban={goban}
+                            color={color}
+                            className="in-game-clock"
+                            show_turn_clock={!compact}
+                        />
                     )
                 )}
             </div>

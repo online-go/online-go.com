@@ -17,25 +17,39 @@
 
 import * as React from "react";
 import {
-    clockTimeLeft,
     findClock,
     Goban,
     JGOFPlayerClock,
+    JGOFTimeControl,
     JGOFTimeControlSystem,
     MoveTree,
     reviewTimeControl,
 } from "goban";
-import { pgettext } from "@/lib/translate";
-import { prettyTime } from "./Clock";
-import "./SGFClock.css";
+import { pauseText, PlayerClockView } from "./Clock";
 
 interface SGFClockProps {
     goban: Goban;
     color: "black" | "white";
     className?: string;
+    compact?: boolean;
+    lineSummary?: boolean;
+    /** Draw the analog turn clock while the review's clock has this player on move */
+    show_turn_clock?: boolean;
 }
 
-export function SGFClock({ goban, color, className }: SGFClockProps): React.ReactElement | null {
+/**
+ * A player's clock at the move being viewed: a review's running clock on its
+ * live move, else the clock recorded on or before the move. It looks the same
+ * as the game clock.
+ */
+export function SGFClock({
+    goban,
+    color,
+    className,
+    compact,
+    lineSummary,
+    show_turn_clock,
+}: SGFClockProps): React.ReactElement | null {
     const [curMove, setCurMove] = React.useState<MoveTree | null>(goban?.engine?.cur_move ?? null);
 
     React.useEffect(() => {
@@ -102,59 +116,48 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
         return null;
     }
 
-    const system = clockTimeSystem(goban);
-    const time_left = clockTimeLeft(player_clock);
-
-    let clock_className = "Clock SGFClock " + color;
-    if (player_clock.main_time <= 0) {
-        clock_className += " in-overtime";
-    }
-    if (live && !live.running) {
-        clock_className += " paused";
-    }
-    if (className) {
-        clock_className += " " + className;
-    }
+    const time_control = reviewTimeControl(goban.engine);
+    // As in a game, the player on move has the turn while the clock runs or
+    // is paused, but not in stone removal or once the game is over
+    const their_turn =
+        !!live?.on_move &&
+        (live.running || (!!live.pause_state && !live.pause_state.stone_removal));
 
     return (
-        <span className={clock_className}>
-            <span className="main-time boxed">
-                {prettyTime(time_left)}
-                {system === "absolute" && <span className="absolute-time">+0</span>}
-            </span>
-
-            {system === "byoyomi" && player_clock.periods_left != null && (
-                <div className="byo-yomi-container">
-                    <span
-                        className={
-                            "byo-yomi-periods " +
-                            (player_clock.periods_left <= 1 ? "sudden-death" : "")
-                        }
-                    >
-                        (
-                        {player_clock.periods_left === 1
-                            ? pgettext("Final byo-yomi period (Sudden Death)", "SD")
-                            : `${player_clock.periods_left}`}
-                        )
-                    </span>
-                </div>
-            )}
-
-            {system === "canadian" && player_clock.moves_left != null && (
-                <span className="canadian-clock-container">
-                    <span className="periods-delimiter">/</span>
-                    <span className="period-moves boxed">{player_clock.moves_left}</span>
-                </span>
-            )}
-
-            {/* A review of an OGS game stops its clock at a pause and at the end alike */}
-            {live && !live.running && goban.isDemoBoard() && (
-                <span className="paused-label">
-                    {pgettext("Demo board clock is paused", "Paused")}
-                </span>
-            )}
-        </span>
+        <PlayerClockView
+            color={color}
+            player_clock={withOvertime(player_clock, time_control)}
+            time_control={time_control}
+            className={"SGFClock" + (className ? " " + className : "")}
+            compact={compact}
+            lineSummary={lineSummary}
+            show_turn_clock={show_turn_clock && their_turn}
+            pause_text={
+                live?.pause_state &&
+                pauseText(live.pause_state, goban.engine.players[color]?.id ?? 0)
+            }
+        />
     );
+}
+
+/**
+ * A recorded clock still in main time leaves out the overtime to come, which
+ * a game clock shows beside the main time: the byo-yomi periods, or the
+ * canadian block.
+ */
+function withOvertime(clock: JGOFPlayerClock, tc: JGOFTimeControl | undefined): JGOFPlayerClock {
+    switch (tc?.system) {
+        case "byoyomi":
+            return { periods_left: tc.periods, period_time_left: tc.period_time * 1000, ...clock };
+        case "canadian":
+            return {
+                moves_left: tc.stones_per_period,
+                block_time_left: tc.period_time * 1000,
+                ...clock,
+            };
+        default:
+            return clock;
+    }
 }
 
 /** The time system per-move clocks are read against: an uploaded SGF's own, else the game's */

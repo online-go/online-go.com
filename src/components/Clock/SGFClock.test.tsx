@@ -3,7 +3,7 @@
  */
 
 // See PlayerCards.test.tsx: this import order avoids a circular-import crash.
-import "@/lib/data";
+import * as data from "@/lib/data";
 import "@/lib/sockets";
 
 import { render } from "@testing-library/react";
@@ -12,6 +12,7 @@ import * as React from "react";
 import { act } from "react";
 import { GobanController } from "@/lib/GobanController";
 import { SGFClock } from "./SGFClock";
+import { Clock } from "./Clock";
 
 const BYOYOMI = {
     system: "byoyomi",
@@ -50,7 +51,8 @@ test("a byo-yomi record in overtime shows the period time and periods left", () 
 
     const { container } = render(<SGFClock goban={goban} color="black" />);
 
-    expect(container.querySelector(".main-time")).toHaveTextContent("0:30");
+    expect(container.querySelector(".main-time")).toBeNull();
+    expect(container.querySelector(".period-time")).toHaveTextContent("0:30");
     expect(container.querySelector(".byo-yomi-periods")).toHaveTextContent("(3)");
 });
 
@@ -77,7 +79,7 @@ test("a canadian record in overtime shows the block time and stones left", () =>
 
     const { container } = render(<SGFClock goban={goban} color="black" />);
 
-    expect(container.querySelector(".main-time")).toHaveTextContent("4:20");
+    expect(container.querySelector(".period-time")).toHaveTextContent("4:20");
     expect(container.querySelector(".period-moves")).toHaveTextContent("4");
 });
 
@@ -176,13 +178,29 @@ describe("demo board running clock", () => {
             clock: { main_time: 590000 },
             on_move: true,
             running: false,
+            pause_state: {},
         });
         const { container } = render(<SGFClock goban={goban} color="black" />);
         expect(container).toHaveTextContent("Paused");
         expect(container.querySelector(".SGFClock")).toHaveClass("paused");
     });
 
-    test("a stopped clock on a review of an OGS game says nothing, as the game may be over", () => {
+    test.each([
+        ["in stone removal", { stone_removal: true } as const],
+        ["once the game is over", undefined],
+    ])("the player on move has no turn clock %s", (_, pause_state) => {
+        const goban = demoBoard({ game_id: 5 });
+        jest.spyOn(goban, "getReviewClock").mockReturnValue({
+            clock: { main_time: 590000 },
+            on_move: true,
+            running: false,
+            pause_state,
+        });
+        const { container } = render(<SGFClock goban={goban} color="black" show_turn_clock />);
+        expect(container.querySelector(".TurnClock")).toBeNull();
+    });
+
+    test("a clock stopped at the end of the game says nothing", () => {
         const goban = demoBoard({ game_id: 5 });
         jest.spyOn(goban, "getReviewClock").mockReturnValue({
             clock: { main_time: 590000 },
@@ -214,5 +232,118 @@ describe("demo board running clock", () => {
         const { container } = render(<SGFClock goban={goban} color="black" />);
         expect(container.querySelector(".main-time")).toHaveTextContent("8:32");
         expect(container).not.toHaveTextContent("Paused");
+    });
+});
+
+describe("a review's running clock looks like the game's", () => {
+    const CANADIAN = {
+        system: "canadian",
+        speed: "live",
+        main_time: 600,
+        period_time: 300,
+        stones_per_period: 5,
+        pause_on_weekends: false,
+    };
+    const FISCHER = {
+        system: "fischer",
+        speed: "live",
+        initial_time: 600,
+        time_increment: 30,
+        max_time: 1200,
+        pause_on_weekends: false,
+    };
+    const SIMPLE = { system: "simple", speed: "live", per_move: 30, pause_on_weekends: false };
+    const ABSOLUTE = {
+        system: "absolute",
+        speed: "live",
+        total_time: 900,
+        pause_on_weekends: false,
+    };
+
+    beforeEach(() => data.set("user", { anonymous: true } as any));
+
+    /** The clock markup, without the class that names the component */
+    function clockHTML(container: HTMLElement): string {
+        const clock = container.querySelector(".Clock")!.cloneNode(true) as HTMLElement;
+        clock.classList.remove("SGFClock");
+        return clock.outerHTML;
+    }
+
+    test.each([
+        // The review records a clock in main time without its overtime
+        [
+            "byo-yomi in main time",
+            BYOYOMI,
+            { main_time: 272000 },
+            { main_time: 272000, periods_left: 5, period_time_left: 30000 },
+        ],
+        [
+            "byo-yomi in overtime",
+            BYOYOMI,
+            { main_time: 0, periods_left: 3, period_time_left: 12000 },
+            null,
+        ],
+        [
+            "byo-yomi sudden death",
+            BYOYOMI,
+            { main_time: 0, periods_left: 1, period_time_left: 12000 },
+            null,
+        ],
+        [
+            "canadian in main time",
+            CANADIAN,
+            { main_time: 100000 },
+            { main_time: 100000, moves_left: 5, block_time_left: 300000 },
+        ],
+        [
+            "canadian in overtime",
+            CANADIAN,
+            { main_time: 0, moves_left: 3, block_time_left: 120000 },
+            null,
+        ],
+        ["fischer", FISCHER, { main_time: 250000 }, null],
+        ["simple", SIMPLE, { main_time: 20000 }, null],
+        ["absolute", ABSOLUTE, { main_time: 500000 }, null],
+    ])("%s", (_, time_control, review_clock, game_clock) => {
+        for (const [running, pause_state] of [
+            [true, undefined],
+            [false, { weekend: true }],
+        ] as const) {
+            const goban = new GobanController({
+                review_id: 77,
+                width: 9,
+                height: 9,
+                time_control,
+                moves: [[2, 2, 1000]],
+            } as any).goban;
+            goban.engine.jumpTo(goban.engine.last_official_move);
+            jest.spyOn(goban, "getReviewClock").mockReturnValue({
+                clock: review_clock,
+                on_move: true,
+                running,
+                pause_state,
+            });
+            const review = render(
+                <SGFClock goban={goban} color="black" className="in-game-clock" show_turn_clock />,
+            );
+            const game = render(
+                <Clock goban={goban} color="black" className="in-game-clock" show_turn_clock />,
+            );
+            act(() => {
+                goban.emit("clock", {
+                    current_player: "black",
+                    current_player_id: "1",
+                    time_of_last_move: 0,
+                    black_clock: game_clock ?? review_clock,
+                    white_clock: game_clock ?? review_clock,
+                    pause_state,
+                } as any);
+            });
+
+            expect(clockHTML(review.container)).toEqual(clockHTML(game.container));
+            review.unmount();
+            game.unmount();
+            jest.restoreAllMocks();
+        }
     });
 });
