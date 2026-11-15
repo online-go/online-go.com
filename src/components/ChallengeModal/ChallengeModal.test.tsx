@@ -926,7 +926,11 @@ describe("rematch saved settings", () => {
         expect(post).toHaveBeenCalledWith(
             "players/456/challenge",
             expect.objectContaining({
-                game: expect.objectContaining({ ranked: true }),
+                game: expect.objectContaining({
+                    ranked: true,
+                    komi_auto: "automatic",
+                    komi: undefined,
+                }),
             }),
         );
     });
@@ -961,6 +965,30 @@ describe("rematch saved settings", () => {
         );
         const savedKeys = jest.mocked(data.set).mock.calls.map((call) => call[0]);
         expect(savedKeys.filter((key) => /^(challenge|time_control)\./.test(key))).toEqual([]);
+    });
+
+    it("keeps a fork against a bot unranked", async () => {
+        const user = userEvent.setup();
+        (bots_list as jest.Mock).mockReturnValue([{ id: 456, username: "TestBot" }]);
+        jest.mocked(post).mockResolvedValueOnce({ id: 123 });
+        const forkState = { komi: 0.5, moves: [], width: 19, height: 19, initial_player: "white" };
+        render(
+            <ChallengeModalBody
+                mode="player"
+                playerId={456}
+                initialState={forkState}
+                modal={mockModal}
+            />,
+        );
+
+        await user.click(screen.getByRole("button", { name: /send challenge/i }));
+
+        expect(post).toHaveBeenCalledWith(
+            "players/456/challenge",
+            expect.objectContaining({
+                game: expect.objectContaining({ initial_state: forkState, ranked: false }),
+            }),
+        );
     });
 });
 

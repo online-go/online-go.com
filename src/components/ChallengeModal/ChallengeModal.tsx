@@ -549,18 +549,21 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
         challenge.game.rengo = next.challenge.game.rengo;
         challenge.game.rengo_casual_mode = next.challenge.game.rengo_casual_mode;
 
+        // The checkbox is hidden. Ranked is set before the komi rule below, the
+        // same rule a ticked Ranked box already uses. A fork stays unranked.
+        if (
+            this.props.mode === "player" &&
+            !this.props.initialState &&
+            challengedPlayerIsBot(this.props.playerId)
+        ) {
+            challenge.game.ranked = true;
+        }
+
         if (challenge.game.ranked) {
             challenge.game.komi_auto = "automatic";
         }
         if (challenge.game.komi_auto === "automatic") {
             challenge.game.komi = undefined;
-        }
-
-        // The checkbox is hidden. The rating system still expects ranked: true,
-        // including a rematch that copied ranked: false. This is after the komi
-        // rule so that copied komi is left as the rematch sent it.
-        if (this.props.mode === "player" && challengedPlayerIsBot(this.props.playerId)) {
-            challenge.game.ranked = true;
         }
 
         return challenge;
