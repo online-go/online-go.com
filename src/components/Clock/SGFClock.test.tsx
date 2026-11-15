@@ -130,8 +130,9 @@ test("a game with no recorded clocks shows nothing", () => {
 });
 
 describe("demo board running clock", () => {
-    function demoBoard() {
+    function demoBoard(config = {}) {
         const goban = new GobanController({
+            ...config,
             review_id: 77,
             width: 9,
             height: 9,
@@ -179,6 +180,18 @@ describe("demo board running clock", () => {
         const { container } = render(<SGFClock goban={goban} color="black" />);
         expect(container).toHaveTextContent("Paused");
         expect(container.querySelector(".SGFClock")).toHaveClass("paused");
+    });
+
+    test("a stopped clock on a review of an OGS game says nothing, as the game may be over", () => {
+        const goban = demoBoard({ game_id: 5 });
+        jest.spyOn(goban, "getReviewClock").mockReturnValue({
+            clock: { main_time: 590000 },
+            on_move: true,
+            running: false,
+        });
+        const { container } = render(<SGFClock goban={goban} color="black" />);
+        expect(container.querySelector(".main-time")).toHaveTextContent("9:50");
+        expect(container).not.toHaveTextContent("Paused");
     });
 
     test("away from the live move the stored clock shows", () => {

@@ -82,7 +82,7 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
         [goban, curMove, color, review_version],
     );
 
-    // A demo board's running clock, shown on its live move
+    // A review's running clock, shown on its live move
     const live =
         curMove && goban && curMove.id === goban.engine.last_official_move?.id
             ? goban.getReviewClock(color)
@@ -147,7 +147,8 @@ export function SGFClock({ goban, color, className }: SGFClockProps): React.Reac
                 </span>
             )}
 
-            {live && !live.running && (
+            {/* A review of an OGS game stops its clock at a pause and at the end alike */}
+            {live && !live.running && goban.isDemoBoard() && (
                 <span className="paused-label">
                     {pgettext("Demo board clock is paused", "Paused")}
                 </span>
