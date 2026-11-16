@@ -34,7 +34,7 @@ import {
 import { EventEmitter } from "eventemitter3";
 import { sfx, SFXSprite, ValidSound } from "@/lib/sfx";
 import { AudioClockEvent } from "goban";
-import { _, current_language } from "@/lib/translate";
+import { _, current_language, pgettext } from "@/lib/translate";
 import { disableTouchAction, enableTouchAction } from "@/views/Game/touch_actions";
 import { browserHistory } from "@/lib/ogsHistory";
 import { errorAlerter, ignore } from "@/lib/misc";
@@ -103,22 +103,49 @@ export interface PreparedAnalysisSnapshot {
     }>;
 }
 
+/**
+ * The server drops a game chat message whose JSON body is longer than this
+ * (`chat_message_size_limit` in ogs/services/_shared/lib/config.ts). Review
+ * chat has no such limit.
+ */
+const CHAT_MESSAGE_SIZE_LIMIT = 16384;
+
+/** The mark types that a user places on a board and that a shared analysis carries. */
+const SHARED_MARK_TYPES = [
+    "letter",
+    "triangle",
+    "circle",
+    "square",
+    "cross",
+    "score",
+    "stone_removed",
+] as const;
+
+/**
+ * Copies the user marks of a node for a shared line. Other marks (display
+ * state that goban or the AI review keeps on the node) and cleared marks are
+ * left out.
+ */
 function cloneMoveTreeMarks(node: MoveTree): MoveTreeJson["marks"] {
     const marks: MoveTreeJson["marks"] = [];
 
     node.foreachMarkedPosition((x, y) => {
         const source = node.getMarks(x, y);
-        const cloned: MarkInterface = {};
+        const cloned: Record<string, string | boolean> = {};
+        let has_mark = false;
 
-        for (const key in source) {
+        for (const key of SHARED_MARK_TYPES) {
             const value = source[key];
 
-            if (value !== undefined) {
+            if (value) {
                 cloned[key] = value;
+                has_mark = true;
             }
         }
 
-        marks.push({ x, y, marks: cloned });
+        if (has_mark) {
+            marks.push({ x, y, marks: cloned });
+        }
     });
 
     return marks.length > 0 ? marks : undefined;
@@ -934,23 +961,14 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         for (let y = 0; y < this.goban.height; ++y) {
             for (let x = 0; x < this.goban.width; ++x) {
                 const pos = this.goban.getMarks(x, y);
-                const mark_types = [
-                    "letter",
-                    "triangle",
-                    "circle",
-                    "square",
-                    "cross",
-                    "score",
-                    "stone_removed",
-                ];
-                for (let i = 0; i < mark_types.length; ++i) {
-                    if (mark_types[i] in pos && pos[mark_types[i]]) {
+                for (const mark_type of SHARED_MARK_TYPES) {
+                    if (pos[mark_type]) {
                         const mark_key =
-                            mark_types[i] === "letter"
+                            mark_type === "letter"
                                 ? pos.letter
-                                : mark_types[i] === "score"
+                                : mark_type === "score"
                                   ? `score-${pos.score}`
-                                  : mark_types[i];
+                                  : mark_type;
 
                         if (mark_key) {
                             if (!(mark_key in marks)) {
@@ -1038,6 +1056,22 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     shareAnalysis = () => {
         const prepared = this.prepareAnalysisSnapshot();
         if (prepared.is_duplicate) {
+            return;
+        }
+
+        if (
+            this.goban.game_id &&
+            JSON.stringify(prepared.analysis).length > CHAT_MESSAGE_SIZE_LIMIT
+        ) {
+            if (prepared.auto_named) {
+                --this.last_variation_number;
+            }
+            void alert.fire(
+                pgettext(
+                    "Error shown when a shared game variation is larger than the server accepts",
+                    "This variation is too large to share. Make it shorter, or remove some drawings, marks or comments.",
+                ),
+            );
             return;
         }
 
