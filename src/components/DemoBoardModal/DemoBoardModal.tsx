@@ -29,6 +29,8 @@ import { alert } from "@/lib/swal_config";
 import { post } from "@/lib/requests";
 import { browserHistory } from "@/lib/ogsHistory";
 import { errorAlerter } from "@/lib/misc";
+import { TimeControl, TimeControlPicker } from "@/components/TimeControl";
+import { recallTimeControlSettings } from "@/components/TimeControl/TimeControlUpdates";
 import "./DemoBoardModal.css";
 
 export function DemoBoardModal(
@@ -56,6 +58,9 @@ export function DemoBoardModal(
         initialSettings.komi_auto,
     );
     const [komi, setKomi] = React.useState<number | null>(initialSettings.komi ?? null);
+    const [timeControl, setTimeControl] = React.useState<TimeControl | null>(
+        initialSettings.time_control ?? null,
+    );
     const [isCustomBoardSize, setIsCustomBoardSize] = React.useState<boolean>(
         !isStandardBoardSize(`${initialSettings.width}x${initialSettings.height}`),
     );
@@ -121,7 +126,16 @@ export function DemoBoardModal(
             private: isPrivate,
             komi_auto: komiOption,
             ...(komi !== null && { komi: komi }),
+            time_control: timeControl,
         };
+    }
+
+    function toggleTimeControl(): void {
+        setTimeControl(
+            timeControl
+                ? null
+                : recallTimeControlSettings("live", "byoyomi", width ?? 19, height ?? 19),
+        );
     }
 
     async function createDemoBoard(): Promise<void> {
@@ -143,6 +157,7 @@ export function DemoBoardModal(
             black_ranking: validatedSettings.black_ranking - (black_pro ? 1000 : 0),
             white_ranking: validatedSettings.white_ranking - (white_pro ? 1000 : 0),
             name: validatedSettings.name || _("Demo Board"),
+            time_control: timeControl && { ...timeControl, time_control: timeControl.system },
         };
 
         await post("demos", extendedSettings)
@@ -353,6 +368,29 @@ export function DemoBoardModal(
                             props.players_list,
                         )}
                     </div>
+                </div>
+
+                <hr></hr>
+
+                <div className="demo-time-control" role="form">
+                    <label className="demo-time-control-toggle">
+                        <input
+                            type="checkbox"
+                            id="demo-board-modal-time-control"
+                            checked={!!timeControl}
+                            onChange={toggleTimeControl}
+                        />
+                        {_("Use a time control")}
+                    </label>
+                    {timeControl && (
+                        <TimeControlPicker
+                            timeControl={timeControl}
+                            onChange={setTimeControl}
+                            forceSystem={false}
+                            boardWidth={width ?? 19}
+                            boardHeight={height ?? 19}
+                        />
+                    )}
                 </div>
             </div>
 
