@@ -17,6 +17,7 @@
 
 import type { MoveTree } from "goban";
 import * as data from "@/lib/data";
+import { alert } from "@/lib/swal_config";
 import { TEST_USER } from "@/views/Game/test_user";
 import { shared_ip_with_player_map } from "@/views/Game/util";
 import { GobanController, getMoveTreeTrunkTail } from "./GobanController";
@@ -159,19 +160,9 @@ describe("GobanController", () => {
     });
 
     describe("shared analysis line", () => {
-        type Tapper = {
-            tapAtImpl(
-                x: number,
-                y: number,
-                double_tap: boolean,
-                right_click: boolean,
-                shift_key: boolean,
-                press_duration_ms: number,
-            ): void;
-        };
-
-        function makeAnalysisController(): GobanController {
+        function makeAnalysisController(game_id?: number): GobanController {
             const controller = new GobanController({
+                game_id,
                 width: 19,
                 height: 19,
                 players: {
@@ -181,73 +172,97 @@ describe("GobanController", () => {
                 phase: "finished",
             });
             controller.goban.setMode("analyze");
-            controller.goban.setAnalyzeTool("stone", "alternate");
             return controller;
         }
 
-        function tapMoves(controller: GobanController, count: number): void {
-            const tapper = controller.goban as unknown as Tapper;
-            // Black fills rows from the top and white rows from the bottom, so nothing is captured.
+        /** Places a variation of `count` stones without captures, and returns their positions. */
+        function placeMoves(controller: GobanController, count: number): Array<[number, number]> {
+            const placed: Array<[number, number]> = [];
             let black = 0;
             let white = 0;
             for (let i = 0; i < count; ++i) {
                 const is_black = controller.goban.engine.colorToMove() === "black";
                 const k = is_black ? black++ : white++;
+                const x = k % 19;
                 const y = is_black ? Math.floor(k / 19) : 18 - Math.floor(k / 19);
-                tapper.tapAtImpl(k % 19, y, false, false, false, 0);
+                controller.goban.engine.place(x, y);
+                placed.push([x, y]);
             }
+            return placed;
         }
 
-        function lineTreeMarkKeys(controller: GobanController): string[] {
-            const keys: string[] = [];
-            let node = controller.buildAnalysisSnapshot().analysis.line_tree;
-            while (node) {
-                for (const entry of node.marks ?? []) {
-                    keys.push(...Object.keys(entry.marks));
-                }
-                node = node.trunk_next;
-            }
-            return keys;
+        function oversizedController(game_id?: number) {
+            data.set("user", { ...TEST_USER, anonymous: false });
+            const controller = makeAnalysisController(game_id);
+            placeMoves(controller, 3);
+            controller.goban.engine.cur_move.text = "x".repeat(20000);
+            const sendChat = jest.spyOn(controller.goban, "sendChat").mockImplementation(() => {});
+            jest.spyOn(alert, "fire").mockResolvedValue(
+                undefined as unknown as Awaited<ReturnType<typeof alert.fire>>,
+            );
+            return { controller, sendChat };
         }
 
-        it("leaves out the variation move numbers that goban writes onto each node", () => {
+        it("sends only the user marks of each node, so a long line stays small", () => {
             const controller = makeAnalysisController();
-            tapMoves(controller, 50);
+            const placed = placeMoves(controller, 50);
 
-            expect(controller.goban.engine.cur_move.getMarks(0, 0).transient_letter).toBe("1");
-            const snapshot = controller.buildAnalysisSnapshot();
-            expect(snapshot.analysis.moves.length).toBe(100);
-            expect(lineTreeMarkKeys(controller).length).toBe(0);
-            expect(JSON.stringify(snapshot.analysis).length).toBeLessThan(4000);
+            // Each node has a user triangle on its stone, plus display marks for every
+            // earlier stone, as older goban versions wrote onto each node.
+            let node: MoveTree | null = controller.goban.engine.cur_move;
+            for (let i = placed.length - 1; node && i >= 0; --i, node = node.parent) {
+                node.getMarks(placed[i][0], placed[i][1]).triangle = true;
+                for (let j = 0; j <= i; ++j) {
+                    node.getMarks(placed[j][0], placed[j][1]).transient_letter = String(j + 1);
+                }
+            }
+
+            const analysis = controller.buildAnalysisSnapshot().analysis;
+            let line = analysis.line_tree;
+            let count = 0;
+            while (line) {
+                expect(line.marks).toEqual([{ x: line.x, y: line.y, marks: { triangle: true } }]);
+                line = line.trunk_next;
+                ++count;
+            }
+            expect(count).toBe(50);
+            expect(JSON.stringify(analysis).length).toBeLessThan(8000);
         });
 
-        it("keeps marks that the user placed, without cleared marks", () => {
+        it("keeps the user mark types and leaves out cleared and other marks", () => {
             const controller = makeAnalysisController();
-            tapMoves(controller, 3);
+            placeMoves(controller, 1);
             const node = controller.goban.engine.cur_move;
             node.getMarks(5, 5).triangle = true;
             node.getMarks(6, 6).letter = "A";
+            node.getMarks(6, 6).subscript = "53%";
             node.getMarks(7, 7).circle = false;
             node.getMarks(8, 8).letter = "";
+            node.getMarks(9, 9).ai_quality = "mistake";
 
-            const tail =
-                controller.buildAnalysisSnapshot().analysis.line_tree?.trunk_next?.trunk_next;
-            expect(tail?.marks).toEqual([
+            expect(controller.buildAnalysisSnapshot().analysis.line_tree?.marks).toEqual([
                 { x: 5, y: 5, marks: { triangle: true } },
                 { x: 6, y: 6, marks: { letter: "A" } },
             ]);
         });
 
-        it("does not send a line that is larger than the server accepts", () => {
-            data.set("user", { ...TEST_USER, anonymous: false });
-            const controller = makeAnalysisController();
-            tapMoves(controller, 3);
-            controller.goban.engine.cur_move.text = "x".repeat(20000);
-            const sendChat = jest.spyOn(controller.goban, "sendChat").mockImplementation(() => {});
+        it("does not send a game line that is larger than the server accepts", () => {
+            const { controller, sendChat } = oversizedController(4242);
 
             controller.shareAnalysis();
 
             expect(sendChat).not.toHaveBeenCalled();
+            expect(alert.fire).toHaveBeenCalled();
+            expect(controller.last_variation_number).toBe(0);
+        });
+
+        it("sends a large review line, because review chat has no size limit", () => {
+            const { controller, sendChat } = oversizedController();
+
+            controller.shareAnalysis();
+
+            expect(sendChat).toHaveBeenCalled();
+            expect(controller.last_variation_number).toBe(1);
         });
     });
 
