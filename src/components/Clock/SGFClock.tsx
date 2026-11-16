@@ -65,16 +65,23 @@ export function SGFClock({
                 setCurMove(move);
             }
         };
+        // A load replaces the engine and all of its moves. A new review's
+        // log can load without moving to a move afterwards.
+        const onLoad = () => {
+            setCurMove(goban.engine.cur_review_move ?? goban.engine.cur_move);
+        };
 
         // Subscribe to both events — in review mode, navigation fires
         // cur_review_move instead of cur_move.
         goban.on("cur_move", onCurMove);
         goban.on("cur_review_move", onCurReviewMove);
-        setCurMove(goban.engine.cur_review_move ?? goban.engine.cur_move);
+        goban.on("load", onLoad);
+        onLoad();
 
         return () => {
             goban.off("cur_move", onCurMove);
             goban.off("cur_review_move", onCurReviewMove);
+            goban.off("load", onLoad);
         };
     }, [goban]);
 

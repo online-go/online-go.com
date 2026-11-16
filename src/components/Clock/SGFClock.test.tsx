@@ -235,6 +235,18 @@ describe("a review's running clock", () => {
     });
 });
 
+test("a new demo board shows its starting clocks once its log loads", () => {
+    const goban = new GobanController({ review_id: 78, width: 9, height: 9 } as any).goban;
+    const { container } = render(<SGFClock goban={goban} color="black" />);
+    expect(container).toBeEmptyDOMElement();
+
+    act(() => {
+        goban.load({ review_id: 78, width: 9, height: 9, time_control: BYOYOMI } as any);
+    });
+    expect(container.querySelector(".main-time")).toHaveTextContent("10:00");
+    expect(container).toHaveTextContent("Paused");
+});
+
 describe("a review's running clock looks like the game's", () => {
     const CANADIAN = {
         system: "canadian",

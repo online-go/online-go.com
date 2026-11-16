@@ -277,6 +277,21 @@ describe("committing an edit", () => {
     });
 });
 
+test("a load shows the clocks of the loaded board", () => {
+    const { goban } = reviewBoard();
+    render(<ReviewClockEditor goban={goban} />);
+
+    act(() => {
+        goban.load({ review_id: 77, width: 9, height: 9, time_control: ABSOLUTE } as any);
+        goban.engine.cur_move.applyClocks({ black_clock: { main_time: 90000 } });
+        goban.emit("review.updated");
+    });
+    const time = screen
+        .getByTestId("review-clock-black")
+        .querySelector<HTMLInputElement>(".ReviewClockEditor-time")!;
+    expect(time.value).toBe("1:30");
+});
+
 describe("demo board clock controls", () => {
     test("Resume and Pause send clock_running", () => {
         const { goban } = reviewBoard();
@@ -324,6 +339,19 @@ describe("demo board clock controls", () => {
         expect(record).not.toBeChecked();
         fireEvent.click(record);
         expect(goban.review_record_moves).toBe(true);
+        expect(record).toBeChecked();
+    });
+
+    test("Record shows as the goban sets it when the review loads", () => {
+        const { goban } = reviewBoard();
+        render(<ReviewClockEditor goban={goban} />);
+        const record = screen.getByRole("checkbox", { name: /Record/ });
+        expect(record).not.toBeChecked();
+
+        act(() => {
+            goban.review_record_moves = true;
+            goban.emit("review.updated");
+        });
         expect(record).toBeChecked();
     });
 
