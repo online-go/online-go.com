@@ -186,7 +186,9 @@ export function ThemePreferences(): React.ReactElement | null {
     }
 
     const [canvas_enabled, setCanvasEnabled] = useData("experiments.canvas");
-    //const canvas_enabled = data.get("experiments.canvas");
+    const [board_renderer_3d, setBoardRenderer3d] = usePreference("board-renderer-3d");
+    const [board_style, setBoardStyle] = usePreference("board-renderer-3d-style");
+    const [board_lighting, setBoardLighting] = usePreference("board-renderer-3d-lighting");
     const enable_svg = canvas_enabled !== "enabled";
 
     const sample_goban_key =
@@ -370,9 +372,19 @@ export function ThemePreferences(): React.ReactElement | null {
                     value={stone_shadows}
                     options={[
                         { value: "default", label: _("Default") },
-                        { value: "low", label: _("Low") },
-                        { value: "mid", label: _("Mid") },
-                        { value: "high", label: _("High") },
+                        {
+                            value: "low",
+                            label: board_renderer_3d
+                                ? pgettext("Stone shadow strength", "Very low")
+                                : _("Low"),
+                        },
+                        { value: "mid", label: board_renderer_3d ? _("Low") : _("Mid") },
+                        {
+                            value: "high",
+                            label: board_renderer_3d
+                                ? pgettext("Stone shadow strength", "Extra strong")
+                                : _("High"),
+                        },
                         { value: "anime", label: _("Anime") },
                         { value: "custom", label: _("Custom") },
                         { value: "none", label: _("None") },
@@ -765,11 +777,67 @@ export function ThemePreferences(): React.ReactElement | null {
                 />
             </PreferenceLine>
 
+            <PreferenceLine
+                title={pgettext("Board display setting", "Use a 3D board")}
+                description={pgettext(
+                    "Board display setting",
+                    "Show a perspective board in games, reviews, and puzzles. Uses the SVG board if 3D is unavailable.",
+                )}
+            >
+                <Toggle
+                    id="board-renderer-3d"
+                    checked={board_renderer_3d}
+                    onChange={(enabled) => {
+                        if (enabled && canvas_enabled === "enabled") {
+                            setCanvasEnabled(undefined);
+                            setGobanRenderer("svg");
+                        }
+                        setBoardRenderer3d(enabled);
+                    }}
+                />
+            </PreferenceLine>
+
+            {board_renderer_3d && (
+                <PreferenceLine title={pgettext("Board display setting", "3D board style")}>
+                    <PreferenceDropdown
+                        value={board_style}
+                        options={[
+                            { value: "tabletop", label: pgettext("3D board style", "Tabletop") },
+                            {
+                                value: "floor",
+                                label: pgettext("3D board style", "Traditional floor goban"),
+                            },
+                        ]}
+                        onChange={setBoardStyle}
+                    />
+                </PreferenceLine>
+            )}
+
+            {board_renderer_3d && (
+                <PreferenceLine title={pgettext("Board display setting", "3D board lighting")}>
+                    <PreferenceDropdown
+                        value={board_lighting}
+                        options={[
+                            {
+                                value: "studio",
+                                label: pgettext("3D lighting preset", "Studio (default)"),
+                            },
+                            {
+                                value: "daylight",
+                                label: pgettext("3D lighting preset", "Warm daylight"),
+                            },
+                        ]}
+                        onChange={setBoardLighting}
+                    />
+                </PreferenceLine>
+            )}
+
             <PreferenceLine title={_("Use old canvas goban renderer")}>
                 <Toggle
                     checked={canvas_enabled === "enabled"}
                     onChange={(tf) => {
                         if (tf) {
+                            setBoardRenderer3d(false);
                             setGobanRenderer("canvas");
                         } else {
                             setGobanRenderer("svg");

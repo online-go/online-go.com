@@ -16,6 +16,7 @@
  */
 
 import * as data from "@/lib/data";
+import type { ThreeBoardStyle } from "goban";
 import { GobanSelectedThemes, Goban, LabelPosition, JGOFTimeControlSpeed, Size } from "goban";
 import * as React from "react";
 import { current_language } from "@/lib/translate";
@@ -69,6 +70,10 @@ export const defaults = {
         "live-byoyomi": false,
     },
     "board-labeling": "automatic",
+    "board-renderer-3d": false,
+    "board-renderer-3d-room": false,
+    "board-renderer-3d-style": "tabletop" as ThreeBoardStyle,
+    "board-renderer-3d-lighting": "studio" as "studio" | "daylight",
     "chat.show-all-global-channels": true,
     "chat.show-all-group-channels": true,
     "chat.show-all-tournament-channels": true,

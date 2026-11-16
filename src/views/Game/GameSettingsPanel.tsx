@@ -20,7 +20,7 @@ import { _, pgettext } from "@/lib/translate";
 import { sfx } from "@/lib/sfx";
 import { usePreference } from "@/lib/preferences";
 import { useData, useIsTouchOnlyDevice } from "@/lib/hooks";
-import type { LabelPosition } from "goban";
+import { SVGRenderer, type LabelPosition } from "goban";
 import { Toggle } from "@/components/Toggle";
 import { GobanThemePicker } from "@/components/GobanThemePicker/GobanThemePicker";
 import { openACLModal } from "@/components/ACLModal";
@@ -58,6 +58,7 @@ export function GameSettingsPanel({
     const controller = useGobanControllerOrNull();
     const game_controller = kibitz ? null : controller;
     const goban = game_controller?.goban;
+    const supports_3d = controller?.goban instanceof SVGRenderer;
 
     // Phones and tablets have no keyboard to speak of, so the shortcut
     // list is only offered where a mouse or trackpad suggests one is
@@ -130,6 +131,10 @@ export function GameSettingsPanel({
     const move_controls_note_id = React.useId();
 
     const [label_position, setLabelPositionPref] = usePreference("label-positioning");
+    const [board_renderer_3d, setBoardRenderer3d] = usePreference("board-renderer-3d");
+    const [board_style, setBoardStyle] = usePreference("board-renderer-3d-style");
+    const [board_lighting, setBoardLighting] = usePreference("board-renderer-3d-lighting");
+    const [board_room, setBoardRoom] = usePreference("board-renderer-3d-room");
     const setCoordinates = (position: LabelPosition) => {
         setLabelPositionPref(position);
         goban?.setLabelPosition(position);
@@ -203,6 +208,81 @@ export function GameSettingsPanel({
                                 game_controller.toggleZenMode();
                                 onClose?.();
                             }}
+                        />
+                    </div>
+                )}
+
+                {supports_3d && (
+                    <div className="GameSidebarPanel-labeled-row">
+                        <label htmlFor="game-settings-board-3d">
+                            <i className="fa fa-cube" aria-hidden="true" />
+                            <span>{pgettext("Board display setting", "Use a 3D board")}</span>
+                        </label>
+                        <Toggle
+                            id="game-settings-board-3d"
+                            checked={board_renderer_3d}
+                            onChange={(enabled) => setBoardRenderer3d(enabled)}
+                        />
+                    </div>
+                )}
+
+                {supports_3d && board_renderer_3d && (
+                    <div className="GameSidebarPanel-labeled-row">
+                        <label htmlFor="game-settings-board-3d-style">
+                            <span>{pgettext("Board display setting", "3D board style")}</span>
+                        </label>
+                        <select
+                            id="game-settings-board-3d-style"
+                            value={board_style}
+                            onChange={(event) =>
+                                setBoardStyle(event.target.value === "floor" ? "floor" : "tabletop")
+                            }
+                        >
+                            <option value="tabletop">
+                                {pgettext("3D board style", "Tabletop")}
+                            </option>
+                            <option value="floor">
+                                {pgettext("3D board style", "Traditional floor goban")}
+                            </option>
+                        </select>
+                    </div>
+                )}
+
+                {supports_3d && board_renderer_3d && (
+                    <div className="GameSidebarPanel-labeled-row">
+                        <label htmlFor="game-settings-board-3d-lighting">
+                            <span>{pgettext("Board display setting", "3D board lighting")}</span>
+                        </label>
+                        <select
+                            id="game-settings-board-3d-lighting"
+                            value={board_lighting}
+                            onChange={(event) =>
+                                setBoardLighting(
+                                    event.target.value === "daylight" ? "daylight" : "studio",
+                                )
+                            }
+                        >
+                            <option value="studio">
+                                {pgettext("3D lighting preset", "Studio (default)")}
+                            </option>
+                            <option value="daylight">
+                                {pgettext("3D lighting preset", "Warm daylight")}
+                            </option>
+                        </select>
+                    </div>
+                )}
+
+                {supports_3d && board_renderer_3d && (
+                    <div className="GameSidebarPanel-labeled-row">
+                        <label htmlFor="game-settings-board-3d-room">
+                            <span>
+                                {pgettext("Board display setting", "Show 3D table and bowls")}
+                            </span>
+                        </label>
+                        <Toggle
+                            id="game-settings-board-3d-room"
+                            checked={board_room}
+                            onChange={setBoardRoom}
                         />
                     </div>
                 )}

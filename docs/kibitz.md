@@ -32,6 +32,8 @@ pending game. Once the switch completes or is cancelled, that warning is
 hidden, including when replaying chat history. Completed-switch messages
 and other system messages remain visible; stored chat history is unchanged.
 
+In **More actions → Settings**, use **Use a 3D board** to switch the boards. The live board and the draft or variation board share the 3D board style, lighting and theme preferences. Open **More options** for lighting and other theme settings.
+
 Portrait: GobanView's `portraitSplit` layout — a board stage, a drag handle,
 and one panel area below it. `KibitzLeftAside` is landscape only. Six panes
 share the panel area — Game chat, Kibitz chat, People, Variations, Rooms
