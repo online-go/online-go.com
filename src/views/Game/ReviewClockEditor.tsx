@@ -36,13 +36,18 @@ export function ReviewClockEditor({ goban }: { goban: Goban }): React.ReactEleme
     React.useEffect(() => {
         const onCurMove = (move: MoveTree) => setNode(move);
         const refresh = () => setVersion((v) => v + 1);
+        // A load replaces the engine and all of its moves
+        const onLoad = () => {
+            setNode(goban.engine.cur_move);
+            refresh();
+        };
         goban.on("cur_move", onCurMove);
         goban.on("review.updated", refresh);
-        goban.on("load", refresh);
+        goban.on("load", onLoad);
         return () => {
             goban.off("cur_move", onCurMove);
             goban.off("review.updated", refresh);
-            goban.off("load", refresh);
+            goban.off("load", onLoad);
         };
     }, [goban]);
 
@@ -178,15 +183,17 @@ function ClockRow({ goban, color, clock, lastClock, overtime }: ClockRowProps): 
  * A demo board's clock controls: pause or resume the running clock (resuming
  * also turns Record on), record stones played at the live move as game moves,
  * and take the last one back.
- * The goban's state comes back with the review log, so this reads it on each
- * render (ReviewClockEditor re-renders on every review update).
+ * The goban's state comes back with the review log, and the goban can turn
+ * Record on as the log loads, so this reads both on each render
+ * (ReviewClockEditor re-renders on every review update).
  */
 function DemoClockControls({ goban }: { goban: Goban }): React.ReactElement {
-    const [record, setRecord] = React.useState(goban.review_record_moves);
+    const [, setVersion] = React.useState(0);
+    const record = goban.review_record_moves;
     const running = goban.reviewClockRunning();
     const setRecording = (on: boolean) => {
         goban.review_record_moves = on;
-        setRecord(on);
+        setVersion((v) => v + 1);
     };
     // Whoever starts the clock is recording the game, so their stones should
     // be game moves; without Record nothing they play would be timed

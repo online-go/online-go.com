@@ -207,6 +207,7 @@ export interface DemoSettings {
     private: boolean;
     komi_auto: rest_api.KomiOption;
     komi?: number;
+    time_control?: TimeControl | null;
 }
 
 interface DebugSchema {
