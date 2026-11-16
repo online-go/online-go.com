@@ -80,26 +80,8 @@
     .demo-time-control {
         margin-top: 1rem;
 
-        .demo-time-control-toggle {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .form-group {
-            align-items: center;
-            margin: 0.2rem 0;
-        }
-
-        .control-label {
-            width: 10rem;
-        }
-
-        select,
-        input:not([type="checkbox"]) {
-            width: 12.8rem;
-            max-width: 100%;
+        .right-pane {
+            border-color: transparent;
         }
     }
 

@@ -372,25 +372,35 @@ export function DemoBoardModal(
 
                 <hr></hr>
 
-                <div className="demo-time-control" role="form">
-                    <label className="demo-time-control-toggle">
-                        <input
-                            type="checkbox"
-                            id="demo-board-modal-time-control"
-                            checked={!!timeControl}
-                            onChange={toggleTimeControl}
-                        />
-                        {_("Use a time control")}
-                    </label>
-                    {timeControl && (
-                        <TimeControlPicker
-                            timeControl={timeControl}
-                            onChange={setTimeControl}
-                            forceSystem={false}
-                            boardWidth={width ?? 19}
-                            boardHeight={height ?? 19}
-                        />
-                    )}
+                <div className="demo-pane-container demo-time-control">
+                    <div className="left-pane pane" role="form">
+                        <div className="form-group">
+                            <label
+                                className="control-label"
+                                htmlFor="demo-board-modal-time-control"
+                            >
+                                {_("Use a time control")}
+                            </label>
+                            <div className="controls checkbox-container">
+                                <input
+                                    type="checkbox"
+                                    id="demo-board-modal-time-control"
+                                    checked={!!timeControl}
+                                    onChange={toggleTimeControl}
+                                />
+                            </div>
+                        </div>
+                        {timeControl && (
+                            <TimeControlPicker
+                                timeControl={timeControl}
+                                onChange={setTimeControl}
+                                forceSystem={false}
+                                boardWidth={width ?? 19}
+                                boardHeight={height ?? 19}
+                            />
+                        )}
+                    </div>
+                    <div className="right-pane pane" />
                 </div>
             </div>
 
