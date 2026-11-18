@@ -26,6 +26,8 @@ import type { GobanViewRef } from "@/components/GobanView";
 import { GameMoreSettingsPanel } from "@/views/Game/GameMoreSettingsPanel";
 import { KBShortcut } from "@/components/KBShortcut";
 import type { KibitzRoomSummary } from "@/models/kibitz";
+import type { KibitzController } from "./KibitzController";
+import type { KibitzRoomActivity } from "./kibitzRoomActivity";
 import type { KibitzGobans } from "./useKibitzGobans";
 import { KibitzLeftAside, KibitzLeftAsideProps } from "./KibitzLeftAside";
 import { KibitzChatPanel, KibitzChatPanelProps } from "./KibitzChatPanel";
@@ -100,6 +102,7 @@ export interface KibitzViewProps {
     onReturnToLive: () => void;
     /** Portrait only: the Rooms pane was selected. */
     onRoomsOpened?: () => void;
+    roomActivitySource?: Pick<KibitzController, "on" | "off">;
     roomSettings: {
         /** False while the room's details and permissions are still
          *  loading; the room actions wait for them. */
@@ -200,7 +203,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         gobans.centerMode === "main" ? (gobans.main?.goban ?? null) : null,
     );
 
-    const { onExitVariation, onRoomsOpened, roomSettings } = props;
+    const { onExitVariation, onRoomsOpened, roomSettings, roomActivitySource } = props;
     const onCreateVariation = React.useCallback(() => {
         stopEstimate();
         if (gobans.centerMode === "variation" && props.onBranchFromVariation) {
@@ -271,6 +274,53 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         !centerShowsVariation && pane === "analysis"
             ? (paneBeforeAnalysis.current ?? readPortraitPane())
             : pane;
+    const roomsOpen = isPortrait && displayedPane === "rooms";
+    const [activity, setActivity] = React.useState(() => ({
+        markers: new Map<string, KibitzRoomActivity>(),
+        revision: 0,
+    }));
+    const { activeRoomId, blockedRoomIds, rooms } = props.leftAside;
+    React.useEffect(() => {
+        if (!isPortrait || !roomActivitySource) {
+            return;
+        }
+        const onActivity = (roomId: string, reason: KibitzRoomActivity) => {
+            if (roomId === activeRoomId || blockedRoomIds?.has(roomId)) {
+                return;
+            }
+            setActivity((current) => {
+                const previous = current.markers.get(roomId);
+                if (previous === reason || previous === "new") {
+                    return current;
+                }
+                const markers = new Map(current.markers);
+                markers.set(roomId, reason);
+                return { markers, revision: current.revision + 1 };
+            });
+        };
+        roomActivitySource.on("room-activity", onActivity);
+        return () => {
+            roomActivitySource.off("room-activity", onActivity);
+        };
+    }, [activeRoomId, blockedRoomIds, isPortrait, roomActivitySource]);
+    React.useEffect(() => {
+        if (!roomsOpen) {
+            return;
+        }
+        return () => {
+            setActivity((current) => ({ ...current, markers: new Map() }));
+        };
+    }, [roomsOpen]);
+    const roomActivity = new Map(
+        rooms.flatMap(({ id }) => {
+            const reason = activity.markers.get(id);
+            return reason && id !== activeRoomId && !blockedRoomIds?.has(id)
+                ? [[id, reason] as const]
+                : [];
+        }),
+    );
+    const showRoomActivityDot = !roomsOpen && roomActivity.size > 0;
+
     React.useEffect(() => {
         if (!isPortrait) {
             return;
@@ -649,6 +699,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 {isPortrait ? (
                     <KibitzPortraitPanes
                         active={displayedPane}
+                        roomActivity={roomActivity}
                         chat={{
                             ...props.chat,
                             onOpenVariation: onOpenVariationByReader,
@@ -707,9 +758,26 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         id={`kibitz-pane-${id}`}
                         type="action"
                         align="left"
-                        icon={PANE_ICONS[id]}
-                        title={PANE_TITLES[id]()}
-                        active={pane === id}
+                        icon={
+                            id === "rooms" && showRoomActivityDot ? (
+                                <span className="Kibitz-pane-icon">
+                                    <i className={`fa fa-${PANE_ICONS.rooms}`} aria-hidden="true" />
+                                    <span
+                                        key={activity.revision}
+                                        className="Kibitz-pane-unread Kibitz-rooms-activity"
+                                        aria-hidden="true"
+                                    />
+                                </span>
+                            ) : (
+                                PANE_ICONS[id]
+                            )
+                        }
+                        title={
+                            id === "rooms" && showRoomActivityDot
+                                ? pgettext("Kibitz Rooms tab with an alert", "Rooms (new activity)")
+                                : PANE_TITLES[id]()
+                        }
+                        active={displayedPane === id}
                         onClick={() => togglePane(id)}
                     />
                 ))}

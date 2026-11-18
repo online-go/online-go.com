@@ -19,6 +19,7 @@ import * as React from "react";
 import { interpolate, npgettext, pgettext } from "@/lib/translate";
 import type { KibitzRoomSummary } from "@/models/kibitz";
 import { getKibitzRoomLockedTooltip } from "./kibitzAnalysisPolicyText";
+import { KIBITZ_BUSY_ROOM_VIEWERS, type KibitzRoomActivity } from "./kibitzRoomActivity";
 import "./KibitzRoomList.css";
 
 interface KibitzRoomListProps {
@@ -29,6 +30,7 @@ interface KibitzRoomListProps {
     canOpenCreateRoomFlow: boolean;
     signInHref: string;
     blockedRoomIds?: Set<string>;
+    roomActivity?: ReadonlyMap<string, KibitzRoomActivity>;
 }
 
 /**
@@ -44,6 +46,7 @@ export function KibitzRoomList({
     canOpenCreateRoomFlow,
     signInHref,
     blockedRoomIds,
+    roomActivity,
 }: KibitzRoomListProps): React.ReactElement {
     const roomGroups = [
         {
@@ -106,6 +109,20 @@ export function KibitzRoomList({
                                     )
                                   : description;
 
+                            const activity = roomActivity?.get(room.id);
+                            const activityLabel =
+                                activity === "new"
+                                    ? pgettext("Kibitz room activity description", "New room")
+                                    : activity === "busy"
+                                      ? interpolate(
+                                            pgettext(
+                                                "Kibitz room activity description",
+                                                "Passed {{count}} viewers",
+                                            ),
+                                            { count: KIBITZ_BUSY_ROOM_VIEWERS },
+                                        )
+                                      : null;
+
                             return (
                                 <button
                                     key={room.id}
@@ -126,6 +143,7 @@ export function KibitzRoomList({
                                         ),
                                         { room: room.title, count: room.viewer_count },
                                     )}
+                                    aria-description={activityLabel ?? undefined}
                                     onClick={() => onSelectRoom(room.id)}
                                 >
                                     <span className="room-title">
@@ -146,6 +164,18 @@ export function KibitzRoomList({
                                             { count: room.viewer_count },
                                         )}
                                     >
+                                        {activity ? (
+                                            <span className="room-activity" aria-hidden="true">
+                                                {activity === "new" ? (
+                                                    pgettext(
+                                                        "Short badge for a new Kibitz room",
+                                                        "New",
+                                                    )
+                                                ) : (
+                                                    <i className="fa fa-arrow-up" />
+                                                )}
+                                            </span>
+                                        ) : null}
                                         {room.viewer_count}
                                     </span>
                                 </button>

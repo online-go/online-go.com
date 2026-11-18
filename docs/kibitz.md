@@ -9,6 +9,10 @@ The Kibitz page (`/kibitz/:roomId`) is a room where spectators watch one live
 game together, chat, and share variations. It renders through the shared
 `GobanView` layout (`src/components/GobanView`).
 
+On mobile, the Rooms tab shows a dot when a room is created or another room
+rises above 10 viewers. Open Rooms to see a `New` badge or an up arrow next to
+the affected room's viewer count. The markers clear when you leave the Rooms pane.
+
 ## Layout
 
 Landscape: a left aside with the room list, the variation list and, while

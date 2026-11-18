@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { KIBITZ_BUSY_ROOM_VIEWERS, type KibitzRoomActivity } from "./kibitzRoomActivity";
 import { hasKibitzAnalysisContent } from "./kibitzAnalysisContent";
 import { EventEmitter } from "eventemitter3";
 import type { GobanController } from "@/lib/GobanController";
@@ -51,6 +52,7 @@ import type {
 } from "@/models/kibitz";
 
 interface KibitzControllerEvents {
+    "room-activity": (roomId: string, activity: KibitzRoomActivity) => void;
     "rooms-changed": (rooms: KibitzRoomSummary[]) => void;
     "room-changed": (room: KibitzRoom | null) => void;
     "stream-changed": (items: KibitzStreamItem[]) => void;
@@ -605,6 +607,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     }
 
     public setRooms(rooms: KibitzRoomSummary[]): void {
+        const previousCounts = new Map(this._rooms.map((room) => [room.id, room.viewer_count]));
         this._rooms = rooms;
         for (const room of rooms) {
             updateCachedChannelInformation(room.channel, {
@@ -613,6 +616,16 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             });
         }
         this.emit("rooms-changed", this._rooms);
+        for (const room of rooms) {
+            const previousCount = previousCounts.get(room.id);
+            if (
+                previousCount !== undefined &&
+                previousCount <= KIBITZ_BUSY_ROOM_VIEWERS &&
+                room.viewer_count > KIBITZ_BUSY_ROOM_VIEWERS
+            ) {
+                this.emit("room-activity", room.id, "busy");
+            }
+        }
     }
 
     public setActiveRoom(room: KibitzRoom | null): void {
@@ -779,6 +792,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         }
         const summary = mapBackendRoomToSummary(incoming);
         this.setRooms([...this._rooms, summary]);
+        this.emit("room-activity", summary.id, "new");
     };
 
     private applyBackendRoomUpdate(incoming: BackendKibitzRoom): void {
