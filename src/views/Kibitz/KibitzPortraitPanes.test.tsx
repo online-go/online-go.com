@@ -143,7 +143,14 @@ function props(active: KibitzPortraitPane): React.ComponentProps<typeof KibitzPo
         onExitVariation: jest.fn(),
     };
 
-    return { active, chat, leftAside, roomChannel: "kibitz-room-1", analysis: null };
+    return {
+        active,
+        chat,
+        leftAside,
+        roomChannel: "kibitz-room-1",
+        roomActivity: new Map(),
+        analysis: null,
+    };
 }
 
 describe("KibitzPortraitPanes", () => {

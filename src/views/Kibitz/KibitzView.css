@@ -231,6 +231,18 @@
     }
 }
 
+@media (prefers-reduced-motion: no-preference) {
+    .Kibitz-rooms-activity {
+        animation: kibitz-room-activity-appear 0.65s ease-out;
+    }
+}
+
+@keyframes kibitz-room-activity-appear {
+    0% { opacity: 1; }
+    45% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
 /* Shown while the room has no game to display: the same three columns as
    GobanView, with a message where the board goes. */
 
