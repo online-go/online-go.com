@@ -388,6 +388,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             boardStyle: preferences.get("board-renderer-3d-style"),
             room: preferences.get("board-renderer-3d-room"),
             lighting: { preset: preferences.get("board-renderer-3d-lighting") },
+            onFallback: (error) => console.error("Unable to use the 3D board", error),
             ...this.three_overrides,
         });
         const updateOptions = () => renderer?.configure(readOptions());
@@ -404,17 +405,22 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
                 return;
             }
             pending = true;
-            void enableThreeGoban(goban, readOptions()).then((handle) => {
-                pending = false;
-                if (goban.destroyed || !preferences.get("board-renderer-3d")) {
-                    handle.disable();
-                }
-                if (handle.active) {
-                    renderer = handle;
-                    this.three_renderer = handle;
-                    updateOptions();
-                }
-            });
+            void enableThreeGoban(goban, readOptions())
+                .then((handle) => {
+                    if (goban.destroyed || !preferences.get("board-renderer-3d")) {
+                        handle.disable();
+                    } else if (handle.active) {
+                        renderer = handle;
+                        this.three_renderer = handle;
+                        updateOptions();
+                    }
+                })
+                .catch((error: unknown) => {
+                    console.error("Unable to enable the 3D board", error);
+                })
+                .finally(() => {
+                    pending = false;
+                });
         };
 
         goban.once("destroy", () => {
