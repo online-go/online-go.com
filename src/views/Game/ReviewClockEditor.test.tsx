@@ -46,14 +46,14 @@ const BYOYOMI = {
 function setRow(color: "black" | "white", fields: { time?: string; count?: string }) {
     const row = screen.getByTestId(`review-clock-${color}`);
     if (fields.time !== undefined) {
-        fireEvent.change(row.querySelector(".ReviewClockEditor-time")!, {
-            target: { value: fields.time },
-        });
+        const input = row.querySelector(".ReviewClockEditor-time")!;
+        fireEvent.change(input, { target: { value: fields.time } });
+        fireEvent.blur(input);
     }
     if (fields.count !== undefined) {
-        fireEvent.change(row.querySelector(".ReviewClockEditor-count")!, {
-            target: { value: fields.count },
-        });
+        const input = row.querySelector(".ReviewClockEditor-count")!;
+        fireEvent.change(input, { target: { value: fields.count } });
+        fireEvent.blur(input);
     }
     return row;
 }
@@ -230,4 +230,153 @@ test("setting the clock while typing keeps the field as typed", () => {
     expect(time.isConnected).toBe(true);
     expect(time.value).toBe("1:2");
     expect(screen.getByTestId("review-clock-black")).not.toHaveClass("inherited");
+});
+
+describe("committing an edit", () => {
+    test("typing sends nothing until blur", () => {
+        const { goban, setClock } = reviewBoard();
+        render(<ReviewClockEditor goban={goban} />);
+        const input = screen
+            .getByTestId("review-clock-black")
+            .querySelector(".ReviewClockEditor-time")!;
+
+        fireEvent.change(input, { target: { value: "9" } });
+        fireEvent.change(input, { target: { value: "9:4" } });
+        fireEvent.change(input, { target: { value: "9:42" } });
+        expect(setClock).not.toHaveBeenCalled();
+
+        fireEvent.blur(input);
+        expect(setClock).toHaveBeenCalledTimes(1);
+        expect(setClock).toHaveBeenCalledWith("black", { main_time: 582000 });
+    });
+
+    test("focusing and leaving a field without typing sends nothing", () => {
+        const { goban, setClock } = reviewBoard();
+        goban.engine.cur_move.parent!.black_clock = { main_time: 589401 };
+        render(<ReviewClockEditor goban={goban} />);
+        const input = screen
+            .getByTestId("review-clock-black")
+            .querySelector(".ReviewClockEditor-time")!;
+
+        fireEvent.focus(input);
+        fireEvent.blur(input);
+        fireEvent.keyDown(input, { key: "Enter" });
+        expect(setClock).not.toHaveBeenCalled();
+    });
+
+    test("Enter sends the value", () => {
+        const { goban, setClock } = reviewBoard();
+        render(<ReviewClockEditor goban={goban} />);
+        const input = screen
+            .getByTestId("review-clock-white")
+            .querySelector(".ReviewClockEditor-time")!;
+
+        fireEvent.change(input, { target: { value: "1:30" } });
+        fireEvent.keyDown(input, { key: "Enter" });
+        expect(setClock).toHaveBeenCalledWith("white", { main_time: 90000 });
+    });
+});
+
+test("a load shows the clocks of the loaded board", () => {
+    const { goban } = reviewBoard();
+    render(<ReviewClockEditor goban={goban} />);
+
+    act(() => {
+        goban.load({ review_id: 77, width: 9, height: 9, time_control: ABSOLUTE } as any);
+        goban.engine.cur_move.applyClocks({ black_clock: { main_time: 90000 } });
+        goban.emit("review.updated");
+    });
+    const time = screen
+        .getByTestId("review-clock-black")
+        .querySelector<HTMLInputElement>(".ReviewClockEditor-time")!;
+    expect(time.value).toBe("1:30");
+});
+
+describe("demo board clock controls", () => {
+    test("Resume and Pause send clock_running", () => {
+        const { goban } = reviewBoard();
+        const setRunning = jest.spyOn(goban, "setReviewClockRunning").mockImplementation(() => {});
+        const running = jest.spyOn(goban, "reviewClockRunning").mockReturnValue(false);
+        render(<ReviewClockEditor goban={goban} />);
+
+        fireEvent.click(screen.getByRole("button", { name: /Resume/ }));
+        expect(setRunning).toHaveBeenLastCalledWith(true);
+
+        running.mockReturnValue(true);
+        act(() => {
+            goban.emit("review.updated");
+        });
+        fireEvent.click(screen.getByRole("button", { name: /Pause/ }));
+        expect(setRunning).toHaveBeenLastCalledWith(false);
+    });
+
+    test("Resume also turns Record on", () => {
+        const { goban } = reviewBoard();
+        jest.spyOn(goban, "setReviewClockRunning").mockImplementation(() => {});
+        jest.spyOn(goban, "reviewClockRunning").mockReturnValue(false);
+        render(<ReviewClockEditor goban={goban} />);
+
+        fireEvent.click(screen.getByRole("button", { name: /Resume/ }));
+        expect(goban.review_record_moves).toBe(true);
+        expect(screen.getByRole("checkbox", { name: /Record/ })).toBeChecked();
+    });
+
+    test("Pause leaves Record as it is", () => {
+        const { goban } = reviewBoard();
+        jest.spyOn(goban, "setReviewClockRunning").mockImplementation(() => {});
+        jest.spyOn(goban, "reviewClockRunning").mockReturnValue(true);
+        render(<ReviewClockEditor goban={goban} />);
+
+        fireEvent.click(screen.getByRole("button", { name: /Pause/ }));
+        expect(goban.review_record_moves).toBe(false);
+    });
+
+    test("Record starts off and toggles review_record_moves", () => {
+        const { goban } = reviewBoard();
+        render(<ReviewClockEditor goban={goban} />);
+        const record = screen.getByRole("checkbox", { name: /Record/ });
+
+        expect(record).not.toBeChecked();
+        fireEvent.click(record);
+        expect(goban.review_record_moves).toBe(true);
+        expect(record).toBeChecked();
+    });
+
+    test("Record shows as the goban sets it when the review loads", () => {
+        const { goban } = reviewBoard();
+        render(<ReviewClockEditor goban={goban} />);
+        const record = screen.getByRole("checkbox", { name: /Record/ });
+        expect(record).not.toBeChecked();
+
+        act(() => {
+            goban.review_record_moves = true;
+            goban.emit("review.updated");
+        });
+        expect(record).toBeChecked();
+    });
+
+    test("Undo game move shows only with Record on and a game move", () => {
+        const { goban } = reviewBoard();
+        const undo = jest.spyOn(goban, "undoOfficialMove").mockImplementation(() => {});
+        render(<ReviewClockEditor goban={goban} />);
+        expect(screen.queryByRole("button", { name: /Undo game move/ })).toBeNull();
+
+        fireEvent.click(screen.getByRole("checkbox", { name: /Record/ }));
+        fireEvent.click(screen.getByRole("button", { name: /Undo game move/ }));
+        expect(undo).toHaveBeenCalledTimes(1);
+    });
+
+    test("no controls on a review of a game", () => {
+        const goban = new GobanController({
+            review_id: 78,
+            game_id: 4242,
+            width: 9,
+            height: 9,
+            time_control: ABSOLUTE,
+            moves: [[2, 2, 1000]],
+        } as any).goban;
+        render(<ReviewClockEditor goban={goban} />);
+        expect(screen.queryByRole("button", { name: /Resume/ })).toBeNull();
+        expect(screen.queryByRole("checkbox", { name: /Record/ })).toBeNull();
+    });
 });

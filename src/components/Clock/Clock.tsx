@@ -17,7 +17,13 @@
 
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Goban, JGOFClockWithTransmitting, JGOFPlayerClock, JGOFTimeControl } from "goban";
+import {
+    Goban,
+    JGOFClockWithTransmitting,
+    JGOFPauseState,
+    JGOFPlayerClock,
+    JGOFTimeControl,
+} from "goban";
 import { _, pgettext, interpolate, ngettext } from "@/lib/translate";
 import { TurnClock } from "@/components/TurnClock";
 import "./Clock.css";
@@ -73,25 +79,19 @@ export function Clock({
         const player_id: number =
             color === "black" ? goban.engine.players.black.id : goban.engine.players.white.id;
 
-        let clock_className = "Clock " + color;
-        if (clock.pause_state) {
-            if (time_control.speed === "correspondence") {
-                clock_className += " paused-correspondence";
-            } else {
-                clock_className += " paused";
-            }
-        }
-        if (player_clock.main_time <= 0) {
-            clock_className += " in-overtime";
-        }
-        if (className) {
-            clock_className += " " + className;
-        }
-
         if (clock.start_mode && clock.current_player === color) {
-            clock_className += " start-mode";
             return (
-                <span className={clock_className}>
+                <span
+                    className={
+                        clockClassName(
+                            color,
+                            player_clock,
+                            time_control,
+                            !!clock.pause_state,
+                            className,
+                        ) + " start-mode"
+                    }
+                >
                     {prettyTime(clock.start_time_left || 0)}
                     {/* The same wrapper the running clock uses, so the face
                      * keeps its usual place beside the digits. */}
@@ -104,101 +104,17 @@ export function Clock({
             );
         }
 
-        // The main time for correspondence games can get pretty lengthy, for those
-        // use use a smaller font
-        const need_small_main_time_font = prettyTime(player_clock.main_time).length > 8;
-
-        const show_pause = !compact && clock.pause_state;
-
-        /* The time the player is actually burning down: the main time until
-         * it runs out, then the overtime block of their time control. */
-        let running_time_left = player_clock.main_time;
-        if (running_time_left <= 0) {
-            running_time_left =
-                (time_control.system === "canadian"
-                    ? player_clock.block_time_left
-                    : player_clock.period_time_left) || 0;
-        }
-
         return (
-            <span className={clock_className}>
-                {player_clock.main_time > 0 && (
-                    <span
-                        className={"main-time boxed " + (need_small_main_time_font ? " small" : "")}
-                    >
-                        {prettyTime(player_clock.main_time)}
-                        {time_control.system === "absolute" && (
-                            <>
-                                <span className="absolute-time">+0</span>
-                            </>
-                        )}
-                    </span>
-                )}
-
-                {time_control.system === "byoyomi" && (
-                    <div className="byo-yomi-container">
-                        {(!compact || player_clock.main_time <= 0) && (
-                            <React.Fragment>
-                                {player_clock.main_time > 0 &&
-                                    (player_clock.periods_left || 0) >= 1 && (
-                                        <span className="periods-delimiter"> + </span>
-                                    )}
-                                {(player_clock.periods_left || 0) >= 1 && (
-                                    <span
-                                        className={
-                                            "period-time boxed" +
-                                            ((player_clock.periods_left || 0) <= 1
-                                                ? "sudden-death"
-                                                : "")
-                                        }
-                                    >
-                                        {prettyTime(player_clock.period_time_left || 0)}
-                                    </span>
-                                )}
-                            </React.Fragment>
-                        )}
-                        {(player_clock.periods_left || 0) >= 1 && (
-                            <span
-                                className={
-                                    "byo-yomi-periods " +
-                                    ((player_clock.periods_left || 0) <= 1 ? "sudden-death" : "")
-                                }
-                            >
-                                (
-                                {player_clock.periods_left === 1
-                                    ? pgettext("Final byo-yomi period (Sudden Death)", "SD")
-                                    : `${player_clock.periods_left}`}
-                                )
-                            </span>
-                        )}
-                    </div>
-                )}
-
-                {time_control.system === "canadian" &&
-                    (!compact || player_clock.main_time <= 0) && (
-                        <React.Fragment>
-                            <span className="canadian-clock-container">
-                                {player_clock.main_time > 0 && (
-                                    <span className="periods-delimiter"> + </span>
-                                )}
-                                <span className="period-time boxed">
-                                    {prettyTime(player_clock.block_time_left || 0)}
-                                </span>
-                                <span className="periods-delimiter">/</span>
-                                <span className="period-moves boxed">
-                                    {player_clock.moves_left}
-                                </span>
-                            </span>
-                        </React.Fragment>
-                    )}
-
-                {(show_pause || !lineSummary || show_turn_clock) && (
-                    <div className="clock-status">
-                        {show_pause && <ClockPauseReason clock={clock} player_id={player_id} />}
-                        {show_turn_clock && <TurnClock time_left={running_time_left} />}
-                    </div>
-                )}
-            </span>
+            <PlayerClockView
+                color={color}
+                player_clock={player_clock}
+                time_control={time_control}
+                className={className}
+                compact={compact}
+                lineSummary={lineSummary}
+                show_turn_clock={show_turn_clock}
+                pause_text={clock.pause_state && pauseText(clock.pause_state, player_id)}
+            />
         );
     }
 
@@ -209,31 +125,177 @@ export function Clock({
     }
 }
 
-function ClockPauseReason({
-    clock,
-    player_id,
+/**
+ * One player's clock. A game's clock and a review's clock both draw through
+ * this, so the two look the same.
+ */
+export function PlayerClockView({
+    color,
+    player_clock,
+    time_control,
+    className,
+    compact,
+    lineSummary,
+    show_turn_clock,
+    pause_text,
 }: {
-    clock: JGOFClockWithTransmitting;
-    player_id: number;
+    color: "black" | "white";
+    player_clock: JGOFPlayerClock;
+    /** Undefined for a clock recorded with no time settings */
+    time_control: JGOFTimeControl | undefined;
+    className?: string;
+    compact?: boolean;
+    lineSummary?: boolean;
+    /** Draw the analog turn clock that marks the player to move. */
+    show_turn_clock?: boolean;
+    /** Why the clock is paused; undefined while it is not paused */
+    pause_text?: string;
 }): React.ReactElement {
-    let pause_text = _("Paused");
-    const pause_state = clock.pause_state;
+    const system = time_control?.system;
 
-    if (pause_state) {
-        if (pause_state.weekend) {
-            pause_text = _("Weekend");
-        }
+    // The main time for correspondence games can get pretty lengthy, for those
+    // use use a smaller font
+    const need_small_main_time_font = prettyTime(player_clock.main_time).length > 8;
 
-        if (pause_state.server) {
-            pause_text = _("Paused by Server");
-        }
+    const show_pause = !compact && pause_text !== undefined;
 
-        if (pause_state.vacation && pause_state.vacation[player_id]) {
-            pause_text = _("Vacation");
-        }
+    /* Overtime shows in place of main time once that runs out. A player with
+     * neither left shows 0.0 rather than nothing. */
+    const has_overtime =
+        system === "canadian" || (system === "byoyomi" && (player_clock.periods_left || 0) >= 1);
+
+    /* The time the player is actually burning down: the main time until
+     * it runs out, then the overtime block of their time control. */
+    let running_time_left = player_clock.main_time;
+    if (running_time_left <= 0) {
+        running_time_left =
+            (system === "canadian"
+                ? player_clock.block_time_left
+                : player_clock.period_time_left) || 0;
     }
 
-    return <span className="pause-text">{pause_text}</span>;
+    return (
+        <span
+            className={clockClassName(
+                color,
+                player_clock,
+                time_control,
+                pause_text !== undefined,
+                className,
+            )}
+        >
+            {(player_clock.main_time > 0 || !has_overtime) && (
+                <span className={"main-time boxed " + (need_small_main_time_font ? " small" : "")}>
+                    {prettyTime(player_clock.main_time)}
+                    {system === "absolute" && (
+                        <>
+                            <span className="absolute-time">+0</span>
+                        </>
+                    )}
+                </span>
+            )}
+
+            {system === "byoyomi" && (
+                <div className="byo-yomi-container">
+                    {(!compact || player_clock.main_time <= 0) && (
+                        <React.Fragment>
+                            {player_clock.main_time > 0 &&
+                                (player_clock.periods_left || 0) >= 1 && (
+                                    <span className="periods-delimiter"> + </span>
+                                )}
+                            {(player_clock.periods_left || 0) >= 1 && (
+                                <span
+                                    className={
+                                        "period-time boxed" +
+                                        ((player_clock.periods_left || 0) <= 1
+                                            ? "sudden-death"
+                                            : "")
+                                    }
+                                >
+                                    {prettyTime(player_clock.period_time_left || 0)}
+                                </span>
+                            )}
+                        </React.Fragment>
+                    )}
+                    {(player_clock.periods_left || 0) >= 1 && (
+                        <span
+                            className={
+                                "byo-yomi-periods " +
+                                ((player_clock.periods_left || 0) <= 1 ? "sudden-death" : "")
+                            }
+                        >
+                            (
+                            {player_clock.periods_left === 1
+                                ? pgettext("Final byo-yomi period (Sudden Death)", "SD")
+                                : `${player_clock.periods_left}`}
+                            )
+                        </span>
+                    )}
+                </div>
+            )}
+
+            {system === "canadian" && (!compact || player_clock.main_time <= 0) && (
+                <React.Fragment>
+                    <span className="canadian-clock-container">
+                        {player_clock.main_time > 0 && (
+                            <span className="periods-delimiter"> + </span>
+                        )}
+                        <span className="period-time boxed">
+                            {prettyTime(player_clock.block_time_left || 0)}
+                        </span>
+                        <span className="periods-delimiter">/</span>
+                        <span className="period-moves boxed">{player_clock.moves_left}</span>
+                    </span>
+                </React.Fragment>
+            )}
+
+            {(show_pause || !lineSummary || show_turn_clock) && (
+                <div className="clock-status">
+                    {show_pause && <span className="pause-text">{pause_text}</span>}
+                    {show_turn_clock && <TurnClock time_left={running_time_left} />}
+                </div>
+            )}
+        </span>
+    );
+}
+
+function clockClassName(
+    color: "black" | "white",
+    player_clock: JGOFPlayerClock,
+    time_control: JGOFTimeControl | undefined,
+    paused: boolean,
+    className: string | undefined,
+): string {
+    let ret = "Clock " + color;
+    if (paused) {
+        ret += time_control?.speed === "correspondence" ? " paused-correspondence" : " paused";
+    }
+    if (player_clock.main_time <= 0) {
+        ret += " in-overtime";
+    }
+    if (className) {
+        ret += " " + className;
+    }
+    return ret;
+}
+
+/** What a paused clock says about why it is paused */
+export function pauseText(pause_state: JGOFPauseState, player_id: number): string {
+    let pause_text = _("Paused");
+
+    if (pause_state.weekend) {
+        pause_text = _("Weekend");
+    }
+
+    if (pause_state.server) {
+        pause_text = _("Paused by Server");
+    }
+
+    if (pause_state.vacation && pause_state.vacation[player_id]) {
+        pause_text = _("Vacation");
+    }
+
+    return pause_text;
 }
 
 // exported for testing

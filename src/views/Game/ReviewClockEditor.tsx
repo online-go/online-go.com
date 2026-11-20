@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { clockTimeLeft, Goban, JGOFPlayerClock, MoveTree } from "goban";
+import { clockTimeLeft, findClock, Goban, JGOFPlayerClock, MoveTree } from "goban";
 import { _, pgettext } from "@/lib/translate";
 import { clockTimeSystem } from "@/components/Clock";
 import "./ReviewClockEditor.css";
@@ -24,7 +24,8 @@ import "./ReviewClockEditor.css";
 /**
  * Lets a review's controller set or clear each player's clock on the current
  * node. The fields start from the node's own clock, or else from the last
- * clock set earlier in the line. A valid edit is set on the node at once.
+ * clock set earlier in the line. An edit is set on the node on Enter or when
+ * the field loses focus. Demo boards also get the running clock's controls.
  * Nothing is shown while the review has no time control.
  */
 export function ReviewClockEditor({ goban }: { goban: Goban }): React.ReactElement | null {
@@ -35,13 +36,18 @@ export function ReviewClockEditor({ goban }: { goban: Goban }): React.ReactEleme
     React.useEffect(() => {
         const onCurMove = (move: MoveTree) => setNode(move);
         const refresh = () => setVersion((v) => v + 1);
+        // A load replaces the engine and all of its moves
+        const onLoad = () => {
+            setNode(goban.engine.cur_move);
+            refresh();
+        };
         goban.on("cur_move", onCurMove);
         goban.on("review.updated", refresh);
-        goban.on("load", refresh);
+        goban.on("load", onLoad);
         return () => {
             goban.off("cur_move", onCurMove);
             goban.off("review.updated", refresh);
-            goban.off("load", refresh);
+            goban.off("load", onLoad);
         };
     }, [goban]);
 
@@ -59,10 +65,11 @@ export function ReviewClockEditor({ goban }: { goban: Goban }): React.ReactEleme
                     goban={goban}
                     color={color}
                     clock={node[`${color}_clock`]}
-                    lastClock={lastClock(node.parent, color)}
+                    lastClock={findClock(node.parent, color)}
                     overtime={overtime}
                 />
             ))}
+            {goban.isDemoBoard() && <DemoClockControls goban={goban} />}
         </div>
     );
 }
@@ -87,22 +94,40 @@ function ClockRow({ goban, color, clock, lastClock, overtime }: ClockRowProps): 
     const [fields, setFields] = React.useState<ClockFields>(() => clockFields(shown));
     // The clock this row set last, so it can tell its own change from one made elsewhere
     const sent = React.useRef<string | null>(null);
+    // Set by typing; only a changed field is sent (see commit)
+    const dirty = React.useRef(false);
     const clock_json = JSON.stringify(clock ?? null);
     const shown_json = JSON.stringify(shown ?? null);
 
     React.useEffect(() => {
         if (clock_json !== sent.current) {
             sent.current = null;
+            dirty.current = false;
             setFields(clockFields(shown));
         }
     }, [clock_json, shown_json]);
 
+    // Only a field the controller has changed is sent: the fields start from a
+    // rounded or inherited clock, and on a running clock every value sent
+    // restarts the countdown for everyone watching. Sent on Enter or blur.
     const edit = (next: ClockFields) => {
+        dirty.current = true;
         setFields(next);
-        const new_clock = buildClock(next, overtime);
+    };
+    const commit = () => {
+        if (!dirty.current) {
+            return;
+        }
+        dirty.current = false;
+        const new_clock = buildClock(fields, overtime);
         if (new_clock && JSON.stringify(new_clock) !== clock_json) {
             sent.current = JSON.stringify(new_clock);
             goban.setReviewNodeClock(color, new_clock);
+        }
+    };
+    const onKeyDown = (ev: React.KeyboardEvent) => {
+        if (ev.key === "Enter") {
+            commit();
         }
     };
 
@@ -121,6 +146,8 @@ function ClockRow({ goban, color, clock, lastClock, overtime }: ClockRowProps): 
                 value={fields.time}
                 placeholder={pgettext("Review clock editor: time left, e.g. 1:30", "Time left")}
                 onChange={(ev) => edit({ ...fields, time: ev.target.value })}
+                onBlur={commit}
+                onKeyDown={onKeyDown}
             />
             {overtime && (
                 <input
@@ -137,6 +164,8 @@ function ClockRow({ goban, color, clock, lastClock, overtime }: ClockRowProps): 
                               )
                     }
                     onChange={(ev) => edit({ ...fields, count: ev.target.value })}
+                    onBlur={commit}
+                    onKeyDown={onKeyDown}
                 />
             )}
             <button
@@ -150,15 +179,49 @@ function ClockRow({ goban, color, clock, lastClock, overtime }: ClockRowProps): 
     );
 }
 
-/** The last clock for `color` on `node` or the nodes before it */
-function lastClock(node: MoveTree | null, color: "black" | "white"): JGOFPlayerClock | undefined {
-    for (let cur = node; cur; cur = cur.parent) {
-        const clock = cur[`${color}_clock`];
-        if (clock) {
-            return clock;
+/**
+ * A demo board's clock controls: pause or resume the running clock (resuming
+ * also turns Record on), record stones played at the live move as game moves,
+ * and take the last one back.
+ * The goban's state comes back with the review log, and the goban can turn
+ * Record on as the log loads, so this reads both on each render
+ * (ReviewClockEditor re-renders on every review update).
+ */
+function DemoClockControls({ goban }: { goban: Goban }): React.ReactElement {
+    const [, setVersion] = React.useState(0);
+    const record = goban.review_record_moves;
+    const running = goban.reviewClockRunning();
+    const setRecording = (on: boolean) => {
+        goban.review_record_moves = on;
+        setVersion((v) => v + 1);
+    };
+    // Whoever starts the clock is recording the game, so their stones should
+    // be game moves; without Record nothing they play would be timed
+    const toggleClock = () => {
+        if (!running) {
+            setRecording(true);
         }
-    }
-    return undefined;
+        goban.setReviewClockRunning(!running);
+    };
+
+    return (
+        <div className="ReviewClockEditor-controls">
+            <button className="xs" onClick={toggleClock}>
+                {running
+                    ? pgettext("Stop the demo board clock", "Pause")
+                    : pgettext("Start the demo board clock", "Resume")}
+            </button>
+            <label className="ReviewClockEditor-record">
+                <input type="checkbox" checked={record} onChange={() => setRecording(!record)} />
+                {pgettext("Record stones played at the last game move as game moves", "Record")}
+            </label>
+            {record && goban.engine.last_official_move.parent && (
+                <button className="xs" onClick={() => goban.undoOfficialMove()}>
+                    {pgettext("Take back the last recorded game move", "Undo game move")}
+                </button>
+            )}
+        </div>
+    );
 }
 
 function clockFields(clock: JGOFPlayerClock | undefined): ClockFields {

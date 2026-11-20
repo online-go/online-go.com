@@ -128,7 +128,7 @@ export function KibitzThinPlayer({
                     {phase !== "finished" && !goban.review_id ? (
                         <Clock goban={goban} color={color} compact lineSummary />
                     ) : hasMoveClocks(goban) ? (
-                        <SGFClock goban={goban} color={color} />
+                        <SGFClock goban={goban} color={color} compact lineSummary />
                     ) : phase === "finished" ? (
                         pgettext("Kibitz game clock", "Finished")
                     ) : (
