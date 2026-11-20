@@ -16,7 +16,7 @@
  */
 
 import * as data from "@/lib/data";
-import type { ThreeBoardStyle } from "goban";
+import type { ThreeBoardStyle, ThreeRendererOptions } from "goban";
 import { GobanSelectedThemes, Goban, LabelPosition, JGOFTimeControlSpeed, Size } from "goban";
 import * as React from "react";
 import { current_language } from "@/lib/translate";
@@ -72,6 +72,9 @@ export const defaults = {
     "board-labeling": "automatic",
     "board-renderer-3d": false,
     "board-renderer-3d-room": false,
+    "board-renderer-3d-mouse-orbit": false,
+    "board-renderer-3d-rotation": 0 as NonNullable<ThreeRendererOptions["rotation"]>,
+    "board-renderer-3d-tilt": "auto" as "auto" | NonNullable<ThreeRendererOptions["tilt"]>,
     "board-renderer-3d-style": "tabletop" as ThreeBoardStyle,
     "board-renderer-3d-lighting": "studio" as "studio" | "daylight",
     "chat.show-all-global-channels": true,
