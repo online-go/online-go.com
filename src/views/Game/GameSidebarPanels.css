@@ -108,6 +108,22 @@
         }
     }
 
+    .GameSidebarPanel-labeled-row .GameSettingsPanel-board-view-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.25rem;
+
+        select {
+            min-width: 0;
+        }
+
+        button {
+            margin: 0;
+            white-space: nowrap;
+        }
+    }
+
     .GameSidebarPanel-section-header {
         font-size: 0.75rem;
         font-weight: 600;

@@ -384,13 +384,19 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     private watchThreeRenderer(goban: SVGRenderer): void {
         let renderer: ThreeRenderer | undefined;
         let pending = false;
-        const readOptions = (): ThreeRendererOptions => ({
-            boardStyle: preferences.get("board-renderer-3d-style"),
-            room: preferences.get("board-renderer-3d-room"),
-            lighting: { preset: preferences.get("board-renderer-3d-lighting") },
-            onFallback: (error) => console.error("Unable to use the 3D board", error),
-            ...this.three_overrides,
-        });
+        const readOptions = (): ThreeRendererOptions => {
+            const tilt = preferences.get("board-renderer-3d-tilt");
+            return {
+                boardStyle: preferences.get("board-renderer-3d-style"),
+                room: preferences.get("board-renderer-3d-room"),
+                mouseOrbit: preferences.get("board-renderer-3d-mouse-orbit"),
+                rotation: preferences.get("board-renderer-3d-rotation"),
+                tilt: tilt === "auto" ? undefined : tilt,
+                lighting: { preset: preferences.get("board-renderer-3d-lighting") },
+                onFallback: (error) => console.error("Unable to use the 3D board", error),
+                ...this.three_overrides,
+            };
+        };
         const updateOptions = () => renderer?.configure(readOptions());
         const update = (enabled: boolean) => {
             if (!enabled) {
@@ -427,10 +433,16 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
             preferences.unwatch("board-renderer-3d", update);
             preferences.unwatch("board-renderer-3d-style", updateOptions);
             preferences.unwatch("board-renderer-3d-room", updateOptions);
+            preferences.unwatch("board-renderer-3d-mouse-orbit", updateOptions);
+            preferences.unwatch("board-renderer-3d-rotation", updateOptions);
+            preferences.unwatch("board-renderer-3d-tilt", updateOptions);
             preferences.unwatch("board-renderer-3d-lighting", updateOptions);
         });
         preferences.watch("board-renderer-3d-style", updateOptions);
         preferences.watch("board-renderer-3d-room", updateOptions);
+        preferences.watch("board-renderer-3d-mouse-orbit", updateOptions);
+        preferences.watch("board-renderer-3d-rotation", updateOptions);
+        preferences.watch("board-renderer-3d-tilt", updateOptions);
         preferences.watch("board-renderer-3d-lighting", updateOptions);
         preferences.watch("board-renderer-3d", update);
     }
