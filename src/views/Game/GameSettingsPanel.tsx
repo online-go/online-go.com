@@ -241,11 +241,11 @@ export function GameSettingsPanel({
                                 setBoardStyle(event.target.value === "floor" ? "floor" : "tabletop")
                             }
                         >
-                            <option value="tabletop">
-                                {pgettext("3D board style", "Tabletop")}
-                            </option>
                             <option value="floor">
                                 {pgettext("3D board style", "Traditional floor goban")}
+                            </option>
+                            <option value="tabletop">
+                                {pgettext("3D board style", "Tabletop")}
                             </option>
                         </select>
                     </div>
