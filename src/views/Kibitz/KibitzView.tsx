@@ -25,7 +25,7 @@ import { GobanView, generateGobanHook, useGobanViewLayout } from "@/components/G
 import type { GobanViewRef } from "@/components/GobanView";
 import { GameMoreSettingsPanel } from "@/views/Game/GameMoreSettingsPanel";
 import { KBShortcut } from "@/components/KBShortcut";
-import type { KibitzRoomSummary } from "@/models/kibitz";
+import type { KibitzRoomBroadcast, KibitzRoomSummary } from "@/models/kibitz";
 import type { KibitzGobans } from "./useKibitzGobans";
 import { KibitzLeftAside, KibitzLeftAsideProps } from "./KibitzLeftAside";
 import { KibitzChatPanel, KibitzChatPanelProps } from "./KibitzChatPanel";
@@ -44,6 +44,15 @@ import {
     KibitzRoomSettingsPopoverView,
 } from "./KibitzRoomSettingsPopover";
 import { KibitzKeyboardShortcuts } from "./KibitzKeyboardShortcuts";
+import { KibitzStreamPanel } from "./KibitzStreamPanel";
+import { useKibitzStream } from "./kibitzStream";
+import {
+    KibitzStreamPlayer,
+    type KibitzStreamPlayerMode,
+    popoutSupported,
+    usePopoutWindow,
+    useSlotRect,
+} from "./KibitzStreamPlayer";
 import { PlayerCards } from "@/views/Game/PlayerCards";
 import { KibitzStackedPlayerHeader } from "./KibitzStackedPlayerHeader";
 import { useKibitzThinHeader } from "./kibitzThinHeader";
@@ -112,6 +121,8 @@ export interface KibitzViewProps {
         onChangeBoard?: () => void;
         onSaveRoomDetails: (title: string, description: string) => Promise<boolean>;
         onDeleteRoom: () => Promise<boolean>;
+        /** Sets or clears the room's stream; absent for users who may not. */
+        onSetBroadcast?: (broadcast: KibitzRoomBroadcast | null) => Promise<boolean>;
     };
     /** Room status shown in the header. */
     banner?: React.ReactNode;
@@ -126,6 +137,7 @@ const PANE_ICONS: Record<KibitzPortraitPane, string> = {
     variations: "code-fork",
     rooms: "th-large",
     analysis: "sitemap",
+    stream: "television",
 };
 
 // The bar's two portrait groups, in the order they are shown. Rooms and
@@ -149,6 +161,7 @@ const PANE_TITLES: Record<KibitzPortraitPane, (onReview: boolean) => string> = {
     variations: () => pgettext("Heading for the Kibitz variation list", "Variations"),
     rooms: () => pgettext("Heading of the room list in the Kibitz left aside", "Rooms"),
     analysis: () => pgettext("Action that starts a new Kibitz variation", "New variation"),
+    stream: () => pgettext("Kibitz pane that shows the room's stream", "Stream"),
 };
 
 /** True while the main board is away from the room's position: behind the
@@ -210,6 +223,21 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const settingsPopoverRef = React.useRef<PopOver | null>(null);
     const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
     const isPresenter = useKibitzReviewPresenter(gobans.main?.goban ?? null);
+    const stream = useKibitzStream(room.id, room.broadcast);
+    const hasStream = !!room.broadcast || !!stream.channel || stream.hidden;
+    // The stream panel's slot, which the docked player covers; the separate
+    // pop-out window; and, in landscape, whether the reader moved the
+    // player into the mini player.
+    const [streamSlot, setStreamSlot] = React.useState<HTMLDivElement | null>(null);
+    const streamSlotRect = useSlotRect(streamSlot);
+    const popout = usePopoutWindow();
+    const [preferMiniPlayer, setPreferMiniPlayer] = React.useState(false);
+    const canPopout = popoutSupported();
+    React.useEffect(() => {
+        if (!stream.channel) {
+            popout.close();
+        }
+    }, [stream.channel, popout.close]);
     const behindLive = useBehindLive(
         gobans.centerMode === "main" ? (gobans.main?.goban ?? null) : null,
     );
@@ -281,10 +309,14 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     // The pane state stores reader intent. Analysis is a presentation of a
     // non-live centre, so derive it for this render instead of first
     // rendering an invalid pane and repairing it in an effect.
+    // A room without a stream has no stream pane, so a stored "stream"
+    // falls back to the default rather than showing an empty area.
     const displayedPane: KibitzPortraitPane =
         !centerShowsVariation && pane === "analysis"
             ? (paneBeforeAnalysis.current ?? readPortraitPane())
-            : pane;
+            : pane === "stream" && !hasStream
+              ? KIBITZ_DEFAULT_PORTRAIT_PANE
+              : pane;
     React.useEffect(() => {
         if (!isPortrait) {
             return;
@@ -432,6 +464,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         }}
                         onDeleteRoom={roomSettings.onDeleteRoom}
                         onSaveRoomDetails={roomSettings.onSaveRoomDetails}
+                        onSetBroadcast={roomSettings.onSetBroadcast}
                         initialView={initialView}
                     />
                 ),
@@ -496,6 +529,24 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             )}
         </div>
     );
+
+    // Where the stream plays. In portrait the stream pane is its full-size
+    // place and leaving the pane shrinks it into the mini player, as a
+    // video app does; in landscape the reader chooses.
+    const streamPlayerMode: KibitzStreamPlayerMode = !stream.channel
+        ? "off"
+        : popout.window
+          ? "popout"
+          : (isPortrait ? displayedPane === "stream" : !preferMiniPlayer)
+            ? "docked"
+            : "mini";
+    const dockStream = () => {
+        popout.close();
+        setPreferMiniPlayer(false);
+        if (isPortrait) {
+            selectPane("stream");
+        }
+    };
 
     const viewingOther = gobans.centerMode !== "main";
     // Player information intentionally follows useKibitzGobans' selection,
@@ -662,6 +713,16 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             portraitPanelMinHeightRem={thinHeader ? 6 : undefined}
         >
             {gobans.center && <KibitzKeyboardShortcuts />}
+            <KibitzStreamPlayer
+                channel={stream.channel}
+                mode={streamPlayerMode}
+                slotRect={streamSlotRect}
+                popoutWindow={popout.window}
+                canPopout={canPopout}
+                onExpand={dockStream}
+                onPopout={() => void popout.open()}
+                onClose={stream.hide}
+            />
             {(viewingOther || scoreEstimation.estimating) && (
                 <KBShortcut shortcut="esc" action={onEscape} />
             )}
@@ -704,15 +765,43 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         roomChannel={room.channel}
                         analysis={variationPanel}
                         analysisPending={viewingOther && !gobans.secondary}
+                        stream={
+                            hasStream ? (
+                                <KibitzStreamPanel
+                                    broadcast={room.broadcast}
+                                    stream={stream}
+                                    fill
+                                    onSlot={setStreamSlot}
+                                    playerMode={streamPlayerMode}
+                                    canPopout={canPopout}
+                                    onPopout={() => void popout.open()}
+                                    onDock={dockStream}
+                                />
+                            ) : undefined
+                        }
                     />
                 ) : (
-                    <KibitzChatPanel
-                        {...props.chat}
-                        onOpenVariation={onOpenVariationByReader}
-                        gameController={gobans.main}
-                        coordinateGoban={coordinateGoban}
-                        showPeople={showPeople}
-                    />
+                    <>
+                        {hasStream ? (
+                            <KibitzStreamPanel
+                                broadcast={room.broadcast}
+                                stream={stream}
+                                onSlot={setStreamSlot}
+                                playerMode={streamPlayerMode}
+                                canPopout={canPopout}
+                                onMini={() => setPreferMiniPlayer(true)}
+                                onPopout={() => void popout.open()}
+                                onDock={dockStream}
+                            />
+                        ) : null}
+                        <KibitzChatPanel
+                            {...props.chat}
+                            onOpenVariation={onOpenVariationByReader}
+                            gameController={gobans.main}
+                            coordinateGoban={coordinateGoban}
+                            showPeople={showPeople}
+                        />
+                    </>
                 )}
             </GobanView.Tab>
 
@@ -747,7 +836,10 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 ))}
 
             {isPortrait &&
-                PORTRAIT_CENTER_PANES.map((id) => (
+                (hasStream
+                    ? (["stream", ...PORTRAIT_CENTER_PANES] as const)
+                    : PORTRAIT_CENTER_PANES
+                ).map((id) => (
                     <GobanView.Tab
                         key={id}
                         id={`kibitz-pane-${id}`}

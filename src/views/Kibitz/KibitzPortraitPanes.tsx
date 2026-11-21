@@ -38,6 +38,9 @@ interface KibitzPortraitPanesProps {
      *  not built yet, which is a wait rather than an invitation to start
      *  something. */
     analysisPending?: boolean;
+    /** The room's stream, when it has one. It stays mounted while another
+     *  pane is on screen, so the commentary keeps playing. */
+    stream?: React.ReactNode;
 }
 
 /**
@@ -53,6 +56,7 @@ export function KibitzPortraitPanes({
     roomChannel,
     analysis,
     analysisPending = false,
+    stream,
 }: KibitzPortraitPanesProps): React.ReactElement {
     // Each panel reports both chats, but only knows whether its own is on
     // screen: the game panel never shows the room chat, so it calls every
@@ -76,6 +80,11 @@ export function KibitzPortraitPanes({
 
     return (
         <div className="KibitzPortraitPanes">
+            {stream ? (
+                <div className="KibitzPortraitPanes-pane" hidden={active !== "stream"}>
+                    {stream}
+                </div>
+            ) : null}
             <div className="KibitzPortraitPanes-pane" hidden={active !== "game-chat"}>
                 <KibitzChatPanel
                     {...chat}

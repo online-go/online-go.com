@@ -1,0 +1,82 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.KibitzStreamPlayer {
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    /* Above the page, below popovers and dialogs. */
+    z-index: 900;
+
+    &.KibitzStreamPlayer-mini {
+        border-radius: 6px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+        overflow: hidden;
+        width: min(20rem, 60vw);
+    }
+
+    .KibitzStreamPlayer-handle {
+        align-items: center;
+        background: var(--shade5);
+        color: var(--fg);
+        cursor: grab;
+        display: flex;
+        gap: 0.15rem;
+        padding: 0.1rem 0.25rem;
+        touch-action: none;
+        user-select: none;
+
+        &:active {
+            cursor: grabbing;
+        }
+
+        button {
+            background: transparent;
+            border: 0;
+            box-shadow: none;
+            color: inherit;
+            margin: 0;
+            min-height: 0;
+            padding: 0.2rem 0.4rem;
+        }
+    }
+
+    .KibitzStreamPlayer-grip {
+        color: var(--text-dimmed);
+        flex: 1 1 auto;
+        font-size: 0.8rem;
+        padding-left: 0.2rem;
+    }
+
+    .KibitzStreamPlayer-frame {
+        flex: 1 1 auto;
+        min-height: 0;
+
+        iframe {
+            border: 0;
+            display: block;
+            height: 100%;
+            width: 100%;
+        }
+    }
+
+    &.KibitzStreamPlayer-mini .KibitzStreamPlayer-frame {
+        aspect-ratio: 16 / 9;
+        flex: 0 0 auto;
+    }
+}

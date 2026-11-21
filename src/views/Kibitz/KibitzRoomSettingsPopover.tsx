@@ -19,7 +19,9 @@ import * as React from "react";
 import { Player } from "@/components/Player";
 import * as player_cache from "@/lib/player_cache";
 import { pgettext } from "@/lib/translate";
-import type { KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
+import type { KibitzRoomBroadcast, KibitzRoomSummary, KibitzRoomUser } from "@/models/kibitz";
+import type { Stream } from "@/views/GoTV/StreamManager";
+import { useLiveStreams } from "./useLiveStreams";
 import { KibitzUserAvatar } from "./KibitzUserAvatar";
 import {
     getKibitzRoomOffensiveMessage,
@@ -29,7 +31,7 @@ import {
 } from "./kibitzAnalysisPolicyText";
 import "./KibitzRoomSettingsPopover.css";
 
-export type KibitzRoomSettingsPopoverView = "menu" | "edit-details";
+export type KibitzRoomSettingsPopoverView = "menu" | "edit-details" | "stream";
 
 interface KibitzRoomSettingsPopoverProps {
     room: KibitzRoomSummary;
@@ -40,6 +42,9 @@ interface KibitzRoomSettingsPopoverProps {
     onRequestChangeBoard: () => void;
     onDeleteRoom: () => Promise<boolean>;
     onSaveRoomDetails: (title: string, description: string) => Promise<boolean>;
+    /** Sets or clears the room's recommended stream. Absent when this user
+     *  may not change it. */
+    onSetBroadcast?: (broadcast: KibitzRoomBroadcast | null) => Promise<boolean>;
     /** Which view to open on. The More actions menu opens straight into
      *  "edit-details", having already offered the choice itself. */
     initialView?: KibitzRoomSettingsPopoverView;
@@ -54,6 +59,7 @@ export function KibitzRoomSettingsPopover({
     onDeleteRoom,
     onRequestChangeBoard,
     onSaveRoomDetails,
+    onSetBroadcast,
     initialView = "menu",
 }: KibitzRoomSettingsPopoverProps): React.ReactElement {
     const [view, setView] = React.useState<KibitzRoomSettingsPopoverView>(initialView);
@@ -155,6 +161,29 @@ export function KibitzRoomSettingsPopover({
         );
     }, [canEditRoom, onClose, onSaveRoomDetails, roomDescription, roomTitle, saving]);
 
+    const saveBroadcast = React.useCallback(
+        async (broadcast: KibitzRoomBroadcast | null) => {
+            if (!onSetBroadcast || saving) {
+                return;
+            }
+            setSaving(true);
+            setErrorMessage(null);
+            const saved = await onSetBroadcast(broadcast);
+            setSaving(false);
+            if (saved) {
+                onClose();
+                return;
+            }
+            setErrorMessage(
+                pgettext(
+                    "Error shown when a Kibitz room's stream fails to save",
+                    "Could not change the room's stream.",
+                ),
+            );
+        },
+        [onClose, onSetBroadcast, saving],
+    );
+
     const onDelete = React.useCallback(async () => {
         if (!canDeleteRoom || deleting) {
             return;
@@ -224,6 +253,26 @@ export function KibitzRoomSettingsPopover({
                             )}
                         </button>
                     ) : null}
+                    {onSetBroadcast ? (
+                        <button
+                            type="button"
+                            className="xs"
+                            onClick={() => {
+                                setErrorMessage(null);
+                                setView("stream");
+                            }}
+                        >
+                            {room.broadcast
+                                ? pgettext(
+                                      "Button label for changing the stream a Kibitz room shows",
+                                      "Change stream",
+                                  )
+                                : pgettext(
+                                      "Button label for adding a stream to a Kibitz room",
+                                      "Add stream",
+                                  )}
+                        </button>
+                    ) : null}
                     {!canEditRoom && owner ? (
                         <div className="KibitzRoomSettingsPopover-owner">
                             <div className="KibitzRoomSettingsPopover-fieldLabel">
@@ -258,6 +307,24 @@ export function KibitzRoomSettingsPopover({
                         )}
                     </button>
                 </>
+            ) : view === "stream" ? (
+                <KibitzRoomStreamPicker
+                    current={room.broadcast?.channel ?? null}
+                    saving={saving}
+                    errorMessage={errorMessage}
+                    onPick={(stream) =>
+                        void saveBroadcast({
+                            source: "twitch",
+                            channel: stream.channel,
+                            title: stream.title,
+                        })
+                    }
+                    onRemove={room.broadcast ? () => void saveBroadcast(null) : undefined}
+                    onBack={() => {
+                        setErrorMessage(null);
+                        setView("menu");
+                    }}
+                />
             ) : (
                 <>
                     <label
@@ -352,5 +419,87 @@ export function KibitzRoomSettingsPopover({
                 </>
             )}
         </div>
+    );
+}
+
+/** The live GoTV streams a room owner can recommend to the room. */
+function KibitzRoomStreamPicker({
+    current,
+    saving,
+    errorMessage,
+    onPick,
+    onRemove,
+    onBack,
+}: {
+    current: string | null;
+    saving: boolean;
+    errorMessage: string | null;
+    onPick: (stream: Stream) => void;
+    onRemove?: () => void;
+    onBack: () => void;
+}): React.ReactElement {
+    const streams = useLiveStreams();
+    return (
+        <>
+            <div className="KibitzRoomSettingsPopover-note">
+                {pgettext(
+                    "Explains the stream picker in the Kibitz room settings",
+                    "Everyone in the room sees this stream beside the board. Each viewer can still hide it or watch another.",
+                )}
+            </div>
+            {streams.length === 0 ? (
+                <div className="KibitzRoomSettingsPopover-note">
+                    {pgettext(
+                        "Shown in the Kibitz room settings when no GoTV stream is live",
+                        "No streams are live right now.",
+                    )}
+                </div>
+            ) : (
+                <ul className="KibitzRoomSettingsPopover-streams">
+                    {streams.map((stream) => (
+                        <li key={stream.stream_id}>
+                            <button
+                                type="button"
+                                className={
+                                    stream.channel.toLowerCase() === current?.toLowerCase()
+                                        ? "xs active"
+                                        : "xs"
+                                }
+                                disabled={saving}
+                                onClick={() => onPick(stream)}
+                            >
+                                <span className="KibitzRoomSettingsPopover-streamName">
+                                    {stream.username}
+                                </span>
+                                <span className="KibitzRoomSettingsPopover-streamTitle">
+                                    {stream.title}
+                                </span>
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            )}
+            {errorMessage ? (
+                <div className="KibitzRoomSettingsPopover-error">{errorMessage}</div>
+            ) : null}
+            <div className="KibitzRoomSettingsPopover-actions">
+                <button type="button" className="xs" onClick={onBack} disabled={saving}>
+                    {pgettext("Button label for leaving the Kibitz stream picker", "Back")}
+                </button>
+                {onRemove ? (
+                    <button
+                        type="button"
+                        className="danger xs"
+                        onClick={onRemove}
+                        disabled={saving}
+                    >
+                        {pgettext(
+                            "Button label for removing the stream from a Kibitz room",
+                            "Remove stream",
+                        )}
+                    </button>
+                ) : null}
+            </div>
+        </>
     );
 }
