@@ -281,7 +281,7 @@ export function KibitzGamePickerOverlay({
     const manualEntryLabel = pgettext("Label for the Kibitz game ID input", "Game ID");
     const manualPlaceholder = pgettext(
         "Placeholder for the Kibitz game ID input",
-        "Paste a game ID, or a game, demo board or review URL",
+        "game ID, or demo/review URL",
     );
     const loadingGameDetailsLabel = pgettext(
         "Loading note for the Kibitz game picker",
