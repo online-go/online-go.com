@@ -25,6 +25,7 @@ export interface GobanViewTabProps {
     mobilePosition?: "top" | "bottom";
     align?: "left" | "center" | "right";
     title?: string;
+    buttonRef?: React.Ref<HTMLButtonElement>;
     active?: boolean;
     disabled?: boolean;
     /** Suppress the tab's button in the bottom tab bar. The panel still

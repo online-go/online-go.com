@@ -161,6 +161,7 @@ export function TabBar({ tabs }: TabBarProps): React.ReactElement {
     const renderTab = (tab: TabDefinition) => (
         <button
             key={tab.id}
+            ref={tab.buttonRef}
             className={`GobanView-tab-button ${isActive(tab) ? "active" : ""}`}
             data-tab-id={tab.id}
             title={tab.title}
