@@ -313,34 +313,20 @@ Kibitz observes Goban’s existing `cur_move` and `update` events. A matching `m
 
 Main-board clicks use local analysis mode and keep the live connection active. Live game moves and navigation do not start drafts. Main-board placement is disabled while another board is open and during stone removal.
 
-## Post-game watched notifications
+## Post-game discussion notifications
 
-The notification list accepts a server notification of type `kibitzGameWatched`
-with an integer `game_id`. It says the game was watched and opens `/game/<id>`.
-It does not imply that chat exists or link to a room that may now show another
-board. The Game page continues to show only currently matching rooms, subject
-to its existing access rules. This frontend support is dormant until the server
-sends the new notification type.
+After a game ends, its players receive one `kibitzGameDiscussed` notification
+if a spectator chatted in a Kibitz room while the room watched the game. The
+server decides who is notified and when; see
+`docs/kibitz-discussion-notifications.md` in the ogs repository.
 
-The backend contract is proposed, not implemented or verified in the backend
-repository. The server must durably record that at least one eligible spectator
-actually watched a game in a room, independent of selection alone. The record
-must survive room switches and deletion. At the authoritative game completion
-transition it must enqueue one ordinary persistent notification per eligible
-player, including each rengo participant, with `{ "type": "kibitzGameWatched",
-"game_id": 42 }` plus the standard notification fields. Transactional or
-otherwise idempotent processing must prevent duplicates per game and recipient,
-including retries and repeated events. Offline players must receive it through
-the existing notification delivery and retention mechanism. The server must
-apply game and room permissions and never notify before the game is finished.
+The notification carries `game_id`, `name`, `black`, `white` and `rooms`, a
+list of `{ id, title }` for the rooms that discussed the game and still existed
+when it was sent. The entry names the game and opens `/game/<id>`. Each room is
+a link to `/kibitz/<id>`; the room may show another board by then, but its chat
+history keeps the discussion. Malformed rooms are not linked.
 
-Room selection, viewer counts and directory updates are current state, not an
-attendance history. A room link is not a reliable link to an earlier discussion
-after a switch or deletion. Historical discussion links require a separate
-server-owned, game-specific archive and access-checked resolver with a defined
-retention period and behavior after expiry. Until that exists, the notification
-contains no room links; the game page can show rooms still on the game. Product
-owners must decide the minimum viewing duration, treatment of brief visits,
-whether discussion activity changes eligibility, archive retention and access,
-and how annulled or resumed games are handled. These decisions and end-to-end
-tests against the server remain open.
+Players turn it on and off with the "My finished game was discussed in a Kibitz
+room" notification setting, which the settings page lists from the server. With
+desktop notifications on, a connected tab also shows it as a desktop
+notification.

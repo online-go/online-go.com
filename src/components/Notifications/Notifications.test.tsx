@@ -22,29 +22,61 @@ jest.mock("./NotificationManager", () => ({
 }));
 jest.mock("@/lib/ogsHistory", () => ({ browserHistory: { push: jest.fn() } }));
 
-describe("Kibitz watched notification", () => {
+const MESSAGE = /Your game was discussed in Kibitz/;
+
+function showDiscussed(fields: Record<string, unknown>) {
+    notification_manager.ordered_notifications = [
+        {
+            id: "1",
+            type: "kibitzGameDiscussed",
+            black: "alice",
+            white: "bob",
+            name: "Friendly Match",
+            ...fields,
+        },
+    ];
+    render(<NotificationList />);
+}
+
+describe("Kibitz discussion notification", () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
-    test.each([undefined, [], [{ id: "deleted-room" }]])(
-        "opens the game without linking unverified rooms (%p)",
-        (rooms) => {
-            notification_manager.ordered_notifications = [
-                { id: "1", type: "kibitzGameWatched", game_id: 42, rooms },
-            ];
-            render(<NotificationList />);
-            const message = screen.getByText("Your game was watched in Kibitz.");
-            expect(screen.queryByRole("link")).toBeNull();
-            fireEvent.click(message);
-            expect(browserHistory.push).toHaveBeenCalledWith("/game/42");
-        },
-    );
+    test("opens the game when the notification is clicked", () => {
+        showDiscussed({ game_id: 42 });
+        fireEvent.click(screen.getByText(MESSAGE));
+        expect(browserHistory.push).toHaveBeenCalledWith("/game/42");
+    });
+
+    test("opens a room, not the game, when the room's link is clicked", () => {
+        showDiscussed({
+            game_id: 42,
+            rooms: [
+                { id: "user-1a2b3c4d", title: "Late-night reviews" },
+                { id: "preset-english-chat-live", title: "English chat" },
+            ],
+        });
+        fireEvent.click(screen.getByRole("link", { name: "English chat" }));
+        expect(browserHistory.push).toHaveBeenCalledTimes(1);
+        expect(browserHistory.push).toHaveBeenCalledWith("/kibitz/preset-english-chat-live");
+    });
+
+    test.each([
+        undefined,
+        "user-1a2b3c4d",
+        [{ id: "user-1a2b3c4d" }],
+        [{ id: "../admin", title: "Bad" }],
+    ])("links no room for a malformed room list (%p)", (rooms) => {
+        showDiscussed({ game_id: 42, rooms });
+        expect(screen.queryByRole("link")).toBeNull();
+        fireEvent.click(screen.getByText(MESSAGE));
+        expect(browserHistory.push).toHaveBeenCalledWith("/game/42");
+    });
 
     test("does not navigate when the game id is missing", () => {
-        notification_manager.ordered_notifications = [{ id: "3", type: "kibitzGameWatched" }];
-        render(<NotificationList />);
-        fireEvent.click(screen.getByText("Your game was watched in Kibitz."));
+        showDiscussed({});
+        fireEvent.click(screen.getByText(MESSAGE));
         expect(browserHistory.push).not.toHaveBeenCalled();
     });
 

@@ -19,7 +19,7 @@ import * as React from "react";
 import { socket, time_since_connect } from "@/lib/sockets";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
-import { _, interpolate } from "@/lib/translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
 import { browserHistory } from "@/lib/ogsHistory";
 
 import { FabX, FabCheck } from "@/components/material";
@@ -572,6 +572,19 @@ export class NotificationManager {
                         "lateChatReceivedInGame",
                     );
                 }
+            }
+
+            if (notification.type === "kibitzGameDiscussed") {
+                emitNotification(
+                    pgettext("Kibitz notification", "Game discussed in Kibitz"),
+                    pgettext("Kibitz notification", "Your game was discussed in Kibitz"),
+                    () => {
+                        if (window.location.pathname !== "/game/" + notification.game_id) {
+                            browserHistory.push("/game/" + notification.game_id);
+                        }
+                    },
+                    "kibitzGameDiscussed",
+                );
             }
 
             this.rebuildNotificationList();

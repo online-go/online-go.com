@@ -35,6 +35,26 @@ import { ModerationOffer } from "@/components/ModerationOffer";
 import { player_is_ignored } from "@/components/BlockPlayer";
 import "./Notifications.css";
 
+interface KibitzDiscussionRoom {
+    id: string;
+    title: string;
+}
+
+/** The well-formed rooms of a kibitzGameDiscussed notification. The server
+ *  lists only rooms that still exist when it sends the notification. */
+function kibitzDiscussionRooms(rooms: unknown): KibitzDiscussionRoom[] {
+    if (!Array.isArray(rooms)) {
+        return [];
+    }
+    return rooms.filter(
+        (room): room is KibitzDiscussionRoom =>
+            typeof room?.id === "string" &&
+            /^[A-Za-z0-9_-]+$/.test(room.id) &&
+            typeof room.title === "string" &&
+            room.title.length > 0,
+    );
+}
+
 export function NotificationList(): React.ReactElement {
     const [, setCount] = React.useState<number | undefined>(
         notification_manager.ordered_notifications.length,
@@ -132,7 +152,7 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
         const notification = this.props.notification;
 
         switch (notification.type) {
-            case "kibitzGameWatched":
+            case "kibitzGameDiscussed":
                 return Number.isSafeInteger(notification.game_id) && notification.game_id > 0
                     ? `/game/${notification.game_id}`
                     : null;
@@ -306,10 +326,36 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                 );
             }
 
-            case "kibitzGameWatched":
+            case "kibitzGameDiscussed": {
+                const rooms = kibitzDiscussionRooms(notification.rooms);
                 return (
-                    <div>{pgettext("Kibitz notification", "Your game was watched in Kibitz.")}</div>
+                    <div>
+                        <div>
+                            {pgettext("Kibitz notification", "Your game was discussed in Kibitz")}:{" "}
+                            {notification.black} v {notification.white} - {notification.name}
+                        </div>
+                        {rooms.length > 0 && (
+                            <div className="kibitz-rooms">
+                                {rooms.map((room, idx) => (
+                                    <React.Fragment key={room.id}>
+                                        {idx > 0 && ", "}
+                                        <a
+                                            href={`/kibitz/${room.id}`}
+                                            onClick={(ev) => {
+                                                ev.preventDefault();
+                                                ev.stopPropagation();
+                                                browserHistory.push(`/kibitz/${room.id}`);
+                                            }}
+                                        >
+                                            {room.title}
+                                        </a>
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 );
+            }
 
             case "timecop": {
                 const now = Date.now() / 1000;
