@@ -17,12 +17,42 @@
 
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
-import { emitNotification } from "./NotificationManager";
+import { getCurrentGameId } from "@/lib/misc";
+import { socket } from "@/lib/sockets";
+import { emitNotification, notification_manager } from "./NotificationManager";
 
 jest.mock("@/lib/misc", () => ({
     ...jest.requireActual("@/lib/misc"),
     ogs_has_focus: () => false,
+    getCurrentGameId: jest.fn(),
 }));
+
+describe("visiting a game", () => {
+    beforeEach(() => {
+        jest.spyOn(socket, "send").mockImplementation(() => undefined as never);
+        (getCurrentGameId as jest.Mock).mockReturnValue(42);
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+        notification_manager.notifications = {};
+    });
+
+    test("clears the game's notifications, except a Kibitz discussion one", () => {
+        notification_manager.notifications = {
+            ended: { id: "ended", type: "gameEnded", game_id: 42 },
+            discussed: { id: "discussed", type: "kibitzGameDiscussed", game_id: 42 },
+            other: { id: "other", type: "gameEnded", game_id: 43 },
+        };
+
+        notification_manager.onNavigate();
+
+        expect(Object.keys(notification_manager.notifications).sort()).toEqual([
+            "discussed",
+            "other",
+        ]);
+    });
+});
 
 describe("emitNotification", () => {
     const NotificationStub = jest.fn();

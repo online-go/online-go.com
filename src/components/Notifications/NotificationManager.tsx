@@ -600,7 +600,12 @@ export class NotificationManager {
             let found = false;
             for (const k in this.notifications) {
                 const notification = this.notifications[k];
-                if (notification.game_id === current_game_id) {
+                // A Kibitz discussion notification points at the rooms that
+                // discussed the game, so seeing the game does not clear it.
+                if (
+                    notification.game_id === current_game_id &&
+                    notification.type !== "kibitzGameDiscussed"
+                ) {
                     this.deleteNotification(notification, true);
                     found = true;
                 }

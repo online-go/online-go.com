@@ -326,6 +326,10 @@ when it was sent. The entry names the game and opens `/game/<id>`. Each room is
 a link to `/kibitz/<id>`; the room may show another board by then, but its chat
 history keeps the discussion. Malformed rooms are not linked.
 
+Opening a room clears the notification, since reading the discussion is what
+it is for. Opening the game keeps it, unlike other game notifications, which
+clear when the player visits their game. The player can still dismiss it.
+
 Players turn it on and off with the "My finished game was discussed in a Kibitz
 room" notification setting, which the settings page lists from the server. With
 desktop notifications on, a connected tab also shows it as a desktop

@@ -344,6 +344,8 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                                             onClick={(ev) => {
                                                 ev.preventDefault();
                                                 ev.stopPropagation();
+                                                // Opening a room is what the notification is for.
+                                                this.del();
                                                 browserHistory.push(`/kibitz/${room.id}`);
                                             }}
                                         >

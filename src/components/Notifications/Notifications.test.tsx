@@ -43,13 +43,14 @@ describe("Kibitz discussion notification", () => {
         jest.clearAllMocks();
     });
 
-    test("opens the game when the notification is clicked", () => {
+    test("opens the game and keeps the notification when it is clicked", () => {
         showDiscussed({ game_id: 42 });
         fireEvent.click(screen.getByText(MESSAGE));
         expect(browserHistory.push).toHaveBeenCalledWith("/game/42");
+        expect(notification_manager.deleteNotification).not.toHaveBeenCalled();
     });
 
-    test("opens a room, not the game, when the room's link is clicked", () => {
+    test("opens a room, not the game, and clears the notification when a room is clicked", () => {
         showDiscussed({
             game_id: 42,
             rooms: [
@@ -60,6 +61,9 @@ describe("Kibitz discussion notification", () => {
         fireEvent.click(screen.getByRole("link", { name: "English chat" }));
         expect(browserHistory.push).toHaveBeenCalledTimes(1);
         expect(browserHistory.push).toHaveBeenCalledWith("/kibitz/preset-english-chat-live");
+        expect(notification_manager.deleteNotification).toHaveBeenCalledWith(
+            expect.objectContaining({ id: "1", type: "kibitzGameDiscussed" }),
+        );
     });
 
     test.each([
