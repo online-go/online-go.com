@@ -54,6 +54,7 @@ export interface TabDefinition {
     mobilePosition: "top" | "bottom";
     align: "left" | "center" | "right";
     title?: string;
+    buttonRef?: React.Ref<HTMLButtonElement>;
     active?: boolean;
     disabled?: boolean;
     hideFromBar?: boolean;
@@ -181,6 +182,7 @@ function partitionChildren(children: React.ReactNode): {
                 mobilePosition: props.mobilePosition ?? "bottom",
                 align: props.align ?? "left",
                 title: props.title,
+                buttonRef: props.buttonRef,
                 active: props.active,
                 disabled: props.disabled,
                 hideFromBar: props.hideFromBar,
