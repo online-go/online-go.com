@@ -225,8 +225,9 @@ The presenter presents from the room. Their main board carries the review
 page's owner and controller checks, so their stones, marks and navigation on
 it go to the review and every other board in the room follows. For them, and
 only for them, a stone on the main board is a move of the review rather than
-the start of a draft; "+ Variation" still starts one. A "Presenting" badge
-beside the room title tells them so. `useKibitzReviewPresenter` follows
+the start of a draft; "+ Variation" still starts one. While the centre shows the main board, "You are presenting" sits directly
+above it, in `GobanView`'s `boardNotice` slot, which both orientations render
+inside the board stage. `useKibitzReviewPresenter` follows
 control as it passes, so the board changes behaviour when it does.
 
 A review's tree branches and changes: the presenter steps back, branches,

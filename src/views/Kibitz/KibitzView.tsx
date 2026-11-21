@@ -612,20 +612,6 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                             >
                                 {room.title}
                             </span>
-                            {isPresenter ? (
-                                <span
-                                    className="Kibitz-header-presenting"
-                                    title={pgettext(
-                                        "Tooltip on the badge a demo board's presenter sees in a Kibitz room",
-                                        "Stones you place on this board go to the demo board, for everyone in the room.",
-                                    )}
-                                >
-                                    {pgettext(
-                                        "Badge a demo board's presenter sees beside the Kibitz room title",
-                                        "Presenting",
-                                    )}
-                                </span>
-                            ) : null}
                             {resultLine ? (
                                 <span className="Kibitz-header-result">{resultLine}</span>
                             ) : null}
@@ -638,6 +624,24 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             leftAsideMinWidth={240}
             leftAsideCollapsedWidth={leftAsideCollapsed ? 28 : undefined}
             centerPlaceholder={waitingMessage}
+            boardNotice={
+                // Only the main board is the demo board: a draft or a
+                // variation in the centre is the presenter's own.
+                isPresenter && gobans.centerMode === "main" ? (
+                    <div
+                        className="Kibitz-presenting-notice"
+                        title={pgettext(
+                            "Tooltip on the notice a demo board's presenter sees above the board in a Kibitz room",
+                            "Stones you place on this board go to the demo board, for everyone in the room.",
+                        )}
+                    >
+                        {pgettext(
+                            "Notice a demo board's presenter sees directly above the board in a Kibitz room",
+                            "You are presenting",
+                        )}
+                    </div>
+                ) : undefined
+            }
             aboveBoard={
                 <KibitzStackedPlayerHeader
                     controller={playerInfoController}

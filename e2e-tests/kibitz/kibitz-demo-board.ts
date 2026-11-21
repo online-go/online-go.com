@@ -124,7 +124,7 @@ export const kibitzDemoBoardTest = async ({
     await load(presenterPage, roomUrl);
     await waitForKibitzReady(presenterPage);
     await waitForKibitzLayoutStable(presenterPage);
-    await expect(presenterPage.locator(".Kibitz-header-presenting")).toBeVisible({
+    await expect(presenterPage.locator(".Kibitz-presenting-notice")).toBeVisible({
         timeout: 15000,
     });
     await expect(presenterPage.locator(".MoveNumberControl")).toHaveText(/Move 2\b/, {
@@ -132,11 +132,21 @@ export const kibitzDemoBoardTest = async ({
     });
     const presenterRoomGoban = presenterPage.locator(".GobanView-center [data-pointers-bound]");
     await expect(presenterRoomGoban).toBeVisible({ timeout: 15000 });
+    // The notice sits directly above the board, not in the room header.
+    const noticeBox = await presenterPage.locator(".Kibitz-presenting-notice").boundingBox();
+    const boardBox = await presenterRoomGoban.boundingBox();
+    expect(noticeBox && boardBox && boardBox.y - (noticeBox.y + noticeBox.height)).toBeLessThan(8);
+    expect(noticeBox && boardBox && boardBox.y - (noticeBox.y + noticeBox.height)).toBeGreaterThan(
+        -1,
+    );
+    await expect(presenterPage.locator(".GobanView-header .Kibitz-presenting-notice")).toHaveCount(
+        0,
+    );
     console.log("[kibitz demo] presenter placing E7 from the room");
     await clickOnGobanIntersection(presenterPage, "E7", "9x9", presenterRoomGoban);
     await expect(moveNumber).toHaveText(/Move 3\b/, { timeout: 15000 });
     await expect(presenterPage.locator(".KibitzVariationPanel.draft")).toBeHidden();
-    await expect(watcherPage.locator(".Kibitz-header-presenting")).toBeHidden();
+    await expect(watcherPage.locator(".Kibitz-presenting-notice")).toBeHidden();
 
     // A variation of the presenter's position, posted to the room.
     const variationList = watcherPage.locator(".KibitzVariationList");

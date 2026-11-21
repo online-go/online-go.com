@@ -30,7 +30,8 @@ description is the "Demo boards" section of `docs/kibitz.md`.
   through `kibitzBoardRef`. The draft source is one `variation_source_board`
   key.
 - The presenter presents from the room, as the design says: their main
-  board plays into the review, and a "Presenting" badge marks it. Everyone
+  board plays into the review, and "You are presenting" directly above the
+  board marks it. Everyone
   else's main board follows. They can also present from the review page,
   which More actions links to ("Open the board").
 - A variation whose branch point is gone is told to the reader by a toast,

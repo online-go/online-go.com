@@ -102,6 +102,11 @@
     /* Under the board, in landscape and portrait, the move controls sit on
      * the page, not in a panel: no background and no border. Docked
      * controls keep their strip look. */
+    /* The board notice keeps its own height; the goban shrinks around it. */
+    .GobanView-stage > .GobanView-board-notice {
+        flex: 0 0 auto;
+    }
+
     .GobanView-stage > .MoveNumberControl {
         background: transparent;
         border-top: none;

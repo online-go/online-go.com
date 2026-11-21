@@ -61,17 +61,14 @@
         white-space: nowrap;
     }
 
-    /* A demo board's presenter: their stones on the main board go to the
-       review rather than into a draft. */
-    .Kibitz-header-presenting {
-        flex: 0 0 auto;
-        padding: 0 0.4rem;
-        border: 1px solid var(--primary);
-        border-radius: 0.6rem;
+    /* Directly above the board, for a demo board's presenter: their stones
+       on the main board go to the review rather than into a draft. */
+    .Kibitz-presenting-notice {
+        padding: 0.15rem 0.5rem;
         color: var(--primary);
-        font-size: 0.7rem;
+        font-size: 0.8rem;
         font-weight: bold;
-        white-space: nowrap;
+        text-align: center;
     }
 
     .Kibitz-header-result {
