@@ -46,7 +46,8 @@ import { formatVariationBranchLabel, formatVariationLengthLabel } from "./kibitz
 import { KibitzVariationSwatch } from "./KibitzVariationSwatch";
 import { kibitzTelemetry } from "./kibitzTelemetry";
 import { getVisibleKibitzStreamItems } from "./kibitzVisibleStreamItems";
-import { boardKey, gobanBoardKey } from "./kibitzBoardRef";
+import { boardKey, gobanBoardKey, isReviewBoard } from "./kibitzBoardRef";
+import { boardChatLabel } from "./kibitzReviewBoard";
 import "./KibitzChatPanel.css";
 import "@/components/Chat/ChatLog.css";
 
@@ -1025,7 +1026,7 @@ export function KibitzChatPanel({
                         onClick={() => setTab("game")}
                     >
                         <i className="fa fa-comment" />{" "}
-                        {pgettext("Kibitz chat tab for the watched game's chat", "Game chat")}
+                        {boardChatLabel(isReviewBoard(room.current_game))}
                         {gameUnread && tab !== "game" ? (
                             <span className="KibitzChatPanel-unread" />
                         ) : null}

@@ -51,8 +51,8 @@ import { KibitzMoreActionsRoomActions, openKibitzMoreActions } from "./KibitzMor
 import { KibitzScoreEstimate } from "./KibitzScoreEstimate";
 import { useKibitzScoreEstimation } from "./useKibitzScoreEstimation";
 import { useKibitzHelp } from "./useKibitzHelp";
-import { boardKey, gobanBoardKey } from "./kibitzBoardRef";
-import { reviewPresenterNode } from "./kibitzReviewBoard";
+import { boardKey, gobanBoardKey, isReviewBoard } from "./kibitzBoardRef";
+import { boardChatLabel, reviewPresenterNode } from "./kibitzReviewBoard";
 import "./KibitzView.css";
 import "@/views/Game/Players.css";
 
@@ -141,8 +141,8 @@ const peopleLabel = () =>
 // Functions, not values: the strings are read after the language is set. The
 // two chat contexts match the chat panel's own tab strip, so both share one
 // translation.
-const PANE_TITLES: Record<KibitzPortraitPane, () => string> = {
-    "game-chat": () => pgettext("Kibitz chat tab for the watched game's chat", "Game chat"),
+const PANE_TITLES: Record<KibitzPortraitPane, (onReview: boolean) => string> = {
+    "game-chat": boardChatLabel,
     "room-chat": () => pgettext("Kibitz chat tab for the kibitz room's chat", "Kibitz chat"),
     people: peopleLabel,
     variations: () => pgettext("Heading for the Kibitz variation list", "Variations"),
@@ -720,7 +720,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         type="action"
                         align="left"
                         icon={PANE_ICONS[id]}
-                        title={PANE_TITLES[id]()}
+                        title={PANE_TITLES[id](isReviewBoard(room.current_game))}
                         active={pane === id}
                         onClick={() => togglePane(id)}
                     />
@@ -743,7 +743,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                                 ) : null}
                             </span>
                         }
-                        title={PANE_TITLES[id]()}
+                        title={PANE_TITLES[id](isReviewBoard(room.current_game))}
                         active={pane === id}
                         onClick={() => selectPane(id)}
                     />

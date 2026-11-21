@@ -17,6 +17,7 @@
 
 import type { MoveTree } from "goban";
 import type { GobanController } from "@/lib/GobanController";
+import { pgettext } from "@/lib/translate";
 
 /**
  * A room on a review follows its presenter: the review's controller, whose
@@ -51,4 +52,15 @@ export function returnToReviewPresenter(
     goban.engine.jumpTo(node);
     goban.redraw(true);
     return true;
+}
+
+/** The label of the chat that belongs to the room's board: the game's chat,
+ *  or the chat of the demo board or review. */
+export function boardChatLabel(onReview: boolean): string {
+    return onReview
+        ? pgettext(
+              "Kibitz chat tab for the chat of the demo board or review the room watches",
+              "Board chat",
+          )
+        : pgettext("Kibitz chat tab for the watched game's chat", "Game chat");
 }
