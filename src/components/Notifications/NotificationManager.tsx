@@ -19,7 +19,7 @@ import * as React from "react";
 import { socket, time_since_connect } from "@/lib/sockets";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
-import { _, interpolate } from "@/lib/translate";
+import { _, interpolate, pgettext } from "@/lib/translate";
 import { browserHistory } from "@/lib/ogsHistory";
 
 import { FabX, FabCheck } from "@/components/material";
@@ -32,6 +32,7 @@ import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { GameListEntry } from "goban";
 import { player_is_ignored } from "@/components/BlockPlayer";
+import { kibitzDiscussionRooms } from "./kibitzDiscussionRooms";
 
 //declare let Notification: any;
 
@@ -574,6 +575,32 @@ export class NotificationManager {
                 }
             }
 
+            if (notification.type === "kibitzGameDiscussed") {
+                const room = kibitzDiscussionRooms(notification.rooms)[0];
+                emitNotification(
+                    pgettext("Kibitz notification", "Game discussed in Kibitz"),
+                    room
+                        ? interpolate(
+                              pgettext(
+                                  "Kibitz notification",
+                                  "Your game was discussed in {{room}}",
+                              ),
+                              { room: room.title },
+                          )
+                        : pgettext("Kibitz notification", "Your game was discussed in Kibitz"),
+                    () => {
+                        if (room) {
+                            // Opening a room is what the notification is for.
+                            this.deleteNotification(notification);
+                            browserHistory.push(`/kibitz/${room.id}`);
+                        } else if (window.location.pathname !== "/game/" + notification.game_id) {
+                            browserHistory.push("/game/" + notification.game_id);
+                        }
+                    },
+                    "kibitzGameDiscussed",
+                );
+            }
+
             this.rebuildNotificationList();
 
             this.event_emitter.emit("notification", notification);
@@ -587,7 +614,12 @@ export class NotificationManager {
             let found = false;
             for (const k in this.notifications) {
                 const notification = this.notifications[k];
-                if (notification.game_id === current_game_id) {
+                // A Kibitz discussion notification points at the rooms that
+                // discussed the game, so seeing the game does not clear it.
+                if (
+                    notification.game_id === current_game_id &&
+                    notification.type !== "kibitzGameDiscussed"
+                ) {
                     this.deleteNotification(notification, true);
                     found = true;
                 }

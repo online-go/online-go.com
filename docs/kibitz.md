@@ -373,3 +373,26 @@ Playing a move on the main game board or a posted variation starts a separate an
 Kibitz observes Goban’s existing `cur_move` and `update` events. A matching `move_selected` identifies placement; the following completed update starts the draft. No separate Goban event is required.
 
 Main-board clicks use local analysis mode and keep the live connection active. Live game moves and navigation do not start drafts. Main-board placement is disabled while another board is open and during stone removal.
+
+## Post-game discussion notifications
+
+After a game ends, its players receive one `kibitzGameDiscussed` notification
+if a spectator chatted in a Kibitz room while the room watched the game. The
+server decides who is notified and when; see
+`docs/kibitz-discussion-notifications.md` in the ogs repository.
+
+The notification carries `game_id`, `name`, `black`, `white` and `rooms`, a
+list of `{ id, title }` for the rooms that discussed the game and still existed
+when it was sent. The entry names the game and opens `/game/<id>`. Each room is
+a link to `/kibitz/<id>`; the room may show another board by then, but its chat
+history keeps the discussion. Malformed rooms are not linked.
+
+Opening a room clears the notification, since reading the discussion is what
+it is for. Opening the game keeps it, unlike other game notifications, which
+clear when the player visits their game. The player can still dismiss it.
+
+Players turn it on and off with the "My finished game was discussed in a Kibitz
+room" notification setting, which the settings page lists from the server. With
+desktop notifications on, a connected tab also shows it as a desktop
+notification that names the first room. Clicking it opens that room and clears
+the notification, or opens the game when no room is listed.
