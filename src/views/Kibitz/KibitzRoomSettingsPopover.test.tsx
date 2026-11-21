@@ -30,6 +30,12 @@ jest.mock("@/lib/translate", () => ({
     pgettext: jest.fn((_: string, text: string) => text),
 }));
 
+const mockLiveStreams = jest.fn(() => [] as Array<Record<string, unknown>>);
+jest.mock("./useLiveStreams", () => ({
+    __esModule: true,
+    useLiveStreams: () => mockLiveStreams(),
+}));
+
 function makeRoom(overrides?: Partial<KibitzRoomSummary>): KibitzRoomSummary {
     return {
         id: "room-1",
@@ -127,5 +133,84 @@ describe("KibitzRoomSettingsPopover", () => {
                 "A room with that name already exists. Please choose another name.",
             ),
         ).toBeInTheDocument();
+    });
+
+    describe("stream", () => {
+        const liveStream = {
+            stream_id: "s1",
+            channel: "gochannel",
+            username: "GoChannel",
+            title: "Pro game review",
+        };
+
+        function renderOwner(props: {
+            room?: KibitzRoomSummary;
+            onSetBroadcast?: jest.Mock;
+            onClose?: jest.Mock;
+        }) {
+            return render(
+                <KibitzRoomSettingsPopover
+                    room={props.room ?? makeRoom()}
+                    canEditRoom
+                    canDeleteRoom
+                    canChangeBoard={false}
+                    onClose={props.onClose ?? jest.fn()}
+                    onRequestChangeBoard={jest.fn()}
+                    onDeleteRoom={async () => false}
+                    onSaveRoomDetails={async () => false}
+                    onSetBroadcast={props.onSetBroadcast}
+                />,
+            );
+        }
+
+        beforeEach(() => {
+            mockLiveStreams.mockReturnValue([liveStream]);
+        });
+
+        it("offers no stream action without permission to set it", () => {
+            renderOwner({});
+            expect(screen.queryByText("Add stream")).toBeNull();
+        });
+
+        it("sets the picked live stream as the room's stream", async () => {
+            const onSetBroadcast = jest.fn(async () => true);
+            const onClose = jest.fn();
+            renderOwner({ onSetBroadcast, onClose });
+
+            fireEvent.click(screen.getByText("Add stream"));
+            fireEvent.click(screen.getByText("GoChannel"));
+
+            expect(onSetBroadcast).toHaveBeenCalledWith({
+                source: "twitch",
+                channel: "gochannel",
+                title: "Pro game review",
+            });
+            await screen.findByText("Add stream").catch(() => null);
+            expect(onClose).toHaveBeenCalled();
+        });
+
+        it("removes the room's stream", () => {
+            const onSetBroadcast = jest.fn(async () => true);
+            renderOwner({
+                room: makeRoom({ broadcast: { source: "twitch", channel: "gochannel" } }),
+                onSetBroadcast,
+            });
+
+            fireEvent.click(screen.getByText("Change stream"));
+            fireEvent.click(screen.getByText("Remove stream"));
+
+            expect(onSetBroadcast).toHaveBeenCalledWith(null);
+        });
+
+        it("says so when the stream could not be saved", async () => {
+            renderOwner({ onSetBroadcast: jest.fn(async () => false) });
+
+            fireEvent.click(screen.getByText("Add stream"));
+            fireEvent.click(screen.getByText("GoChannel"));
+
+            expect(
+                await screen.findByText("Could not change the room's stream."),
+            ).toBeInTheDocument();
+        });
     });
 });
