@@ -57,5 +57,6 @@ Two pull requests. Branch `kibitz-demo-boards` in both `ogs` and `ogs-ui`.
 
 - [x] Spec
 - [x] Plan
-- [ ] `ogs` backend
+- [x] `ogs` backend (committed on `ogs` `kibitz-demo-boards`, not pushed).
+      A review on any non-user room (preset or broadcast) is a 403.
 - [ ] `ogs-ui` frontend
