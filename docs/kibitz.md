@@ -333,4 +333,5 @@ clear when the player visits their game. The player can still dismiss it.
 Players turn it on and off with the "My finished game was discussed in a Kibitz
 room" notification setting, which the settings page lists from the server. With
 desktop notifications on, a connected tab also shows it as a desktop
-notification.
+notification that names the first room. Clicking it opens that room and clears
+the notification, or opens the game when no room is listed.

@@ -18,6 +18,7 @@
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
 import { getCurrentGameId } from "@/lib/misc";
+import { browserHistory } from "@/lib/ogsHistory";
 import { socket } from "@/lib/sockets";
 import { emitNotification, notification_manager } from "./NotificationManager";
 
@@ -51,6 +52,66 @@ describe("visiting a game", () => {
             "discussed",
             "other",
         ]);
+    });
+});
+
+describe("a Kibitz discussion desktop notification", () => {
+    const NotificationStub = jest.fn();
+    let receive: (notification: Record<string, unknown>) => void;
+
+    beforeEach(() => {
+        jest.useFakeTimers();
+        jest.setSystemTime(Date.now() + 60000); // past the page-load grace period
+        NotificationStub.mockClear();
+        (window as any).Notification = Object.assign(NotificationStub, { permission: "granted" });
+        preferences.set("desktop-notifications", true);
+        jest.spyOn(socket, "send").mockImplementation(() => undefined as never);
+        jest.spyOn(browserHistory, "push").mockImplementation(() => undefined);
+        const handlers: Record<string, (data: never) => void> = {};
+        jest.spyOn(socket, "on").mockImplementation(((event: string, handler: never) => {
+            handlers[event] = handler;
+            return socket;
+        }) as never);
+        notification_manager.connect();
+        receive = (notification) => handlers["notification"](notification as never);
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+        jest.restoreAllMocks();
+        notification_manager.notifications = {};
+    });
+
+    function clickPopup() {
+        jest.advanceTimersByTime(1000);
+        expect(NotificationStub).toHaveBeenCalledTimes(1);
+        NotificationStub.mock.instances[0].onclick();
+    }
+
+    test("opens the first room and clears the notification when clicked", () => {
+        receive({
+            id: "1",
+            type: "kibitzGameDiscussed",
+            game_id: 42,
+            rooms: [
+                { id: "user-1a2b3c4d", title: "Late-night reviews" },
+                { id: "preset-english-chat-live", title: "English chat" },
+            ],
+        });
+
+        clickPopup();
+
+        expect(browserHistory.push).toHaveBeenCalledWith("/kibitz/user-1a2b3c4d");
+        expect(notification_manager.notifications).not.toHaveProperty("1");
+    });
+
+    test("opens the game and keeps the notification when it names no room", () => {
+        receive({ id: "2", type: "kibitzGameDiscussed", game_id: 42, rooms: [] });
+
+        clickPopup();
+
+        expect(browserHistory.push).toHaveBeenCalledWith("/game/42");
+        expect(notification_manager.notifications).toHaveProperty("2");
     });
 });
 

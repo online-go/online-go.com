@@ -33,27 +33,8 @@ import { MODERATOR_POWERS, MOD_POWER_NAMES } from "@/lib/moderation";
 import { notification_manager, Notification } from "./NotificationManager";
 import { ModerationOffer } from "@/components/ModerationOffer";
 import { player_is_ignored } from "@/components/BlockPlayer";
+import { kibitzDiscussionRooms } from "./kibitzDiscussionRooms";
 import "./Notifications.css";
-
-interface KibitzDiscussionRoom {
-    id: string;
-    title: string;
-}
-
-/** The well-formed rooms of a kibitzGameDiscussed notification. The server
- *  lists only rooms that still exist when it sends the notification. */
-function kibitzDiscussionRooms(rooms: unknown): KibitzDiscussionRoom[] {
-    if (!Array.isArray(rooms)) {
-        return [];
-    }
-    return rooms.filter(
-        (room): room is KibitzDiscussionRoom =>
-            typeof room?.id === "string" &&
-            /^[A-Za-z0-9_-]+$/.test(room.id) &&
-            typeof room.title === "string" &&
-            room.title.length > 0,
-    );
-}
 
 export function NotificationList(): React.ReactElement {
     const [, setCount] = React.useState<number | undefined>(

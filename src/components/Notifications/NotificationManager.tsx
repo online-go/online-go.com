@@ -32,6 +32,7 @@ import { lookingAtOurLiveGame } from "@/components/TimeControl/util";
 import { PlayerCacheEntry } from "@/lib/player_cache";
 import { GameListEntry } from "goban";
 import { player_is_ignored } from "@/components/BlockPlayer";
+import { kibitzDiscussionRooms } from "./kibitzDiscussionRooms";
 
 //declare let Notification: any;
 
@@ -575,11 +576,24 @@ export class NotificationManager {
             }
 
             if (notification.type === "kibitzGameDiscussed") {
+                const room = kibitzDiscussionRooms(notification.rooms)[0];
                 emitNotification(
                     pgettext("Kibitz notification", "Game discussed in Kibitz"),
-                    pgettext("Kibitz notification", "Your game was discussed in Kibitz"),
+                    room
+                        ? interpolate(
+                              pgettext(
+                                  "Kibitz notification",
+                                  "Your game was discussed in {{room}}",
+                              ),
+                              { room: room.title },
+                          )
+                        : pgettext("Kibitz notification", "Your game was discussed in Kibitz"),
                     () => {
-                        if (window.location.pathname !== "/game/" + notification.game_id) {
+                        if (room) {
+                            // Opening a room is what the notification is for.
+                            this.deleteNotification(notification);
+                            browserHistory.push(`/kibitz/${room.id}`);
+                        } else if (window.location.pathname !== "/game/" + notification.game_id) {
                             browserHistory.push("/game/" + notification.game_id);
                         }
                     },
