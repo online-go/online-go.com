@@ -67,6 +67,7 @@ jest.mock("@/lib/GobanController", () => {
 });
 jest.mock("./kibitzVariationTree", () => ({
     applyKibitzVariationToController: jest.fn(() => ({ variationId: "v1", endpoint: null })),
+    findNodeByMovePath: jest.requireActual("./kibitzVariationTree").findNodeByMovePath,
 }));
 jest.mock("./kibitzCurrentGameBaseSnapshot", () => ({
     captureCurrentGameBaseSnapshotFromController: jest.fn(() => null),

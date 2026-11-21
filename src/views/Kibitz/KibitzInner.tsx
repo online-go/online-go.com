@@ -69,6 +69,7 @@ import {
     restoreMainBoardToOfficialTail,
 } from "./kibitzCurrentGameBaseSnapshot";
 import { openKibitzChatMove } from "./kibitzChatMove";
+import { returnToReviewPresenter } from "./kibitzReviewBoard";
 import { boardIdsFromKey, boardKey, gobanBoardKey, type KibitzBoardKey } from "./kibitzBoardRef";
 import "./KibitzInner.css";
 
@@ -1364,6 +1365,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             return;
         }
 
+        if (returnToReviewPresenter(main.goban)) {
+            return;
+        }
         main.gotoLastMove();
         if (main.goban.mode === "analyze") {
             main.goban.setMode("play");

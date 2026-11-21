@@ -52,6 +52,7 @@ import { KibitzScoreEstimate } from "./KibitzScoreEstimate";
 import { useKibitzScoreEstimation } from "./useKibitzScoreEstimation";
 import { useKibitzHelp } from "./useKibitzHelp";
 import { boardKey, gobanBoardKey } from "./kibitzBoardRef";
+import { reviewPresenterNode } from "./kibitzReviewBoard";
 import "./KibitzView.css";
 import "@/views/Game/Players.css";
 
@@ -149,10 +150,20 @@ const PANE_TITLES: Record<KibitzPortraitPane, () => string> = {
     analysis: () => pgettext("Action that starts a new Kibitz variation", "New variation"),
 };
 
+/** True while the main board is away from the room's position: behind the
+ *  live game's last move, or off the presenter's node of a review. */
 const useBehindLive = generateGobanHook(
-    (goban: GobanController["goban"] | null) =>
-        !!goban && goban.engine.cur_move.move_number < goban.engine.last_official_move.move_number,
-    ["cur_move", "last_official_move"],
+    (goban: GobanController["goban"] | null) => {
+        if (!goban) {
+            return false;
+        }
+        const presenter = reviewPresenterNode(goban);
+        if (presenter) {
+            return goban.engine.cur_move !== presenter;
+        }
+        return goban.engine.cur_move.move_number < goban.engine.last_official_move.move_number;
+    },
+    ["cur_move", "last_official_move", "review.updated"],
 );
 
 /**

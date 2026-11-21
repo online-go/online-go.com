@@ -916,6 +916,33 @@ describe("Kibitz history replay batching", () => {
             controller.destroy();
         },
     );
+    test.each([
+        ["a review body with its branch point's path", { review_id: 7, from_path: "bb" }, true],
+        ["a review body without a path", { review_id: 7 }, false],
+        [
+            "a body naming both a game and a review",
+            { game_id: 42, review_id: 7, from_path: "bb" },
+            false,
+        ],
+    ])("reads %s as a variation: %p", async (_label, board, accepted) => {
+        const { controller, proxy } = await setup();
+        const variation = message(1);
+        variation.message.m = {
+            type: "analysis",
+            name: "Variation",
+            from: 1,
+            moves: "aa",
+            ...board,
+        } as unknown as ChatMessage["message"]["m"];
+        proxy.channel.chat_log.push(variation);
+        proxy.emit("chat", variation);
+        flushFrames();
+        expect(controller.variations).toEqual(
+            accepted ? [expect.objectContaining({ review_id: 7, analysis_from_path: "bb" })] : [],
+        );
+        expect(controller.variations[0]?.game_id).toBeUndefined();
+        controller.destroy();
+    });
     test("removal cancels a queued replay and rebuilds from the remaining log", async () => {
         const { controller, proxy } = await setup();
         proxy.channel.chat_log.push(message(1), message(2));
@@ -1009,6 +1036,49 @@ test("posts annotation-only analysis and refuses an empty post", async () => {
         analysis.marks = {} as typeof analysis.marks;
         expect(controller.postVariation("annotations", board, "game:42")).toBeNull();
         expect(sendTypedBody).toHaveBeenCalledTimes(1);
+    } finally {
+        controller.destroy();
+        jest.mocked(analysisPolicy.getCurrentKibitzUser).mockReturnValue(null);
+    }
+});
+
+test("posts a review variation with the review and its branch point's path", async () => {
+    mockedGet.mockResolvedValueOnce([]);
+    const controller = new KibitzController();
+    await flushPromises();
+    const sendTypedBody = jest.fn();
+    jest.mocked(chatManager.chat_manager.join).mockReturnValueOnce({
+        on: jest.fn(),
+        off: jest.fn(),
+        part: jest.fn(),
+        channel: { chat_log: [], users_by_join: [], sendTypedBody },
+    } as never);
+    mockedGet.mockResolvedValueOnce({
+        room: { id: "demo", channel: "kibitz-demo", kind: "user" },
+        permissions: {},
+    });
+    await controller.selectRoom("demo");
+    jest.mocked(analysisPolicy.getCurrentKibitzUser).mockReturnValue({
+        id: 1,
+        username: "Author",
+        anonymous: false,
+    } as never);
+    const analysis = { type: "analysis", from: 2, moves: "dd" };
+    const board = {
+        buildAnalysisSnapshot: () => ({ analysis, moves: [], move_count: 3, is_duplicate: false }),
+        recordAnalysisSent: jest.fn(),
+        goban: {
+            engine: {
+                last_official_move: { move_number: 2 },
+                cur_move: { getBranchPoint: () => ({ getMoveStringToThisPoint: () => "bbcc" }) },
+            },
+        },
+    } as never;
+    try {
+        controller.postVariation("demo", board, "review:7");
+        const body = sendTypedBody.mock.calls[0][0];
+        expect(body).toEqual(expect.objectContaining({ review_id: 7, from_path: "bbcc" }));
+        expect(body).not.toHaveProperty("game_id");
     } finally {
         controller.destroy();
         jest.mocked(analysisPolicy.getCurrentKibitzUser).mockReturnValue(null);

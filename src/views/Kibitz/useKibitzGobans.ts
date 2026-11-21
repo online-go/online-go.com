@@ -33,10 +33,12 @@ import {
 } from "./kibitzCurrentGameBaseSnapshot";
 import {
     applyKibitzVariationToController,
+    findNodeByMovePath,
     isVariationOfficialAnchorReady,
     type AppliedKibitzVariation,
 } from "./kibitzVariationTree";
 import { boardIdsFromKey, boardKey, sameBoard, type KibitzBoardKey } from "./kibitzBoardRef";
+import { reviewPresenterNode } from "./kibitzReviewBoard";
 
 export type KibitzCenterMode = "main" | "draft" | "variation";
 
@@ -220,21 +222,6 @@ function refreshLastOfficialMoveFromTrunk(controller: GobanController): void {
     }
 }
 
-/** The node at the end of `path` (as from `getMoveStringToThisPoint`), or
- *  null when any step of it is not in the tree. Unlike `followPath` this
- *  never places a move, so a node that left the board is not recreated. */
-export function findNodeByMovePath(controller: GobanController, path: string): MoveTree | null {
-    const { engine } = controller.goban;
-    let cur: MoveTree | null = engine.move_tree;
-    for (const mv of engine.decodeMoves(path)) {
-        cur = cur?.lookupMove(mv.x, mv.y, engine.playerByColor(mv.color || 0), !!mv.edited) ?? null;
-        if (!cur) {
-            return null;
-        }
-    }
-    return cur;
-}
-
 /**
  * Owns the Kibitz GobanControllers. The main controller connects to the
  * room's live game and lives as long as that game is the room's game. The
@@ -297,12 +284,17 @@ export function useKibitzGobans({
             ...boardIdsFromKey(mainBoard),
         });
         // A snapshot clones the whole trunk, so only take one when the trunk
-        // has actually moved on since the last one that was accepted.
+        // has actually moved on since the last one that was accepted. On a
+        // review the position is the presenter's node, which moves without
+        // the trunk changing.
         let lastSnapshotKey: string | null = null;
         const sync = () => {
             const engine = controller.goban.engine;
             const tail = getMoveTreeTrunkTail(engine.move_tree);
-            const key = `${engine.move_tree?.id ?? ""}:${tail?.move_number ?? -1}`;
+            const presenter = reviewPresenterNode(controller.goban);
+            const key = presenter
+                ? `${engine.move_tree?.id ?? ""}:review:${presenter.id}`
+                : `${engine.move_tree?.id ?? ""}:${tail?.move_number ?? -1}`;
             if (key === lastSnapshotKey) {
                 return;
             }
@@ -322,6 +314,8 @@ export function useKibitzGobans({
         controller.goban.on("gamedata", sync);
         controller.goban.on("last_official_move", sync);
         controller.goban.on("move-made", sync);
+        controller.goban.on("review.load-end", sync);
+        controller.goban.on("review.updated", sync);
         setMain(controller);
         setMainReady(false);
         return () => {
@@ -329,6 +323,8 @@ export function useKibitzGobans({
             controller.goban.off("gamedata", sync);
             controller.goban.off("last_official_move", sync);
             controller.goban.off("move-made", sync);
+            controller.goban.off("review.load-end", sync);
+            controller.goban.off("review.updated", sync);
             controller.destroy();
             setMain(null);
             setMainReady(false);
@@ -478,6 +474,7 @@ export function useKibitzGobans({
                 // have been standing anywhere in what was on screen, and a node that is
                 // not on this board is not navigated to but replayed as a fresh move.
                 let focusEndpoint: AppliedKibitzVariation["endpoint"] = null;
+                let focusDetached = false;
                 for (const v of pane.chat_variation ? [pane.chat_variation] : variations) {
                     if (!sameBoard(v, focus)) {
                         continue;
@@ -485,7 +482,7 @@ export function useKibitzGobans({
                     if (v.id !== focus.id && !latest.current.visibleVariationIds.includes(v.id)) {
                         continue;
                     }
-                    if (pane.chat_variation && v.analysis_moves === "") {
+                    if (pane.chat_variation && v.analysis_moves === "" && !v.review_id) {
                         if (isVariationOfficialAnchorReady(controller, v)) {
                             controller.goban.engine.followPath(v.analysis_from ?? 0, "");
                             focusEndpoint = controller.goban.engine.cur_move;
@@ -495,6 +492,7 @@ export function useKibitzGobans({
                     const applied = apply(v, v.id === focus.id);
                     if (v.id === focus.id) {
                         focusEndpoint = applied.endpoint;
+                        focusDetached = Boolean(applied.detached);
                     }
                 }
                 if (pane.chat_variation && !focusEndpoint) {
@@ -510,6 +508,18 @@ export function useKibitzGobans({
                     );
                     setSecondary(null);
                     return;
+                }
+                if (focusDetached && mode === "variation") {
+                    toast(
+                        React.createElement(
+                            "div",
+                            null,
+                            pgettext(
+                                "Notice in a Kibitz room on a demo board or review when a variation's position was removed from the board",
+                                "This position is no longer on the presenter's board. The variation is shown from the start of the board.",
+                            ),
+                        ),
+                    );
                 }
                 // A draft branched from a posted variation opens where the
                 // reader was standing in it, which is only the end of the
