@@ -59,4 +59,7 @@ Two pull requests. Branch `kibitz-demo-boards` in both `ogs` and `ogs-ui`.
 - [x] Plan
 - [x] `ogs` backend (committed on `ogs` `kibitz-demo-boards`, not pushed).
       A review on any non-user room (preset or broadcast) is a 403.
-- [ ] `ogs-ui` frontend
+- [x] `ogs-ui` frontend: board-ref refactor, review rooms and variations,
+      picker by URL, room chrome, docs, jest and e2e.
+- [ ] Follow-ups: "My demo boards" list in the picker, telemetry `mode`,
+      board positions on review-room chat lines.

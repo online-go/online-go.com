@@ -5,9 +5,10 @@ order. Rooms watching the current player's active game are skipped. If all rooms
 are blocked, the directory stays open without joining a room. Explicit links to
 blocked rooms still show the access warning.
 
-The Kibitz page (`/kibitz/:roomId`) is a room where spectators watch one live
-game together, chat, and share variations. It renders through the shared
-`GobanView` layout (`src/components/GobanView`).
+The Kibitz page (`/kibitz/:roomId`) is a room where spectators watch one
+board together, chat, and share variations. The board is a live game, or a
+public review: a demo board or a review of a game (see "Demo boards"). It
+renders through the shared `GobanView` layout (`src/components/GobanView`).
 
 ## Layout
 
@@ -188,6 +189,52 @@ proposals and the chat are all still there. The analysis action is disabled
 because there is nothing to analyse, and Return to live cannot apply. Without
 a board there is no `GobanContainer` to report resizes, so `GobanView`
 listens to the window itself for as long as it has no controller.
+
+## Demo boards
+
+A user room can watch a review instead of a game: a demo board, or a review of
+a game. Any public review qualifies; a private one, or a review of a private
+game, does not. The picker's ID field takes a demo board or review URL
+(`/demo/<id>`, `/review/<id>`, with or without `/view` and a move number) as
+well as a game id or URL (`parseKibitzBoardInput`). Preset and broadcast rooms
+only watch games.
+
+The server sends the review as `current_review` beside a null
+`current_game`, and `mode: "demo"`. `KibitzController` reads it into the same
+watched-board shape as a game, with `review_id` set and no `game_id`. A review
+is never live, so the policies for live games do not apply to it: the players
+of a reviewed game are not kept out, and analysis is never disabled. A demo
+board's players are names, with id 0, and are not linked.
+
+Boards are identified by kind and id, because game ids and review ids are
+separate sequences. Anything that groups or compares boards goes through
+`kibitzBoardRef` (`boardKey`, `sameBoard`, `gobanBoardKey`): the variation
+list, the secondary board's target, the draft source
+(`variation_source_board`) and the base snapshot (`board`).
+
+The main board connects with `review_id` and follows the presenter, the
+review's controller, as the review page does for anyone else. It never writes
+to the review: the presenter moves the stones on the review's own page, which
+More actions links to as "Open the board". The room's position is the
+presenter's node (`cur_review_move`, see `kibitzReviewBoard`), where a game
+has its trunk tail: Return to live goes there, "behind live" means away from
+it, and a stone placed on the main board to start a draft is taken back to
+it. The game chat tab is "Board chat", the review's own chat. SGF and Call
+moderator use the review.
+
+A review's tree branches and changes: the presenter steps back, branches,
+and a demo board's undo takes recorded moves off its trunk. So the base
+snapshot copies the whole tree, and is taken whenever the presenter's node
+moves, backwards included. A variation posted on a review carries `review_id`
+(not `game_id`, so clients that predate reviews drop it) and `from_path`, the
+move path from the root to its branch point, as well as the usual `from` and
+`moves`. It is laid from the node `from_path` names. When the presenter has
+removed that node, the path and the line are replayed from the root, which
+puts the same stones on the board, and the reader is told the position is no
+longer on the presenter's board.
+
+Chat lines carry a game position, so a room on a review sends its chat lines
+without one. Proposals to switch a room to a review are not supported.
 
 ## Game page cards
 

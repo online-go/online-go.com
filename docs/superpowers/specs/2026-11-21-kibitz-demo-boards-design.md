@@ -19,6 +19,29 @@ with `review_id` (`review/connect`, `review/<id>/r`, `isDemoBoard()`), and
 chat. This work lets a room watch a review, and makes the parts of the room
 that assume a game work for one.
 
+## As built
+
+The build departed from the design below in these places. The durable
+description is the "Demo boards" section of `docs/kibitz.md`.
+
+- The client has no separate `KibitzWatchedReview` type: the review is read
+  into `KibitzWatchedGame` with `review_id` set and `game_id` absent, so the
+  code that reads `room.current_game` works unchanged. Boards are compared
+  through `kibitzBoardRef`. The draft source is one `variation_source_board`
+  key.
+- The presenter does not move stones in the room. The main board is a
+  follower for everyone; More actions links to the review page ("Open the
+  board"), where the presenter moves the stones.
+- A variation whose branch point is gone is told to the reader by a toast,
+  not by a message in the variation panel.
+- The picker takes a demo board or review by ID field (URL) only. The "My
+  demo boards and reviews" list is not built.
+- Telemetry does not carry `mode` yet.
+- Room chat lines in a review room carry no board position.
+- The connection keeper stays game-only: the picker shows no connected review
+  boards that could disconnect the room's review.
+- "Change live game" keeps its label.
+
 ## Terms
 
 - **Board**: what a room watches. Either a game or a review.
