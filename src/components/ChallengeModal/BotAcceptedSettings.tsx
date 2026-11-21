@@ -65,6 +65,9 @@ function rankedText(allow_ranked: boolean, allow_unranked: boolean): string {
     if (allow_ranked && allow_unranked) {
         return pgettext("A bot accepts ranked and unranked games", "Ranked and unranked");
     }
+    if (!allow_ranked && !allow_unranked) {
+        return pgettext("A bot does not accept ranked or unranked games", "Not allowed");
+    }
     if (allow_ranked) {
         return pgettext("A bot accepts only ranked games", "Ranked only");
     }
