@@ -213,14 +213,21 @@ list, the secondary board's target, the draft source
 (`variation_source_board`) and the base snapshot (`board`).
 
 The main board connects with `review_id` and follows the presenter, the
-review's controller, as the review page does for anyone else. It never writes
-to the review: the presenter moves the stones on the review's own page, which
-More actions links to as "Open the board". The room's position is the
-presenter's node (`cur_review_move`, see `kibitzReviewBoard`), where a game
-has its trunk tail: Return to live goes there, "behind live" means away from
-it, and a stone placed on the main board to start a draft is taken back to
-it. The game chat tab is "Board chat", the review's own chat. SGF and Call
-moderator use the review.
+review's current controller (`isReviewPresenter`; control can pass from the
+owner to someone else). The room's position is the presenter's node
+(`cur_review_move`, see `kibitzReviewBoard`), where a game has its trunk tail:
+Return to live goes there, "behind live" means away from it, and a stone
+placed on the main board to start a draft is taken back to it. The game chat
+tab is "Board chat", the review's own chat. SGF and Call moderator use the
+review, and More actions links to the review's own page ("Open the board").
+
+The presenter presents from the room. Their main board carries the review
+page's owner and controller checks, so their stones, marks and navigation on
+it go to the review and every other board in the room follows. For them, and
+only for them, a stone on the main board is a move of the review rather than
+the start of a draft; "+ Variation" still starts one. A "Presenting" badge
+beside the room title tells them so. `useKibitzReviewPresenter` follows
+control as it passes, so the board changes behaviour when it does.
 
 A review's tree branches and changes: the presenter steps back, branches,
 and a demo board's undo takes recorded moves off its trunk. So the base
