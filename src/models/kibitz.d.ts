@@ -68,6 +68,8 @@ export interface KibitzWatchedGame {
     white: KibitzRoomUser;
     tournament_name?: string;
     move_number?: number;
+    /** False once the game has ended, and for a review. Not the game's speed:
+     *  an unfinished correspondence game is live. */
     live?: boolean;
     analysis_disabled?: boolean;
     rengo_black_team?: number[];
