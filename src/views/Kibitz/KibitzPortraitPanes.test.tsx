@@ -131,7 +131,7 @@ function props(active: KibitzPortraitPane): React.ComponentProps<typeof KibitzPo
         canOpenCreateRoomFlow: false,
         signInHref: "/sign-in",
         variations: [makeVariation("v1")],
-        currentGameId: 10,
+        currentBoard: "game:10",
         variationGameById: new Map(),
         selectedVariationId: null,
         variationFocusRequestId: 0,

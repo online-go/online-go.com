@@ -71,8 +71,8 @@ const room_b: KibitzRoomSummary = {
 };
 
 function mockBackend(rooms: KibitzRoomSummary[]): void {
-    mock_get.mockImplementation((url: string, params: { game: number }) => {
-        if (url === "kibitz/rooms" && params?.game === 42) {
+    mock_get.mockImplementation((url: string, params: { game?: number; review?: number }) => {
+        if (url === "kibitz/rooms" && (params?.game === 42 || params?.review === 9)) {
             return Promise.resolve(rooms);
         }
         return Promise.reject(new Error(`unexpected get: ${url}`));
@@ -85,7 +85,7 @@ function ids(rooms: KibitzRoomSummary[]): string[] {
 
 async function renderWithRooms(rooms: KibitzRoomSummary[]) {
     mockBackend(rooms);
-    const rendered = renderHook(() => useGameKibitzRooms(42, false));
+    const rendered = renderHook(() => useGameKibitzRooms({ game_id: 42 }, false));
     await waitFor(() => expect(mock_get).toHaveBeenCalled());
     await waitFor(() => expect(rendered.result.current).toHaveLength(rooms.length));
     return rendered;
@@ -109,14 +109,14 @@ describe("useGameKibitzRooms", () => {
 
     it("drops rooms the server returns for other games", async () => {
         mockBackend([room_a, { ...room_b, current_game_id: 7 }]);
-        const { result } = renderHook(() => useGameKibitzRooms(42, false));
+        const { result } = renderHook(() => useGameKibitzRooms({ game_id: 42 }, false));
         await waitFor(() => expect(result.current).toHaveLength(1));
         expect(ids(result.current)).toEqual(["user-aaaa"]);
     });
 
     it("returns no rooms and makes no request while hidden", () => {
         mockBackend([room_a]);
-        const { result } = renderHook(() => useGameKibitzRooms(42, true));
+        const { result } = renderHook(() => useGameKibitzRooms({ game_id: 42 }, true));
         expect(mock_get).not.toHaveBeenCalled();
         expect(result.current).toEqual([]);
         expect(mock_push_manager.subscribe).not.toHaveBeenCalled();
@@ -125,12 +125,24 @@ describe("useGameKibitzRooms", () => {
     it("starts fetching when hidden turns false", async () => {
         mockBackend([room_a, room_b]);
         const { result, rerender } = renderHook(
-            ({ hidden }: { hidden: boolean }) => useGameKibitzRooms(42, hidden),
+            ({ hidden }: { hidden: boolean }) => useGameKibitzRooms({ game_id: 42 }, hidden),
             { initialProps: { hidden: true } },
         );
         expect(mock_get).not.toHaveBeenCalled();
         rerender({ hidden: false });
         await waitFor(() => expect(result.current).toHaveLength(2));
+    });
+
+    it("follows the rooms on a review, by review id, on a review page", async () => {
+        const on_review = { ...room_a, current_game_id: null, current_review_id: 9 };
+        // A room on the reviewed game itself is not a room on the review.
+        mockBackend([on_review, room_b]);
+        const { result } = renderHook(() =>
+            useGameKibitzRooms({ game_id: 42, review_id: 9 }, false),
+        );
+        await waitFor(() => expect(result.current).toHaveLength(1));
+        expect(mock_get).toHaveBeenCalledWith("kibitz/rooms", { review: 9 });
+        expect(ids(result.current)).toEqual(["user-aaaa"]);
     });
 
     it("returns no rooms and makes no request without a game id", () => {
@@ -278,7 +290,7 @@ describe("useGameKibitzRooms", () => {
 
         it("protects the first fetch from pushes too", async () => {
             const pending = holdFetches();
-            const { result } = renderHook(() => useGameKibitzRooms(42, false));
+            const { result } = renderHook(() => useGameKibitzRooms({ game_id: 42 }, false));
             act(() => {
                 mock_push_manager.fire("room-updated", { ...room_a, current_game_id: 7 });
             });

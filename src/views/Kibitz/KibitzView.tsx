@@ -51,6 +51,9 @@ import { KibitzMoreActionsRoomActions, openKibitzMoreActions } from "./KibitzMor
 import { KibitzScoreEstimate } from "./KibitzScoreEstimate";
 import { useKibitzScoreEstimation } from "./useKibitzScoreEstimation";
 import { useKibitzHelp } from "./useKibitzHelp";
+import { boardKey, gobanBoardKey, isReviewBoard } from "./kibitzBoardRef";
+import { boardChatLabel, reviewPresenterNode } from "./kibitzReviewBoard";
+import { useKibitzReviewPresenter } from "./useKibitzReviewPresenter";
 import "./KibitzView.css";
 import "@/views/Game/Players.css";
 
@@ -139,8 +142,8 @@ const peopleLabel = () =>
 // Functions, not values: the strings are read after the language is set. The
 // two chat contexts match the chat panel's own tab strip, so both share one
 // translation.
-const PANE_TITLES: Record<KibitzPortraitPane, () => string> = {
-    "game-chat": () => pgettext("Kibitz chat tab for the watched game's chat", "Game chat"),
+const PANE_TITLES: Record<KibitzPortraitPane, (onReview: boolean) => string> = {
+    "game-chat": boardChatLabel,
     "room-chat": () => pgettext("Kibitz chat tab for the kibitz room's chat", "Kibitz chat"),
     people: peopleLabel,
     variations: () => pgettext("Heading for the Kibitz variation list", "Variations"),
@@ -148,10 +151,20 @@ const PANE_TITLES: Record<KibitzPortraitPane, () => string> = {
     analysis: () => pgettext("Action that starts a new Kibitz variation", "New variation"),
 };
 
+/** True while the main board is away from the room's position: behind the
+ *  live game's last move, or off the presenter's node of a review. */
 const useBehindLive = generateGobanHook(
-    (goban: GobanController["goban"] | null) =>
-        !!goban && goban.engine.cur_move.move_number < goban.engine.last_official_move.move_number,
-    ["cur_move", "last_official_move"],
+    (goban: GobanController["goban"] | null) => {
+        if (!goban) {
+            return false;
+        }
+        const presenter = reviewPresenterNode(goban);
+        if (presenter) {
+            return goban.engine.cur_move !== presenter;
+        }
+        return goban.engine.cur_move.move_number < goban.engine.last_official_move.move_number;
+    },
+    ["cur_move", "last_official_move", "review.updated"],
 );
 
 /**
@@ -189,13 +202,14 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         }
     }, [gobans.center]);
     const coordinateGoban =
-        scoreSource?.goban.game_id === room.current_game?.game_id
+        gobanBoardKey(scoreSource?.goban) === boardKey(room.current_game)
             ? (gobans.center?.goban ?? null)
             : null;
     const gobanViewRef = React.useRef<GobanViewRef>(null);
     const [themeSettingsOpen, setThemeSettingsOpen] = React.useState(false);
     const settingsPopoverRef = React.useRef<PopOver | null>(null);
     const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
+    const isPresenter = useKibitzReviewPresenter(gobans.main?.goban ?? null);
     const behindLive = useBehindLive(
         gobans.centerMode === "main" ? (gobans.main?.goban ?? null) : null,
     );
@@ -465,7 +479,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         }
     }, [gobans.center, onExitVariation, stopEstimate]);
 
-    if (!gobans.center && room.current_game?.game_id) {
+    if (!gobans.center && boardKey(room.current_game)) {
         // The live controller is created after the first commit. Render
         // nothing for that one commit, so the chat and panels mount once.
         return null;
@@ -504,10 +518,10 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const selectedVariation = panelVariationId
         ? (props.leftAside.variations.find((v) => v.id === panelVariationId) ?? null)
         : null;
-    const chipGameId = selectedVariation?.game_id ?? null;
+    const chipBoard = boardKey(selectedVariation);
     const chipOtherGame =
-        chipGameId != null && chipGameId !== room.current_game?.game_id
-            ? (props.leftAside.variationGameById.get(chipGameId) ?? null)
+        chipBoard != null && chipBoard !== boardKey(room.current_game)
+            ? (props.leftAside.variationGameById.get(chipBoard) ?? null)
             : null;
     const variationPanel =
         viewingOther && gobans.secondary ? (
@@ -610,6 +624,24 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             leftAsideMinWidth={240}
             leftAsideCollapsedWidth={leftAsideCollapsed ? 28 : undefined}
             centerPlaceholder={waitingMessage}
+            boardNotice={
+                // Only the main board is the demo board: a draft or a
+                // variation in the centre is the presenter's own.
+                isPresenter && gobans.centerMode === "main" ? (
+                    <div
+                        className="Kibitz-presenting-notice"
+                        title={pgettext(
+                            "Tooltip on the notice a demo board's presenter sees above the board in a Kibitz room",
+                            "Stones you place on this board go to the demo board, for everyone in the room.",
+                        )}
+                    >
+                        {pgettext(
+                            "Notice a demo board's presenter sees directly above the board in a Kibitz room",
+                            "You are presenting",
+                        )}
+                    </div>
+                ) : undefined
+            }
             aboveBoard={
                 <KibitzStackedPlayerHeader
                     controller={playerInfoController}
@@ -708,7 +740,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         type="action"
                         align="left"
                         icon={PANE_ICONS[id]}
-                        title={PANE_TITLES[id]()}
+                        title={PANE_TITLES[id](isReviewBoard(room.current_game))}
                         active={pane === id}
                         onClick={() => togglePane(id)}
                     />
@@ -731,7 +763,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                                 ) : null}
                             </span>
                         }
-                        title={PANE_TITLES[id]()}
+                        title={PANE_TITLES[id](isReviewBoard(room.current_game))}
                         active={pane === id}
                         onClick={() => selectPane(id)}
                     />

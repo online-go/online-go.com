@@ -17,7 +17,7 @@
 
 import { GobanController } from "@/lib/GobanController";
 import type { KibitzVariationSummary } from "@/models/kibitz";
-import type { MoveTree } from "goban";
+import { decodeMoves, type MoveTree } from "goban";
 import {
     applyKibitzVariationToController,
     isVariationOfficialAnchorReady,
@@ -42,6 +42,7 @@ type TestNode = {
     branches: TestNode[];
     state: Record<string, never>;
     line_color: number;
+    lookupMove: (x: number, y: number, player: number, edited: boolean) => TestNode | null;
 };
 
 function makeNode(
@@ -63,6 +64,14 @@ function makeNode(
         branches: [],
         state: {},
         line_color: -1,
+        lookupMove(x: number, y: number, _player: number, edited: boolean) {
+            const children = [this.trunk_next, ...this.branches];
+            return (
+                children.find(
+                    (child) => child && child.x === x && child.y === y && child.edited === edited,
+                ) ?? null
+            );
+        },
     };
 }
 
@@ -362,5 +371,76 @@ describe("annotation-only variations on a real board", () => {
         } finally {
             controller.destroy();
         }
+    });
+});
+
+/** A review variation, with moves in goban's own encoding ("aa" is 0,0). */
+function makeReviewVariation(fromPath: string, moves: string): KibitzVariationSummary {
+    return {
+        ...makeVariation("review-variation", []),
+        game_id: undefined,
+        review_id: 77,
+        analysis_from: 1,
+        analysis_from_path: fromPath,
+        analysis_moves: moves,
+    };
+}
+
+function makeReviewController() {
+    const controller = makeController();
+    const engine = controller.goban.engine as unknown as { decodeMoves: unknown };
+    engine.decodeMoves = (moveObj: string) => decodeMoves(moveObj, 19, 19);
+    return controller;
+}
+
+describe("review variations", () => {
+    // The trunk is root -> (1,1) "bb" -> (2,2) "cc".
+    it("branch from the node their path names while it is on the board", () => {
+        const controller = makeReviewController();
+        const root = controller.goban.engine.move_tree as unknown as TestNode;
+        const branchPoint = root.trunk_next as TestNode;
+
+        const applied = applyKibitzVariationToController(
+            controller,
+            makeReviewVariation("bb", "kk"),
+            3,
+            false,
+        );
+
+        expect(applied.detached).toBe(false);
+        expect(branchPoint.branches).toHaveLength(1);
+        expect(branchPoint.branches[0]).toMatchObject({ x: 10, y: 10, line_color: 3 });
+        expect(applied.endpoint).toBe(branchPoint.branches[0]);
+    });
+
+    it("are replayed from the root, as the same stones, when their branch point is gone", () => {
+        const controller = makeReviewController();
+        const root = controller.goban.engine.move_tree as unknown as TestNode;
+
+        // (3,3) "dd" is not on the board: the presenter removed it.
+        const applied = applyKibitzVariationToController(
+            controller,
+            makeReviewVariation("bbdd", "kk"),
+            3,
+            false,
+        );
+
+        const endpoint = applied.endpoint as unknown as TestNode;
+        expect(applied.detached).toBe(true);
+        expect(endpoint).toMatchObject({ x: 10, y: 10, line_color: 3 });
+        expect(endpoint.parent).toMatchObject({ x: 3, y: 3 });
+        expect(endpoint.parent?.parent).toMatchObject({ x: 1, y: 1 });
+        expect(endpoint.parent?.parent?.parent).toBe(root);
+        // Only the variation's own move takes its colour, not the replayed path.
+        expect(endpoint.parent?.line_color).toBe(-1);
+        // The presenter's trunk is left as it was.
+        expect((root.trunk_next as TestNode).branches).toHaveLength(0);
+    });
+
+    it("are always ready, since a missing branch point is replayed", () => {
+        const controller = makeReviewController();
+        expect(isVariationOfficialAnchorReady(controller, makeReviewVariation("bbdd", "kk"))).toBe(
+            true,
+        );
     });
 });

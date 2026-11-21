@@ -116,6 +116,11 @@ interface GobanViewProps {
      *  visible height of the scroll area: the goban shrinks so that both
      *  slots stay on screen without scrolling, whatever the device size. */
     aboveBoard?: React.ReactNode;
+    /** A notice rendered directly above the goban, in both orientations,
+     *  inside the board stage: the goban gives up the height it takes. Used
+     *  by Kibitz to tell a demo board's presenter that their stones go to
+     *  the demo board. */
+    boardNotice?: React.ReactNode;
     /** Portrait-only slot rendered directly below the goban, inside the
      *  scroll flow and above the tab panels. Ignored in landscape. Used by
      *  the Game view for the local player's card and the play buttons. */
@@ -203,6 +208,7 @@ function GobanViewComponent({
     hideSlider,
     header,
     aboveBoard,
+    boardNotice,
     belowBoard,
     playerBars,
     sidebarContentBefore,
@@ -292,6 +298,7 @@ function GobanViewComponent({
     const aboveRef = React.useRef<HTMLDivElement>(null);
     const centerRef = React.useRef<HTMLDivElement>(null);
     const belowRef = React.useRef<HTMLDivElement>(null);
+    const noticeRef = React.useRef<HTMLDivElement>(null);
     const stageRef = React.useRef<HTMLDivElement>(null);
     const panelsRef = React.useRef<HTMLDivElement>(null);
 
@@ -556,6 +563,11 @@ function GobanViewComponent({
                 <PlayerBar color={bottom_color} controller={barsController} />
             </div>
         ) : null;
+    const notice = boardNotice ? (
+        <div className="GobanView-board-notice" ref={noticeRef}>
+            {boardNotice}
+        </div>
+    ) : null;
     const hasTakeover = activeTakeover !== null;
 
     const mobileScroll = resolved.mobileScroll;
@@ -568,7 +580,7 @@ function GobanViewComponent({
             above: aboveRef,
             center: centerRef,
             below: belowRef,
-            extra: [topBarRef, bottomBarRef],
+            extra: [topBarRef, bottomBarRef, noticeRef],
         },
         isPortrait && !mobileScroll && hideSlider === "when-cramped",
     );
@@ -710,6 +722,7 @@ function GobanViewComponent({
                                         </div>
                                     )}
                                     {topBar}
+                                    {notice}
                                     <div className="GobanView-center" ref={centerRef}>
                                         {controller ? (
                                             <GobanContainer
@@ -814,6 +827,7 @@ function GobanViewComponent({
                             {controller ? (
                                 <div className="GobanView-stage">
                                     {topBar}
+                                    {notice}
                                     <GobanContainer respectContainerBounds />
                                     {underBoardSlider}
                                     {bottomBar}

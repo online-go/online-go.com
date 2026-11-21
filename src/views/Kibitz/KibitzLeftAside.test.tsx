@@ -44,7 +44,7 @@ function baseProps(overrides: Partial<KibitzLeftAsideProps> = {}): KibitzLeftAsi
         canOpenCreateRoomFlow: false,
         signInHref: "/sign-in",
         variations: [],
-        currentGameId: 100,
+        currentBoard: "game:100",
         variationGameById: new Map(),
         selectedVariationId: null,
         variationFocusRequestId: 0,

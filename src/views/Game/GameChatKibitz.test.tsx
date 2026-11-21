@@ -158,7 +158,13 @@ describe("GameChat kibitz rooms", () => {
     it("hides the rooms until the game's players have loaded", () => {
         mock_loaded.mockReturnValue(false);
         render(<GameChat channel="game-5" game_id={5} show_kibitz_rooms />);
-        expect(mock_rooms).toHaveBeenCalledWith(5, true);
+        expect(mock_rooms).toHaveBeenCalledWith({ game_id: 5, review_id: undefined }, true);
+    });
+
+    it("asks for a review's rooms without waiting for players on a review page", () => {
+        mock_loaded.mockReturnValue(false);
+        render(<GameChat channel="review-9" review_id={9} show_kibitz_rooms />);
+        expect(mock_rooms).toHaveBeenCalledWith({ game_id: undefined, review_id: 9 }, false);
     });
 
     it("makes no kibitz request when show_kibitz_rooms is not set", () => {
@@ -168,20 +174,20 @@ describe("GameChat kibitz rooms", () => {
 
     it("asks for the game's rooms when show_kibitz_rooms is set", () => {
         render(<GameChat channel="game-5" game_id={5} show_kibitz_rooms />);
-        expect(mock_rooms).toHaveBeenCalledWith(5, false);
+        expect(mock_rooms).toHaveBeenCalledWith({ game_id: 5, review_id: undefined }, false);
     });
 
     it("hides the rooms from a player while the game is in progress", () => {
         mock_participant.mockReturnValue(true);
         render(<GameChat channel="game-5" game_id={5} show_kibitz_rooms />);
-        expect(mock_rooms).toHaveBeenCalledWith(5, true);
+        expect(mock_rooms).toHaveBeenCalledWith({ game_id: 5, review_id: undefined }, true);
     });
 
     it("shows the rooms to a player once the game is finished", () => {
         mock_participant.mockReturnValue(true);
         mock_phase.mockReturnValue("finished");
         render(<GameChat channel="game-5" game_id={5} show_kibitz_rooms />);
-        expect(mock_rooms).toHaveBeenCalledWith(5, false);
+        expect(mock_rooms).toHaveBeenCalledWith({ game_id: 5, review_id: undefined }, false);
     });
 
     it("passes the summed kibitz viewer count to the toggle", () => {

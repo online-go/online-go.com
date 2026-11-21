@@ -5,9 +5,10 @@ order. Rooms watching the current player's active game are skipped. If all rooms
 are blocked, the directory stays open without joining a room. Explicit links to
 blocked rooms still show the access warning.
 
-The Kibitz page (`/kibitz/:roomId`) is a room where spectators watch one live
-game together, chat, and share variations. It renders through the shared
-`GobanView` layout (`src/components/GobanView`).
+The Kibitz page (`/kibitz/:roomId`) is a room where spectators watch one
+board together, chat, and share variations. The board is a live game, or a
+public review: a demo board or a review of a game (see "Demo boards"). It
+renders through the shared `GobanView` layout (`src/components/GobanView`).
 
 ## Layout
 
@@ -189,9 +190,64 @@ because there is nothing to analyse, and Return to live cannot apply. Without
 a board there is no `GobanContainer` to report resizes, so `GobanView`
 listens to the window itself for as long as it has no controller.
 
+## Demo boards
+
+A user room can watch a review instead of a game: a demo board, or a review of
+a game. Any public review qualifies; a private one, or a review of a private
+game, does not. The picker's ID field takes a demo board or review URL
+(`/demo/<id>`, `/review/<id>`, with or without `/view` and a move number) as
+well as a game id or URL (`parseKibitzBoardInput`). Preset and broadcast rooms
+only watch games.
+
+The server sends the review as `current_review` beside a null
+`current_game`, and `mode: "demo"`. `KibitzController` reads it into the same
+watched-board shape as a game, with `review_id` set and no `game_id`. A review
+is never live, so the policies for live games do not apply to it: the players
+of a reviewed game are not kept out, and analysis is never disabled. A demo
+board's players are names, with id 0, and are not linked.
+
+Boards are identified by kind and id, because game ids and review ids are
+separate sequences. Anything that groups or compares boards goes through
+`kibitzBoardRef` (`boardKey`, `sameBoard`, `gobanBoardKey`): the variation
+list, the secondary board's target, the draft source
+(`variation_source_board`) and the base snapshot (`board`).
+
+The main board connects with `review_id` and follows the presenter, the
+review's current controller (`isReviewPresenter`; control can pass from the
+owner to someone else). The room's position is the presenter's node
+(`cur_review_move`, see `kibitzReviewBoard`), where a game has its trunk tail:
+Return to live goes there, "behind live" means away from it, and a stone
+placed on the main board to start a draft is taken back to it. The game chat
+tab is "Board chat", the review's own chat. SGF and Call moderator use the
+review, and More actions links to the review's own page ("Open the board").
+
+The presenter presents from the room. Their main board carries the review
+page's owner and controller checks, so their stones, marks and navigation on
+it go to the review and every other board in the room follows. For them, and
+only for them, a stone on the main board is a move of the review rather than
+the start of a draft; "+ Variation" still starts one. While the centre shows the main board, "You are presenting" sits directly
+above it, in `GobanView`'s `boardNotice` slot, which both orientations render
+inside the board stage. `useKibitzReviewPresenter` follows
+control as it passes, so the board changes behaviour when it does.
+
+A review's tree branches and changes: the presenter steps back, branches,
+and a demo board's undo takes recorded moves off its trunk. So the base
+snapshot copies the whole tree, and is taken whenever the presenter's node
+moves, backwards included. A variation posted on a review carries `review_id`
+(not `game_id`, so clients that predate reviews drop it) and `from_path`, the
+move path from the root to its branch point, as well as the usual `from` and
+`moves`. It is laid from the node `from_path` names. When the presenter has
+removed that node, the path and the line are replayed from the root, which
+puts the same stones on the board, and the reader is told the position is no
+longer on the presenter's board.
+
+Chat lines carry a game position, so a room on a review sends its chat lines
+without one. Proposals to switch a room to a review are not supported.
+
 ## Game page cards
 
-The Game page lists the kibitz rooms whose current board is that game.
+The Game page lists the kibitz rooms whose current board is that game, and
+a review or demo board page the rooms whose board is that review.
 `GameChat` passes them to `ChatUserList` as its `footer`, so they sit at
 the bottom of the chat's user list under a "Kibitz" heading, one card per
 room (`src/views/Game/GameKibitzRooms.tsx`): the room title, its
@@ -199,16 +255,18 @@ description if it has one, and the viewer count. Clicking a card opens
 `/kibitz/<room id>`. With no rooms the footer renders nothing.
 
 `useGameKibitzRooms` (`src/views/Game/useGameKibitzRooms.ts`) seeds the
-list from `GET /api/v1/kibitz/rooms?game=<id>` — every room on the game,
-empty ones included. `useKibitzDirectoryRooms`
+list from `GET /api/v1/kibitz/rooms?game=<id>`, or `?review=<id>` on a review
+or demo board page — every room on the board, empty ones included. A review
+of a game lists the rooms on the review, not those on the game. `useKibitzDirectoryRooms`
 (`src/lib/useKibitzDirectoryRooms.ts`) then follows the `kibitz-rooms`
 directory pushes: `room-created` and `room-updated` add or drop a room by its
-`current_game_id`, `viewer-count-changed` re-sorts by viewers,
+`current_game_id` or `current_review_id`, `viewer-count-changed` re-sorts by viewers,
 `room-removed` drops, and `rooms-refresh` or a socket reconnect fetch again.
 A push that arrives during a fetch is replayed on the result, only the newest
 fetch is applied, and a failed fetch keeps the current list.
 The hook is inert for a player of the game until it has finished, which is
-when the server starts letting players into rooms on their own game.
+when the server starts letting players into rooms on their own game. A
+review has no such rule, so it is never held back.
 
 The list toggle shows `KibitzUsersIcon`
 (`src/components/ChatUserList/KibitzUsersIcon.tsx`, the `fa-users` heads
@@ -216,8 +274,9 @@ with a speech bubble above) whenever at least one room is watching the
 game, and its number becomes the game chat users plus the viewers across
 those rooms: people watching the game anywhere, with the cards accounting
 for the difference from the names in the list. A viewer with both the
-game page and a room open counts twice. Only `Game.tsx` switches this on, through `show_kibitz_rooms`; the
-review page and the annul queue, which also mount `GameChat`, do not.
+game page and a room open counts twice. Only `Game.tsx` switches this on,
+through `show_kibitz_rooms`, for games, reviews and demo boards; the annul
+queue, which also mounts `GameChat`, does not.
 `ChatKibitzRoom` on the Chat page is the sibling card, keyed by chat
 channel instead of game. It uses the same hook and the same
 `KibitzRoomCard` and `KibitzRoomCards` components

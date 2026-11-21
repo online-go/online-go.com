@@ -50,8 +50,18 @@ export interface KibitzRoomUser {
     icon?: string;
 }
 
+/** The board a room watches: a game, or a review (a demo board or a review
+ *  of a game). A review board has `review_id` and no `game_id`; compare
+ *  boards with `sameBoard` from `views/Kibitz/kibitzBoardRef`. */
 export interface KibitzWatchedGame {
-    game_id: number;
+    game_id?: number;
+    review_id?: number;
+    /** For a review of a game: the game it reviews. Not the board's id. */
+    reviewed_game_id?: number | null;
+    /** For a review: the user whose moves are the review's position. */
+    review_controller?: KibitzRoomUser;
+    /** For a review: its recorded result, if any. */
+    outcome?: string | null;
     board_size: `${number}x${number}`;
     title: string;
     black: KibitzRoomUser;
@@ -80,7 +90,10 @@ export interface KibitzRoomSummary {
     description?: string;
     creator_id?: number | null;
     current_game_id?: number | null;
+    current_review_id?: number | null;
+    /** The watched board, a game or a review. */
     current_game?: KibitzWatchedGame;
+    mode?: KibitzMode;
     pinned?: boolean;
     proposals_enabled?: boolean;
     preset?: KibitzPresetBlock;
@@ -115,7 +128,9 @@ export interface KibitzVariationSummary {
     id: string;
     room_id: string;
     source?: "room" | "game-chat";
-    game_id: number;
+    /** The board the variation was made on: exactly one of these is set. */
+    game_id?: number;
+    review_id?: number;
     client_pending_id?: string;
     creator: KibitzRoomUser;
     created_at: number;
@@ -128,6 +143,10 @@ export interface KibitzVariationSummary {
     analysis_marks?: Record<string, string>;
     analysis_pen_marks?: KibitzVariationPenMarks;
     analysis_line_tree?: KibitzVariationLineTree;
+    /** A review variation's anchor: the move path from the root to the node
+     *  it branches from. A review's tree branches and changes, so the move
+     *  number in `analysis_from` alone cannot find that node. */
+    analysis_from_path?: string;
 }
 
 export interface KibitzStreamItem {
@@ -151,7 +170,8 @@ export interface KibitzSecondaryPaneState {
     collapsed: boolean;
     chat_variation?: KibitzVariationSummary;
     variation_id?: string;
-    variation_source_game_id?: number;
+    /** The board a draft is made on. Set exactly while drafting. */
+    variation_source_board?: import("@/views/Kibitz/kibitzBoardRef").KibitzBoardKey;
     variation_source_game?: KibitzWatchedGame;
     variation_source_move_tree?: KibitzVariationLineTree;
     variation_source_move_tree_id?: number;

@@ -244,7 +244,7 @@ function variationLeftAside(
         canOpenCreateRoomFlow: false,
         signInHref: "/login",
         variations: [],
-        currentGameId: 100,
+        currentBoard: "game:100",
         variationGameById: new Map(),
         selectedVariationId: null,
         variationFocusRequestId: 0,
@@ -371,7 +371,7 @@ describe("KibitzView", () => {
             leftAside: variationLeftAside({
                 variations: [variation],
                 selectedVariationId: "v1",
-                variationGameById: new Map([[42, otherGame]]),
+                variationGameById: new Map([["game:42" as const, otherGame]]),
             }),
         });
         const secondary = fakeController();
@@ -397,7 +397,10 @@ describe("KibitzView", () => {
                 variations: [variation],
                 selectedVariationId: "v1",
                 variationGameById: new Map([
-                    [100, makeWatchedGame({ game_id: 100, title: "Should not appear" })],
+                    [
+                        "game:100" as const,
+                        makeWatchedGame({ game_id: 100, title: "Should not appear" }),
+                    ],
                 ]),
             }),
         });

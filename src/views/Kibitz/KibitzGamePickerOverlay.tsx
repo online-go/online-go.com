@@ -35,13 +35,14 @@ import {
     isKibitzRoomOffensiveError,
     isKibitzRoomTitleTakenError,
 } from "./kibitzAnalysisPolicyText";
-import { parseGameId } from "./parseGameId";
+import { parseKibitzBoardInput } from "./parseGameId";
 import { useCurrentKibitzUser } from "./useCurrentKibitzUser";
 import {
     buildCurrentGameBaseSnapshotFromGameDetails,
     createCurrentGameMiniGobanSnapshotOverrides,
 } from "./kibitzCurrentGameBaseSnapshot";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
+import { sameBoard } from "./kibitzBoardRef";
 import "./KibitzGamePickerOverlay.css";
 
 type KibitzGamePickerOverlayMode = "create-room" | "change-board";
@@ -67,10 +68,53 @@ interface KibitzGamePickerOverlayProps {
 }
 
 interface SelectedGameState {
-    details: rest_api.GameDetails;
+    /** The game's details; null when the selection is a review. */
+    details: rest_api.GameDetails | null;
     game: KibitzWatchedGame;
     isFinished: boolean;
     isPublic: boolean;
+}
+
+/** What GET reviews/<id> returns that the picker reads. A demo board's
+ *  players are names, with id 0, and its `game` is a size summary. */
+interface ReviewDetailsForPicker {
+    id: number;
+    name: string | null;
+    private: boolean;
+    game: { id: number; width: number; height: number } | null;
+    players: {
+        black?: Partial<KibitzRoomUser> | null;
+        white?: Partial<KibitzRoomUser> | null;
+    };
+    controller?: KibitzRoomUser | null;
+}
+
+function toReviewPlayer(player: Partial<KibitzRoomUser> | null | undefined): KibitzRoomUser {
+    return {
+        id: player?.id ?? 0,
+        username: player?.username ?? "",
+        ranking: player?.ranking ?? 0,
+        professional: Boolean(player?.professional),
+        ui_class: player?.ui_class ?? "",
+        country: player?.country,
+        icon: player?.icon,
+    };
+}
+
+function mapReviewDetailsToWatchedGame(details: ReviewDetailsForPicker): KibitzWatchedGame {
+    const width = details.game?.width ?? 19;
+    const height = details.game?.height ?? 19;
+    return {
+        review_id: details.id,
+        board_size: `${width}x${height}` as KibitzWatchedGame["board_size"],
+        title: details.name ?? "",
+        black: toReviewPlayer(details.players?.black),
+        white: toReviewPlayer(details.players?.white),
+        live: false,
+        analysis_disabled: false,
+        reviewed_game_id: details.game?.id || null,
+        ...(details.controller ? { review_controller: details.controller } : {}),
+    };
 }
 
 function toRoomUser(player: rest_api.games.Player): KibitzRoomUser {
@@ -113,6 +157,10 @@ function buildDefaultRoomName(username?: string | null): string {
 }
 
 function buildDefaultRoomDescription(game: KibitzWatchedGame): string {
+    // A demo board need not name its players.
+    if (!game.black.username && !game.white.username) {
+        return game.title;
+    }
     return interpolate(
         pgettext(
             "Default room description for a Kibitz room",
@@ -126,8 +174,11 @@ function buildDefaultRoomDescription(game: KibitzWatchedGame): string {
     );
 }
 
-function findExistingRoom(rooms: KibitzRoomSummary[], gameId: number): KibitzRoomSummary | null {
-    return rooms.find((room) => room.current_game?.game_id === gameId) ?? null;
+function findExistingRoom(
+    rooms: KibitzRoomSummary[],
+    board: KibitzWatchedGame,
+): KibitzRoomSummary | null {
+    return rooms.find((room) => sameBoard(room.current_game, board)) ?? null;
 }
 
 function waitForNextFrame(): Promise<void> {
@@ -199,14 +250,14 @@ export function KibitzGamePickerOverlay({
         [currentGameBaseSnapshot, currentGameId],
     );
     const selectedGamePreviewSnapshot = React.useMemo(() => {
-        if (!selectedGame) {
+        if (!selectedGame?.details) {
             return null;
         }
 
         try {
             return buildCurrentGameBaseSnapshotFromGameDetails({
                 details: selectedGame.details,
-                gameId: selectedGame.game.game_id,
+                gameId: selectedGame.details.id,
                 requiredSnapshotMoveNumber: selectedGame.game.move_number,
             });
         } catch {
@@ -218,7 +269,7 @@ export function KibitzGamePickerOverlay({
             return null;
         }
 
-        const existing = findExistingRoom(rooms, selectedGame.game.game_id);
+        const existing = findExistingRoom(rooms, selectedGame.game);
 
         if (mode === "change-board" && existing?.id === currentRoom?.id) {
             return null;
@@ -230,7 +281,7 @@ export function KibitzGamePickerOverlay({
     const manualEntryLabel = pgettext("Label for the Kibitz game ID input", "Game ID");
     const manualPlaceholder = pgettext(
         "Placeholder for the Kibitz game ID input",
-        "Paste a game ID or OGS game URL",
+        "game ID, or demo/review URL",
     );
     const loadingGameDetailsLabel = pgettext(
         "Loading note for the Kibitz game picker",
@@ -238,10 +289,12 @@ export function KibitzGamePickerOverlay({
     );
 
     const selectionIsSameAsCurrent = Boolean(
-        mode === "change-board" && selectedGame && currentGameId === selectedGame.game.game_id,
+        mode === "change-board" &&
+        selectedGame &&
+        sameBoard(currentRoom?.current_game, selectedGame.game),
     );
     const accessPolicy = selectedGame
-        ? getKibitzAccessPolicyForUser(currentUser, selectedGame.details)
+        ? getKibitzAccessPolicyForUser(currentUser, selectedGame.details ?? selectedGame.game)
         : { allowed: true as const };
     const blockedMessage =
         !accessPolicy.allowed && accessPolicy.reason === "own-active-game"
@@ -297,7 +350,7 @@ export function KibitzGamePickerOverlay({
 
     React.useEffect(() => {
         setSuppressGamePreviews(false);
-    }, [selectedGame?.game.game_id, sourceMode]);
+    }, [selectedGame?.game.game_id, selectedGame?.game.review_id, sourceMode]);
 
     const resolveGame = React.useCallback(
         async (gameId: number) => {
@@ -356,6 +409,57 @@ export function KibitzGamePickerOverlay({
         [currentUser, isMobileLayout, mode],
     );
 
+    const resolveReview = React.useCallback(
+        async (reviewId: number) => {
+            const requestId = ++resolveGameRequestIdRef.current;
+            setLoading(true);
+            setErrorMessage(null);
+
+            try {
+                const details = (await get(`reviews/${reviewId}`)) as ReviewDetailsForPicker;
+                if (requestId !== resolveGameRequestIdRef.current) {
+                    return;
+                }
+                const game = mapReviewDetailsToWatchedGame(details);
+                const isPublic = !details.private;
+
+                setSelectedGame({ details: null, game, isFinished: false, isPublic });
+                setNameTouched(false);
+                setDescriptionTouched(false);
+                if (mode === "create-room") {
+                    setRoomName(buildDefaultRoomName(currentUser?.username));
+                    setRoomDescription(buildDefaultRoomDescription(game));
+                }
+                if (!isPublic) {
+                    setErrorMessage(
+                        pgettext(
+                            "Error shown when a demo board or review picked for a Kibitz room is private",
+                            "Only public demo boards and reviews can be used for Kibitz rooms.",
+                        ),
+                    );
+                } else if (isMobileLayout) {
+                    setMobileStep("preview");
+                }
+            } catch {
+                if (requestId !== resolveGameRequestIdRef.current) {
+                    return;
+                }
+                setSelectedGame(null);
+                setErrorMessage(
+                    pgettext(
+                        "Error shown when a demo board or review picked for a Kibitz room cannot be found",
+                        "Demo board or review not found.",
+                    ),
+                );
+            } finally {
+                if (requestId === resolveGameRequestIdRef.current) {
+                    setLoading(false);
+                }
+            }
+        },
+        [currentUser, isMobileLayout, mode],
+    );
+
     const onSelectGameId = React.useCallback(
         (gameId: number) => {
             setManualInput(String(gameId));
@@ -366,21 +470,25 @@ export function KibitzGamePickerOverlay({
     );
 
     const onResolveManualGame = React.useCallback(() => {
-        const gameId = parseGameId(manualInput);
-        if (!gameId) {
+        const board = parseKibitzBoardInput(manualInput);
+        if (!board) {
             setSelectedGame(null);
             setErrorMessage(
                 pgettext(
                     "Error shown when the Kibitz game ID input is invalid",
-                    "Enter a valid game ID or OGS game URL.",
+                    "Enter a valid game ID, or an OGS game, demo board or review URL.",
                 ),
             );
             return;
         }
 
         setSourceMode("game-id");
-        void resolveGame(gameId);
-    }, [manualInput, resolveGame]);
+        if ("review_id" in board) {
+            void resolveReview(board.review_id);
+        } else {
+            void resolveGame(board.game_id);
+        }
+    }, [manualInput, resolveGame, resolveReview]);
 
     const onSubmitCreateRoom = React.useCallback(() => {
         if (!selectedGame || !canCreateRoom) {
@@ -533,12 +641,16 @@ export function KibitzGamePickerOverlay({
 
     const selectedGameSummary = selectedGame?.game;
     const selectedGameStateLabel = selectedGame
-        ? selectedGame.isFinished
-            ? pgettext("Label for a finished Kibitz game", "Finished")
-            : pgettext("Label for a live Kibitz game", "Live")
+        ? selectedGame.game.review_id
+            ? selectedGame.game.reviewed_game_id
+                ? pgettext("Label for a review of a game picked for a Kibitz room", "Review")
+                : pgettext("Label for a demo board picked for a Kibitz room", "Demo board")
+            : selectedGame.isFinished
+              ? pgettext("Label for a finished Kibitz game", "Finished")
+              : pgettext("Label for a live Kibitz game", "Live")
         : null;
     const selectedGameStateClassName = selectedGame
-        ? selectedGame.isFinished
+        ? selectedGame.isFinished || selectedGame.game.review_id
             ? "KibitzGamePickerOverlay-stateText KibitzGamePickerOverlay-stateFinished"
             : "KibitzGamePickerOverlay-stateText KibitzGamePickerOverlay-stateLive"
         : undefined;
@@ -598,7 +710,10 @@ export function KibitzGamePickerOverlay({
                         </div>
                     </div>
                 )}
-                {showBoardPreview && !hidePickerGamePreviews && selectedGamePreviewSnapshot ? (
+                {showBoardPreview &&
+                !hidePickerGamePreviews &&
+                selectedGamePreviewSnapshot &&
+                selectedGame.details ? (
                     <div
                         className={
                             "KibitzGamePickerOverlay-boardWrap" +

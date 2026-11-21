@@ -29,6 +29,8 @@ export interface KibitzAnalysisUser {
 }
 
 export interface KibitzAnalysisGameLike {
+    /** Set when the board is a review; a review is never someone's game in progress. */
+    review_id?: number | null;
     live?: boolean;
     ended?: string | null;
     analysis_disabled?: boolean | null;
@@ -160,7 +162,7 @@ export function getKibitzAccessPolicyForUser(
     user: KibitzAnalysisUser | null | undefined,
     game: KibitzAnalysisGameLike | null | undefined,
 ): KibitzAccessPolicyResult {
-    if (!user || user.anonymous || !game) {
+    if (!user || user.anonymous || !game || game.review_id) {
         return { allowed: true };
     }
 
