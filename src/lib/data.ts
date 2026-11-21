@@ -226,8 +226,9 @@ export function get<KeyT extends Extract<keyof DataSchema, string>>(
     if (key in store) {
         return store[key] as DataSchema[KeyT];
     }
-    if (remote_get(key)) {
-        return remote_get(key) as DataSchema[KeyT];
+    const remote_value = remote_get(key);
+    if (remote_value !== undefined) {
+        return remote_value as DataSchema[KeyT];
     }
     if (key in defaults) {
         return defaults[key] as DataSchema[KeyT];
