@@ -461,7 +461,7 @@ describe("KibitzController room ordering", () => {
         // A draft opened while the room details load must survive their arrival.
         controller.setSecondaryPane({
             collapsed: false,
-            variation_source_game_id: 5,
+            variation_source_board: "game:5",
         });
         resolveRoom({});
         await pending;
@@ -551,7 +551,7 @@ describe("KibitzController telemetry", () => {
             viewer_count: 1,
             current_game: { game_id: 5, title: "g" },
         } as never);
-        controller.startVariationFromCurrentBoard({ roomId: "user-1", gameId: 5 });
+        controller.startVariationFromCurrentBoard({ roomId: "user-1", board: "game:5" });
         controller.startVariationFromPostedVariation({ id: "v1", game_id: 5 } as never);
         expect(mockedRecord.mock.calls.map((c) => c[0])).toEqual([
             "start_variation",
@@ -585,11 +585,11 @@ describe("KibitzController telemetry", () => {
         expect(controller.active_room?.id).toBe("preset-room");
         expect(
             controller.startVariationFromCurrentBoard(
-                { roomId: "user-room", gameId: 9 },
+                { roomId: "user-room", board: "game:9" },
                 { x: -1, y: -1 },
             ),
         ).toBe(false);
-        expect(controller.secondary_pane.variation_source_game_id).toBeUndefined();
+        expect(controller.secondary_pane.variation_source_board).toBeUndefined();
         expect(mockedRecord).not.toHaveBeenCalledWith("start_variation");
 
         resolveRoom({
@@ -614,11 +614,11 @@ describe("KibitzController telemetry", () => {
         expect(controller.active_room?.id).toBe("user-room");
         expect(
             controller.startVariationFromCurrentBoard(
-                { roomId: "user-room", gameId: 9 },
+                { roomId: "user-room", board: "game:9" },
                 { x: -1, y: -1 },
             ),
         ).toBe(true);
-        expect(controller.secondary_pane.variation_source_game_id).toBe(9);
+        expect(controller.secondary_pane.variation_source_board).toBe("game:9");
         controller.destroy();
     });
 
@@ -756,12 +756,12 @@ describe("KibitzController telemetry", () => {
                 goban: { engine: { last_official_move: { move_number: 4 } } },
             }) as never;
         jest.spyOn(console, "warn").mockImplementation(() => undefined);
-        controller.postVariation("user-4", boardController({ from: "x", moves: "" }), 5);
+        controller.postVariation("user-4", boardController({ from: "x", moves: "" }), "game:5");
         expect(mockedRecord).toHaveBeenLastCalledWith("post_variation", {
             outcome: "error",
             error: "malformed_payload",
         });
-        controller.postVariation("user-4", boardController({ from: 4, moves: "aa" }), 5);
+        controller.postVariation("user-4", boardController({ from: 4, moves: "aa" }), "game:5");
         expect(mockedRecord).toHaveBeenLastCalledWith("post_variation");
         controller.destroy();
     });
@@ -999,7 +999,7 @@ test("posts annotation-only analysis and refuses an empty post", async () => {
         goban: { engine: { last_official_move: { move_number: 0 } } },
     } as never;
     try {
-        expect(controller.postVariation("annotations", board, 42)).toEqual(
+        expect(controller.postVariation("annotations", board, "game:42")).toEqual(
             expect.objectContaining(analysis),
         );
         expect(sendTypedBody).toHaveBeenCalledWith(
@@ -1007,7 +1007,7 @@ test("posts annotation-only analysis and refuses an empty post", async () => {
         );
         expect(recordAnalysisSent).toHaveBeenCalledWith(analysis);
         analysis.marks = {} as typeof analysis.marks;
-        expect(controller.postVariation("annotations", board, 42)).toBeNull();
+        expect(controller.postVariation("annotations", board, "game:42")).toBeNull();
         expect(sendTypedBody).toHaveBeenCalledTimes(1);
     } finally {
         controller.destroy();

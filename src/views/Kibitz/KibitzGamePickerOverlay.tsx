@@ -42,6 +42,7 @@ import {
     createCurrentGameMiniGobanSnapshotOverrides,
 } from "./kibitzCurrentGameBaseSnapshot";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
+import { sameBoard } from "./kibitzBoardRef";
 import "./KibitzGamePickerOverlay.css";
 
 type KibitzGamePickerOverlayMode = "create-room" | "change-board";
@@ -126,8 +127,11 @@ function buildDefaultRoomDescription(game: KibitzWatchedGame): string {
     );
 }
 
-function findExistingRoom(rooms: KibitzRoomSummary[], gameId: number): KibitzRoomSummary | null {
-    return rooms.find((room) => room.current_game?.game_id === gameId) ?? null;
+function findExistingRoom(
+    rooms: KibitzRoomSummary[],
+    board: KibitzWatchedGame,
+): KibitzRoomSummary | null {
+    return rooms.find((room) => sameBoard(room.current_game, board)) ?? null;
 }
 
 function waitForNextFrame(): Promise<void> {
@@ -206,7 +210,7 @@ export function KibitzGamePickerOverlay({
         try {
             return buildCurrentGameBaseSnapshotFromGameDetails({
                 details: selectedGame.details,
-                gameId: selectedGame.game.game_id,
+                gameId: selectedGame.details.id,
                 requiredSnapshotMoveNumber: selectedGame.game.move_number,
             });
         } catch {
@@ -218,7 +222,7 @@ export function KibitzGamePickerOverlay({
             return null;
         }
 
-        const existing = findExistingRoom(rooms, selectedGame.game.game_id);
+        const existing = findExistingRoom(rooms, selectedGame.game);
 
         if (mode === "change-board" && existing?.id === currentRoom?.id) {
             return null;
@@ -238,7 +242,9 @@ export function KibitzGamePickerOverlay({
     );
 
     const selectionIsSameAsCurrent = Boolean(
-        mode === "change-board" && selectedGame && currentGameId === selectedGame.game.game_id,
+        mode === "change-board" &&
+        selectedGame &&
+        sameBoard(currentRoom?.current_game, selectedGame.game),
     );
     const accessPolicy = selectedGame
         ? getKibitzAccessPolicyForUser(currentUser, selectedGame.details)

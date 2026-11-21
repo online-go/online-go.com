@@ -36,6 +36,7 @@ import {
     isKibitzRoomTitleTakenError,
 } from "./kibitzAnalysisPolicyText";
 import { kibitzTelemetry } from "./kibitzTelemetry";
+import { boardIdsFromKey, boardKey, sameBoard, type KibitzBoardKey } from "./kibitzBoardRef";
 import type {
     KibitzPresetBlock,
     KibitzProposal,
@@ -1293,7 +1294,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     public postVariation(
         roomId: string,
         boardController: GobanController,
-        sourceGameId: number | undefined,
+        sourceBoard: KibitzBoardKey | null | undefined,
     ): AnalysisChatBody | null {
         const proxy = this._active_chat_proxy;
         if (!proxy || !this._active_room || this._active_room.id !== roomId) {
@@ -1303,7 +1304,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (prepared.is_duplicate) {
             return null;
         }
-        if (!sourceGameId) {
+        if (!sourceBoard) {
             return null;
         }
         const pendingId = `kibitz-post:${Date.now()}:${Math.random().toString(36).slice(2)}`;
@@ -1311,7 +1312,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             boardController.goban.engine.last_official_move?.move_number ?? 0;
         const body = {
             ...prepared.analysis,
-            game_id: sourceGameId,
+            ...boardIdsFromKey(sourceBoard),
             kibitz_pending_id: pendingId,
         } as AnalysisChatBody;
         if (
@@ -1321,7 +1322,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         ) {
             console.warn("kibitz-post-variation:refusing-malformed-payload", {
                 roomId,
-                sourceGameId,
+                sourceBoard,
                 officialTailMoveNumber,
                 payload: body,
             });
@@ -1332,13 +1333,13 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             return null;
         }
         if (
-            this._active_room?.current_game?.game_id === sourceGameId &&
+            boardKey(this._active_room?.current_game) === sourceBoard &&
             typeof prepared.analysis.from === "number" &&
             prepared.analysis.from > officialTailMoveNumber
         ) {
             console.warn("kibitz-post-variation:analysis-from-ahead-of-official-tail", {
                 roomId,
-                sourceGameId,
+                sourceBoard,
                 officialTailMoveNumber,
                 analysis_from: prepared.analysis.from,
                 draft_end_move_number: prepared.move_count,
@@ -1359,20 +1360,20 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     }
 
     public startVariationFromCurrentBoard(
-        source: { roomId: string; gameId: number },
+        source: { roomId: string; board: KibitzBoardKey },
         variation_source_move_tree?: KibitzVariationLineTree,
         variation_source_move_path?: string,
         variation_source_move_tree_id?: number,
     ): boolean {
         const activeRoom = this._active_room;
-        const currentGameId = activeRoom?.current_game?.game_id;
+        const currentBoard = boardKey(activeRoom?.current_game);
         // The directory entry for the next room can be visible while this
         // controller is still hydrating the previous room.
         if (
             !activeRoom ||
-            currentGameId == null ||
+            currentBoard == null ||
             source.roomId !== activeRoom.id ||
-            source.gameId !== currentGameId
+            source.board !== currentBoard
         ) {
             return false;
         }
@@ -1384,7 +1385,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             chat_variation: undefined,
             collapsed: false,
             variation_id: undefined,
-            variation_source_game_id: currentGameId,
+            variation_source_board: currentBoard,
             variation_source_game: this._active_room?.current_game
                 ? { ...this._active_room.current_game }
                 : undefined,
@@ -1408,10 +1409,8 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         variation_source_move_tree_id?: number,
         variation_draft_base_path?: string,
     ): void {
-        const sourceGame =
-            this._active_room?.current_game?.game_id === variation.game_id
-                ? this._active_room.current_game
-                : undefined;
+        const currentGame = this._active_room?.current_game;
+        const sourceGame = sameBoard(currentGame, variation) ? currentGame : undefined;
 
         kibitzTelemetry.record("start_variation");
 
@@ -1421,7 +1420,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 this._secondary_pane.chat_variation?.id === variation.id ? variation : undefined,
             collapsed: false,
             variation_id: undefined,
-            variation_source_game_id: variation.game_id,
+            variation_source_board: boardKey(variation) ?? undefined,
             variation_source_game: sourceGame ? { ...sourceGame } : undefined,
             variation_source_move_tree,
             variation_source_move_tree_id,
@@ -1447,7 +1446,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             chat_variation: undefined,
             collapsed: false,
             variation_id: variationId,
-            variation_source_game_id: undefined,
+            variation_source_board: undefined,
             variation_source_game: undefined,
             variation_source_move_tree: undefined,
             variation_source_move_tree_id: undefined,

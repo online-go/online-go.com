@@ -36,6 +36,7 @@ import {
     isVariationOfficialAnchorReady,
     type AppliedKibitzVariation,
 } from "./kibitzVariationTree";
+import { boardIdsFromKey, boardKey, sameBoard, type KibitzBoardKey } from "./kibitzBoardRef";
 
 export type KibitzCenterMode = "main" | "draft" | "variation";
 
@@ -65,7 +66,7 @@ export interface UseKibitzGobansOptions {
     variations: readonly KibitzVariationSummary[];
     visibleVariationIds: readonly string[];
     variationColorIndexes: Record<string, number>;
-    variationGameById: ReadonlyMap<number, KibitzWatchedGame>;
+    variationGameById: ReadonlyMap<KibitzBoardKey, KibitzWatchedGame>;
     onMainSnapshot?: (snapshot: KibitzCurrentGameBaseSnapshot) => void;
 }
 
@@ -73,7 +74,7 @@ export function deriveKibitzCenterMode(pane: KibitzSecondaryPaneState): KibitzCe
     if (pane.collapsed) {
         return "main";
     }
-    if (pane.variation_source_game_id != null) {
+    if (pane.variation_source_board != null) {
         return "draft";
     }
     if (pane.variation_id) {
@@ -127,22 +128,22 @@ function baseConfig(game: KibitzWatchedGame | null | undefined): GobanRendererCo
     };
 }
 
-/** The game id the secondary board should show, given the center mode and
+/** The board the secondary board should show, given the center mode and
  *  the pane state that selects it. `null` when nothing is selected yet. */
-function computeSecondaryTargetGameId(
+function computeSecondaryTargetBoard(
     mode: KibitzCenterMode,
     pane: KibitzSecondaryPaneState,
     variations: readonly KibitzVariationSummary[],
-): number | null {
+): KibitzBoardKey | null {
     if (mode === "variation") {
         return (
-            pane.chat_variation?.game_id ??
-            variations.find((v) => v.id === pane.variation_id)?.game_id ??
+            boardKey(pane.chat_variation) ??
+            boardKey(variations.find((v) => v.id === pane.variation_id)) ??
             null
         );
     }
     if (mode === "draft") {
-        return pane.variation_source_game_id ?? null;
+        return pane.variation_source_board ?? null;
     }
     return null;
 }
@@ -280,10 +281,10 @@ export function useKibitzGobans({
         main,
     };
 
-    const gameId = currentGame?.game_id ?? null;
+    const mainBoard = boardKey(currentGame);
 
     React.useEffect(() => {
-        if (gameId == null) {
+        if (mainBoard == null) {
             setMain(null);
             return;
         }
@@ -293,7 +294,7 @@ export function useKibitzGobans({
             interactive: true,
             mode: "analyze",
             connect_to_chat: true,
-            game_id: gameId,
+            ...boardIdsFromKey(mainBoard),
         });
         // A snapshot clones the whole trunk, so only take one when the trunk
         // has actually moved on since the last one that was accepted.
@@ -332,13 +333,9 @@ export function useKibitzGobans({
             setMain(null);
             setMainReady(false);
         };
-    }, [gameId]);
+    }, [mainBoard]);
 
-    const secondaryTargetGameId = computeSecondaryTargetGameId(
-        centerMode,
-        secondaryPane,
-        variations,
-    );
+    const secondaryTargetBoard = computeSecondaryTargetBoard(centerMode, secondaryPane, variations);
 
     // Any change to what the secondary board shows rebuilds it from scratch.
     // In variation mode only the visible variations of the same game are
@@ -346,7 +343,7 @@ export function useKibitzGobans({
     const composedVariationIds =
         centerMode === "variation"
             ? visibleVariationIds.filter(
-                  (id) => variations.find((v) => v.id === id)?.game_id === secondaryTargetGameId,
+                  (id) => boardKey(variations.find((v) => v.id === id)) === secondaryTargetBoard,
               )
             : [];
     const secondaryKey =
@@ -355,7 +352,7 @@ export function useKibitzGobans({
             : [
                   centerMode,
                   secondaryPane.variation_id ?? "",
-                  secondaryPane.variation_source_game_id ?? "",
+                  secondaryPane.variation_source_board ?? "",
                   secondaryPane.variation_draft_base_id ?? "",
                   secondaryPane.variation_draft_nonce ?? "",
                   secondaryPane.variation_source_move_tree_id ?? "",
@@ -370,7 +367,7 @@ export function useKibitzGobans({
     // A same-game board copies the main trunk, so it waits for `mainReady`. A
     // board for another game connects on its own; gating it on `mainReady`
     // too would rebuild it, and lose its socket, whenever readiness flips.
-    const secondaryUsesMainTrunk = centerMode !== "main" && secondaryTargetGameId === gameId;
+    const secondaryUsesMainTrunk = centerMode !== "main" && secondaryTargetBoard === mainBoard;
     const secondaryGate = secondaryUsesMainTrunk ? mainReady : true;
 
     // Keep original node annotations as well as the branch count: editing
@@ -394,7 +391,7 @@ export function useKibitzGobans({
             return;
         }
         const mode = deriveKibitzCenterMode(pane);
-        const currentGameId = currentGame?.game_id ?? null;
+        const currentBoard = boardKey(currentGame);
 
         const selectedVariation =
             mode === "variation"
@@ -409,18 +406,16 @@ export function useKibitzGobans({
                   null)
                 : null;
 
-        const targetGameId = computeSecondaryTargetGameId(mode, pane, variations);
+        const targetBoard = computeSecondaryTargetBoard(mode, pane, variations);
         const targetGame =
-            (targetGameId != null
-                ? latest.current.variationGameById.get(targetGameId)
-                : undefined) ??
+            (targetBoard != null ? latest.current.variationGameById.get(targetBoard) : undefined) ??
             pane.variation_source_game ??
-            (targetGameId === currentGameId ? currentGame : undefined);
+            (targetBoard === currentBoard ? currentGame : undefined);
 
-        // The current game's trunk comes from the main controller so the
-        // secondary board never opens a second socket for the same game.
-        // Other games connect read-only.
-        const useMainTrunk = targetGameId === currentGameId;
+        // The current board's trunk comes from the main controller so the
+        // secondary board never opens a second socket for the same board.
+        // Other boards connect read-only.
+        const useMainTrunk = targetBoard === currentBoard;
         const mainSnapshot = useMainTrunk
             ? captureCurrentGameBaseSnapshotFromController(main, currentGame, roomId)
             : null;
@@ -447,7 +442,11 @@ export function useKibitzGobans({
             board_div: document.createElement("div"),
             interactive: true,
             connect_to_chat: false,
-            game_id: useMainTrunk ? undefined : (targetGameId ?? undefined),
+            // A copied trunk must not connect: clear any id the snapshot
+            // config carries.
+            game_id: undefined,
+            review_id: undefined,
+            ...(useMainTrunk || targetBoard == null ? {} : boardIdsFromKey(targetBoard)),
             move_tree:
                 mode === "draft" && pane.variation_source_move_tree
                     ? pane.variation_source_move_tree
@@ -480,7 +479,7 @@ export function useKibitzGobans({
                 // not on this board is not navigated to but replayed as a fresh move.
                 let focusEndpoint: AppliedKibitzVariation["endpoint"] = null;
                 for (const v of pane.chat_variation ? [pane.chat_variation] : variations) {
-                    if (v.game_id !== focus.game_id) {
+                    if (!sameBoard(v, focus)) {
                         continue;
                     }
                     if (v.id !== focus.id && !latest.current.visibleVariationIds.includes(v.id)) {
@@ -554,7 +553,7 @@ export function useKibitzGobans({
             controller.goban.redraw(true);
         };
 
-        const connected = !useMainTrunk && targetGameId != null;
+        const connected = !useMainTrunk && targetBoard != null;
         setSecondary(controller);
         if (connected) {
             // Connected boards compose once the server has sent the game.

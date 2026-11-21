@@ -23,6 +23,7 @@ import {
 } from "@/lib/GobanController";
 import type { KibitzWatchedGame } from "@/models/kibitz";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
+import { boardKey, type KibitzBoardKey } from "./kibitzBoardRef";
 
 export function createCurrentGameMiniGobanSnapshotOverrides(
     snapshot: KibitzCurrentGameBaseSnapshot | null | undefined,
@@ -32,7 +33,7 @@ export function createCurrentGameMiniGobanSnapshotOverrides(
         return undefined;
     }
 
-    if (!snapshot || snapshot.gameId !== currentGameId) {
+    if (!snapshot || snapshot.board !== boardKey({ game_id: currentGameId })) {
         return new Map([[currentGameId, null]]);
     }
 
@@ -118,7 +119,7 @@ function buildSnapshotFromEngine({
     }
 
     return {
-        gameId,
+        board: `game:${gameId}`,
         roomId: roomId ?? null,
         trunkTailMoveNumber: officialTail.move_number,
         moveTreeId: engine.move_tree?.id ?? null,
@@ -186,25 +187,21 @@ export function restoreMainBoardToOfficialTail(controller: GobanController): Mov
     return restoreGobanToOfficialTail(controller.goban);
 }
 
-function positiveGameId(value: unknown): number | null {
-    const id = typeof value === "string" ? Number(value) : value;
-    if (typeof id === "number" && Number.isFinite(id) && id > 0) {
-        return id;
-    }
-    return null;
+function boardKeyFromRaw(gameId: unknown, reviewId: unknown): KibitzBoardKey | null {
+    return boardKey({ game_id: Number(gameId), review_id: Number(reviewId) });
 }
 
-/** Game ids the board itself reports. A detached details board has none. */
-function sourceBoardGameIds(controller: GobanController): number[] {
+/** Boards the controller itself reports. A detached details board has none. */
+function sourceBoardKeys(controller: GobanController): KibitzBoardKey[] {
     const goban = controller.goban;
     const engine = goban?.engine;
-    const ids = [
-        positiveGameId(goban?.game_id),
-        positiveGameId(engine?.game_id),
-        positiveGameId(engine?.config?.game_id),
-        positiveGameId(goban?.config?.game_id),
+    const keys = [
+        boardKeyFromRaw(goban?.game_id, goban?.review_id),
+        boardKeyFromRaw(engine?.game_id, engine?.review_id),
+        boardKeyFromRaw(engine?.config?.game_id, engine?.config?.review_id),
+        boardKeyFromRaw(goban?.config?.game_id, goban?.config?.review_id),
     ];
-    return ids.filter((id): id is number => id != null);
+    return keys.filter((key): key is KibitzBoardKey => key != null);
 }
 
 export function captureCurrentGameBaseSnapshotFromController(
@@ -214,7 +211,8 @@ export function captureCurrentGameBaseSnapshotFromController(
     source: KibitzCurrentGameBaseSnapshot["source"] = "main-board",
     expectedMoveNumber?: number,
 ): KibitzCurrentGameBaseSnapshot | null {
-    if (!controller || !game) {
+    const board = boardKey(game);
+    if (!controller || !game || !board) {
         return null;
     }
 
@@ -235,12 +233,12 @@ export function captureCurrentGameBaseSnapshotFromController(
 
     // The previous controller stays mounted until its effect is replaced.
     // Do not stamp the next game's id onto that controller's move tree.
-    if (sourceBoardGameIds(controller).some((id) => id !== game.game_id)) {
+    if (sourceBoardKeys(controller).some((key) => key !== board)) {
         return null;
     }
 
     return {
-        gameId: game.game_id,
+        board,
         roomId: roomId ?? null,
         trunkTailMoveNumber: officialTail.move_number,
         moveTreeId: engine.move_tree?.id ?? null,
@@ -250,6 +248,7 @@ export function captureCurrentGameBaseSnapshotFromController(
         config: {
             ...(engine.config as Record<string, unknown>),
             game_id: game.game_id,
+            review_id: game.review_id,
             moves: undefined,
             move_tree: cloneOfficialTrunkMoveTreeJson(engine.move_tree),
         },
@@ -264,7 +263,7 @@ export function chooseFresherCurrentGameBaseSnapshot(
         return next;
     }
 
-    if (previous.gameId !== next.gameId) {
+    if (previous.board !== next.board) {
         return next;
     }
 

@@ -28,6 +28,7 @@ import {
     createCurrentGameMiniGobanSnapshotOverrides,
 } from "./kibitzCurrentGameBaseSnapshot";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
+import type { KibitzBoardKey } from "./kibitzBoardRef";
 
 function makeGame(gameId: number, moveNumber: number): KibitzWatchedGame {
     return {
@@ -141,11 +142,11 @@ function makeController(moveTree: TestMoveTree, gameId = 4321): GobanController 
 describe("chooseFresherCurrentGameBaseSnapshot", () => {
     it("keeps the fresher same-game snapshot", () => {
         const previous = {
-            gameId: 10,
+            board: "game:10" as KibitzBoardKey,
             trunkTailMoveNumber: 2,
         } as Parameters<typeof chooseFresherCurrentGameBaseSnapshot>[0];
         const next = {
-            gameId: 10,
+            board: "game:10" as KibitzBoardKey,
             trunkTailMoveNumber: 0,
         } as Parameters<typeof chooseFresherCurrentGameBaseSnapshot>[1];
 
@@ -154,11 +155,11 @@ describe("chooseFresherCurrentGameBaseSnapshot", () => {
 
     it("accepts a newer same-game snapshot", () => {
         const previous = {
-            gameId: 10,
+            board: "game:10" as KibitzBoardKey,
             trunkTailMoveNumber: 2,
         } as Parameters<typeof chooseFresherCurrentGameBaseSnapshot>[0];
         const next = {
-            gameId: 10,
+            board: "game:10" as KibitzBoardKey,
             trunkTailMoveNumber: 3,
         } as Parameters<typeof chooseFresherCurrentGameBaseSnapshot>[1];
 
@@ -167,11 +168,11 @@ describe("chooseFresherCurrentGameBaseSnapshot", () => {
 
     it("accepts snapshots for a different game", () => {
         const previous = {
-            gameId: 10,
+            board: "game:10" as KibitzBoardKey,
             trunkTailMoveNumber: 2,
         } as Parameters<typeof chooseFresherCurrentGameBaseSnapshot>[0];
         const next = {
-            gameId: 11,
+            board: "game:11" as KibitzBoardKey,
             trunkTailMoveNumber: 0,
         } as Parameters<typeof chooseFresherCurrentGameBaseSnapshot>[1];
 
@@ -196,7 +197,7 @@ describe("buildCurrentGameBaseSnapshotFromGameDetails", () => {
             gameId: 4321,
         });
 
-        expect(snapshot?.gameId).toBe(4321);
+        expect(snapshot?.board).toBe("game:4321");
         expect(snapshot?.trunkTailMoveNumber).toBe(2);
         expect(snapshot?.config.move_tree).toBeDefined();
         expect(snapshot?.config.move_tree?.trunk_next?.trunk_next).toBeDefined();
@@ -214,7 +215,7 @@ describe("buildCurrentGameBaseSnapshotFromGameDetails", () => {
 
         expect(snapshot).toEqual(
             expect.objectContaining({
-                gameId: 4321,
+                board: "game:4321",
                 trunkTailMoveNumber: 0,
                 config: expect.objectContaining({
                     width: 13,
@@ -278,7 +279,7 @@ describe("captureCurrentGameBaseSnapshotFromController", () => {
             "room-base-broker",
         );
 
-        expect(snapshot?.gameId).toBe(4321);
+        expect(snapshot?.board).toBe("game:4321");
         expect(snapshot?.roomId).toBe("room-1");
         expect(snapshot?.source).toBe("room-base-broker");
         expect(snapshot?.trunkTailMoveNumber).toBe(2);
@@ -345,7 +346,7 @@ describe("createCurrentGameMiniGobanSnapshotOverrides", () => {
             const players = { black, white };
             const player_pool = { 1: black, 2: white };
             const snapshot = {
-                gameId: 123,
+                board: "game:123",
                 config: poolFirst ? { player_pool, players } : { players, player_pool },
             } as unknown as KibitzCurrentGameBaseSnapshot;
 
@@ -362,7 +363,7 @@ describe("createCurrentGameMiniGobanSnapshotOverrides", () => {
         const metadata: Record<string, unknown> = { name: "preview" };
         metadata.parent = metadata;
         const snapshot = {
-            gameId: 123,
+            board: "game:123",
             config: { metadata },
         } as unknown as KibitzCurrentGameBaseSnapshot;
 
@@ -380,7 +381,7 @@ describe("createCurrentGameMiniGobanSnapshotOverrides", () => {
 
     it("clones the matching snapshot and suppresses only its internal game id", () => {
         const snapshot = {
-            gameId: 123,
+            board: "game:123",
             roomId: "room-1",
             trunkTailMoveNumber: 2,
             moveTreeId: "tree-1",
@@ -406,7 +407,7 @@ describe("createCurrentGameMiniGobanSnapshotOverrides", () => {
         circularSocket.events = { context: circularSocket };
         const boardDiv = document.createElement("div");
         const snapshot = {
-            gameId: 123,
+            board: "game:123",
             config: {
                 game_id: 123,
                 board_div: boardDiv,
@@ -437,7 +438,7 @@ describe("createCurrentGameMiniGobanSnapshotOverrides", () => {
 
     it("does not create an override for a different game", () => {
         const snapshot = {
-            gameId: 123,
+            board: "game:123",
             config: {},
         } as unknown as KibitzCurrentGameBaseSnapshot;
 

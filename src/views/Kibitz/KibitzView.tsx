@@ -51,6 +51,7 @@ import { KibitzMoreActionsRoomActions, openKibitzMoreActions } from "./KibitzMor
 import { KibitzScoreEstimate } from "./KibitzScoreEstimate";
 import { useKibitzScoreEstimation } from "./useKibitzScoreEstimation";
 import { useKibitzHelp } from "./useKibitzHelp";
+import { boardKey, gobanBoardKey } from "./kibitzBoardRef";
 import "./KibitzView.css";
 import "@/views/Game/Players.css";
 
@@ -189,7 +190,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         }
     }, [gobans.center]);
     const coordinateGoban =
-        scoreSource?.goban.game_id === room.current_game?.game_id
+        gobanBoardKey(scoreSource?.goban) === boardKey(room.current_game)
             ? (gobans.center?.goban ?? null)
             : null;
     const gobanViewRef = React.useRef<GobanViewRef>(null);
@@ -465,7 +466,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         }
     }, [gobans.center, onExitVariation, stopEstimate]);
 
-    if (!gobans.center && room.current_game?.game_id) {
+    if (!gobans.center && boardKey(room.current_game)) {
         // The live controller is created after the first commit. Render
         // nothing for that one commit, so the chat and panels mount once.
         return null;
@@ -504,10 +505,10 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const selectedVariation = panelVariationId
         ? (props.leftAside.variations.find((v) => v.id === panelVariationId) ?? null)
         : null;
-    const chipGameId = selectedVariation?.game_id ?? null;
+    const chipBoard = boardKey(selectedVariation);
     const chipOtherGame =
-        chipGameId != null && chipGameId !== room.current_game?.game_id
-            ? (props.leftAside.variationGameById.get(chipGameId) ?? null)
+        chipBoard != null && chipBoard !== boardKey(room.current_game)
+            ? (props.leftAside.variationGameById.get(chipBoard) ?? null)
             : null;
     const variationPanel =
         viewingOther && gobans.secondary ? (
