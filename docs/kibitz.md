@@ -82,6 +82,18 @@ the same two components for the logs that keep their separators inline. A log
 does not open with today's date — only with an older one. A posted variation
 is laid out the same way, so its link lines up with the chat around it.
 
+Kibitz chat puts a link to the game above the first comment in each group
+about a previous game. The group uses the watched game ID saved with each
+comment, even if its move number is missing. System notices, proposals and
+variation posts do not start or split groups. Older comments without a saved
+game ID keep their place in the log and break the group. A later comment with
+the same historical game ID starts a new group. When comments return directly
+to the current game after a historical group, a plain “Current game” divider
+marks the start of the current game comments.
+Historical game links use the same title and player labels as game-switch
+notices, including the Hide ranks preference. The link shows the title alone
+if the player names are missing, or the game number if no title is available.
+
 The left aside has two collapsible sections, Rooms and Variations, laid out
 like the chat page's channel list, each with a quiet "+ Room" / "+ Variation"
 row at the bottom (Variations also has "Clear all"). The room list shows
