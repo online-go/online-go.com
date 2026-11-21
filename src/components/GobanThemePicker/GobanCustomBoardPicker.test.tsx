@@ -49,7 +49,10 @@ describe("GobanCustomBoardPicker", () => {
     beforeEach(() => {
         act_environment = g.IS_REACT_ACT_ENVIRONMENT;
         data.set("user", { anonymous: true, id: 0 } as rest_api.UserConfig);
-        jest.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(() => fakeContext);
+        const canvas = HTMLCanvasElement.prototype as {
+            getContext(type: "2d"): CanvasRenderingContext2D | null;
+        };
+        jest.spyOn(canvas, "getContext").mockImplementation(() => fakeContext);
     });
     afterEach(() => {
         g.IS_REACT_ACT_ENVIRONMENT = act_environment;

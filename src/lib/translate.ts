@@ -546,6 +546,8 @@ export function setCurrentLanguage(language_code: string) {
         "Synchronization error, reloading": _("Synchronization error, reloading"),
         "Stone Removal": _("Stone Removal"),
         "Stone Removal Phase": _("Stone Removal Phase"),
+        "Camera mode": pgettext("3D board camera controls", "Camera mode"),
+        Done: pgettext("Exit 3D board camera mode", "Done"),
         "Enter the label you want to add to the board": _(
             "Enter the label you want to add to the board",
         ),

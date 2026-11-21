@@ -118,6 +118,12 @@ export function labelConfig(enabled: boolean = true): LabelConfig {
     };
 }
 
+function createBoardHost(): HTMLDivElement {
+    const host = document.createElement("div");
+    host.style.position = "relative";
+    return host;
+}
+
 function baseConfig(game: KibitzWatchedGame | null | undefined): GobanRendererConfig {
     const { width, height } = parseKibitzBoardDimensions(game);
     return {
@@ -280,7 +286,8 @@ export function useKibitzGobans({
         const currentUserId = () => data.get("user")?.id;
         const controller: GobanController = new GobanController({
             ...baseConfig(latest.current.currentGame),
-            board_div: document.createElement("div"),
+            board_div: createBoardHost(),
+            allow_3d: true,
             interactive: true,
             mode: "analyze",
             connect_to_chat: true,
@@ -448,7 +455,8 @@ export function useKibitzGobans({
             ...(useMainTrunk
                 ? { phase: "play" as const, removed: undefined, score: undefined }
                 : {}),
-            board_div: document.createElement("div"),
+            board_div: createBoardHost(),
+            allow_3d: true,
             interactive: true,
             connect_to_chat: false,
             // A copied trunk must not connect: clear any id the snapshot

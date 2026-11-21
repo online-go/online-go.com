@@ -28,6 +28,7 @@ import { openReport } from "@/components/Report";
 import { openGameInfoModal } from "@/views/Game/GameInfoModal";
 import { openGameLinkModal } from "@/views/Game/GameLinkModal";
 import { GameSettingsPanel } from "@/views/Game/GameSettingsPanel";
+import { GobanControllerContext } from "@/components/GobanView";
 import "@/views/Game/GameSidebarPanels.css";
 import "./KibitzMoreActionsPopover.css";
 
@@ -114,12 +115,14 @@ export function KibitzMoreActionsPopover({
     if (settings_open) {
         return (
             <div className="GamePopover GameSettingsPopover KibitzBoardSettingsPopover">
-                <GameSettingsPanel
-                    kibitz
-                    compact={compact}
-                    onClose={onClose}
-                    onShowThemeSettings={onShowThemeSettings}
-                />
+                <GobanControllerContext.Provider value={controller}>
+                    <GameSettingsPanel
+                        kibitz
+                        compact={compact}
+                        onClose={onClose}
+                        onShowThemeSettings={onShowThemeSettings}
+                    />
+                </GobanControllerContext.Provider>
             </div>
         );
     }

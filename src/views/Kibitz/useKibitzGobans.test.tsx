@@ -321,7 +321,9 @@ describe("useKibitzGobans", () => {
                 onResult={() => undefined}
             />,
         );
+        expect(instances[0].config).toMatchObject({ allow_3d: true });
         expect(instances[1].config).toMatchObject({
+            allow_3d: true,
             interactive: true,
             game_id: undefined,
             phase: "play",

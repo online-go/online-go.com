@@ -23,6 +23,10 @@ import {
     GobanRenderer,
     MoveTree,
     createGoban,
+    enableThreeGoban,
+    SVGRenderer,
+    type ThreeRenderer,
+    type ThreeRendererOptions,
     decodeMoves,
     encodeMove,
     JGOFClock,
@@ -320,9 +324,28 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     private _stashed_submit_move?: () => void;
     private readonly unregisterMoveTreeBoard: () => void;
 
-    constructor(opts: GobanRendererConfig & { enable_sounds?: boolean }) {
+    /** Per-page 3D settings layered over the user's 3D preferences. */
+    private three_overrides: ThreeRendererOptions = {};
+    private three_renderer?: ThreeRenderer;
+
+    constructor(
+        opts: GobanRendererConfig & {
+            enable_sounds?: boolean;
+            allow_3d?: boolean;
+            /** Fixed 3D settings for this board, e.g. `{ room: false }`. */
+            three?: ThreeRendererOptions;
+        },
+    ) {
         super();
-        this.goban = createGoban(opts);
+        this.three_overrides = { ...opts.three };
+        const wants_3d = opts.allow_3d && opts.board_div && preferences.get("board-renderer-3d");
+        this.goban =
+            wants_3d && !("native_transport" in opts && opts.native_transport)
+                ? new SVGRenderer(opts)
+                : createGoban(opts);
+        if (opts.allow_3d && opts.board_div && this.goban instanceof SVGRenderer) {
+            this.watchThreeRenderer(this.goban);
+        }
         this.unregisterMoveTreeBoard = registerMoveTreeBoard(this.goban);
         this.enable_sounds = opts.enable_sounds !== false; // Default to true if not specified
         if (this.enable_sounds) {
@@ -383,6 +406,78 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
                 console.error(e);
             }
         });
+    }
+
+    private watchThreeRenderer(goban: SVGRenderer): void {
+        let renderer: ThreeRenderer | undefined;
+        let pending = false;
+        const readOptions = (): ThreeRendererOptions => {
+            const tilt = preferences.get("board-renderer-3d-tilt");
+            return {
+                boardStyle: preferences.get("board-renderer-3d-style"),
+                room: preferences.get("board-renderer-3d-room"),
+                mouseOrbit: preferences.get("board-renderer-3d-mouse-orbit"),
+                rotation: preferences.get("board-renderer-3d-rotation"),
+                tilt: tilt === "auto" ? undefined : tilt,
+                lighting: { preset: preferences.get("board-renderer-3d-lighting") },
+                onFallback: (error) => console.error("Unable to use the 3D board", error),
+                ...this.three_overrides,
+            };
+        };
+        const updateOptions = () => renderer?.configure(readOptions());
+        const update = (enabled: boolean) => {
+            if (!enabled) {
+                renderer?.disable();
+                return;
+            }
+            if (renderer) {
+                renderer.enable();
+                return;
+            }
+            if (pending) {
+                return;
+            }
+            pending = true;
+            void enableThreeGoban(goban, readOptions())
+                .then((handle) => {
+                    if (goban.destroyed || !preferences.get("board-renderer-3d")) {
+                        handle.disable();
+                    } else if (handle.active) {
+                        renderer = handle;
+                        this.three_renderer = handle;
+                        updateOptions();
+                    }
+                })
+                .catch((error: unknown) => {
+                    console.error("Unable to enable the 3D board", error);
+                })
+                .finally(() => {
+                    pending = false;
+                });
+        };
+
+        goban.once("destroy", () => {
+            preferences.unwatch("board-renderer-3d", update);
+            preferences.unwatch("board-renderer-3d-style", updateOptions);
+            preferences.unwatch("board-renderer-3d-room", updateOptions);
+            preferences.unwatch("board-renderer-3d-mouse-orbit", updateOptions);
+            preferences.unwatch("board-renderer-3d-rotation", updateOptions);
+            preferences.unwatch("board-renderer-3d-tilt", updateOptions);
+            preferences.unwatch("board-renderer-3d-lighting", updateOptions);
+        });
+        preferences.watch("board-renderer-3d-style", updateOptions);
+        preferences.watch("board-renderer-3d-room", updateOptions);
+        preferences.watch("board-renderer-3d-mouse-orbit", updateOptions);
+        preferences.watch("board-renderer-3d-rotation", updateOptions);
+        preferences.watch("board-renderer-3d-tilt", updateOptions);
+        preferences.watch("board-renderer-3d-lighting", updateOptions);
+        preferences.watch("board-renderer-3d", update);
+    }
+
+    /** Change this board's 3D view, e.g. camera rotation or mirroring. */
+    public setThreeView(view: Pick<ThreeRendererOptions, "rotation" | "mirror">): void {
+        this.three_overrides = { ...this.three_overrides, ...view };
+        this.three_renderer?.configure(this.three_overrides);
     }
 
     public destroy() {

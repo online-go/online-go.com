@@ -15,12 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { MoveTree } from "goban";
+import { enableThreeGoban, SVGRenderer, type MoveTree } from "goban";
 import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
 import { alert } from "@/lib/swal_config";
 import { TEST_USER } from "@/views/Game/test_user";
 import { shared_ip_with_player_map } from "@/views/Game/util";
 import { GobanController, getMoveTreeTrunkTail } from "./GobanController";
+
+jest.mock("goban", () => ({
+    ...jest.requireActual("goban"),
+    enableThreeGoban: jest.fn(),
+}));
 
 function makeMoveNode(move_number: number, trunk_next?: MoveTree): MoveTree {
     return {
@@ -30,6 +36,56 @@ function makeMoveNode(move_number: number, trunk_next?: MoveTree): MoveTree {
 }
 
 describe("GobanController", () => {
+    it("can retry 3D after the renderer rejects", async () => {
+        const enable = jest.mocked(enableThreeGoban);
+        const error = new Error("3D chunk unavailable");
+        const log = jest.spyOn(console, "error").mockImplementation(() => undefined);
+        const previous = preferences.get("board-renderer-3d");
+        const setTheme = SVGRenderer.prototype.setTheme;
+        const theme = jest.spyOn(SVGRenderer.prototype, "setTheme").mockImplementation(function (
+            this: SVGRenderer,
+            themes,
+            dontRedraw,
+        ) {
+            setTheme.call(this, { ...themes, white: "Plain", black: "Plain" }, dontRedraw);
+        });
+        let controller: GobanController | undefined;
+        try {
+            preferences.set("board-renderer-3d", true);
+            enable.mockRejectedValueOnce(error);
+            controller = new GobanController({
+                width: 9,
+                height: 9,
+                board_div: document.createElement("div"),
+                allow_3d: true,
+                enable_sounds: false,
+            });
+            expect(enable).toHaveBeenCalledTimes(1);
+            // Let the rejection and the finally handler finish before changing the preference.
+            await Promise.resolve();
+            await Promise.resolve();
+            await Promise.resolve();
+            expect(log).toHaveBeenCalledWith("Unable to enable the 3D board", error);
+            enable.mockResolvedValueOnce({
+                goban: enable.mock.calls[0][0],
+                active: true,
+                enable: jest.fn(),
+                disable: jest.fn(),
+                configure: jest.fn(),
+            });
+            preferences.set("board-renderer-3d", false);
+            preferences.set("board-renderer-3d", true);
+            expect(enable).toHaveBeenCalledTimes(2);
+            await Promise.resolve();
+        } finally {
+            controller?.goban.destroy();
+            preferences.set("board-renderer-3d", previous);
+            theme.mockRestore();
+            enable.mockReset();
+            log.mockRestore();
+        }
+    });
+
     it("finds the actual trunk tail even when a variation exists", () => {
         const tail = makeMoveNode(7);
         const trunk = makeMoveNode(6, tail);
