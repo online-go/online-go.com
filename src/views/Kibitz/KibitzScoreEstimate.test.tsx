@@ -53,3 +53,18 @@ test("reads an estimate that completed before the controls mounted", () => {
     render(<KibitzScoreEstimate controller={controller} />);
     expect(screen.getByRole("status")).toHaveTextContent("White by 0.0");
 });
+
+test("shows the score bar text without the exit button when not estimating", () => {
+    const goban = Object.assign(new EventEmitter(), {
+        score_estimator: { winner: "White", amount: 4 },
+    });
+    const controller = { goban, stopEstimatingScore: jest.fn() } as unknown as GobanController;
+    const view = render(
+        <KibitzScoreEstimate controller={controller} scoreText="Black by 2.0" estimating={false} />,
+    );
+    expect(screen.getByRole("status")).toHaveTextContent("Black by 2.0");
+    expect(screen.queryByRole("button", { name: "Back to Board" })).toBeNull();
+    view.rerender(<KibitzScoreEstimate controller={controller} scoreText="Black by 2.0" />);
+    expect(screen.getByRole("status")).toHaveTextContent("Black by 2.0");
+    expect(screen.getByRole("button", { name: "Back to Board" })).toBeTruthy();
+});

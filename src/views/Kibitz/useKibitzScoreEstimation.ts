@@ -30,6 +30,23 @@ export function useKibitzScoreEstimation(
             return;
         }
         const sync = () => refresh();
+        let estimatedMove = controller.estimating_score ? controller.goban.engine.cur_move : null;
+        const onEstimating = (estimating: boolean) => {
+            estimatedMove = estimating ? controller.goban.engine.cur_move : null;
+            sync();
+        };
+        const followLiveMove = () => {
+            const engine = controller.goban.engine;
+            if (
+                controller.estimating_score &&
+                !controller.destroyed &&
+                engine.cur_move !== estimatedMove &&
+                engine.cur_move.id === engine.last_official_move.id
+            ) {
+                estimatedMove = engine.cur_move;
+                controller.refreshScoreEstimate();
+            }
+        };
         const redrawEstimate = () => {
             if (controller.estimating_score && !controller.destroyed) {
                 controller.goban.redraw(true);
@@ -47,15 +64,17 @@ export function useKibitzScoreEstimation(
             }
             sync();
         };
-        controller.on("estimating_score", sync);
+        controller.on("estimating_score", onEstimating);
         controller.goban.on("mode", checkMode);
+        controller.goban.on("update", followLiveMove);
         controller.goban.on("score_estimate", redrawEstimate);
         source.goban.on("phase", checkAccess);
         source.goban.on("load", checkAccess);
         sync();
         return () => {
-            controller.off("estimating_score", sync);
+            controller.off("estimating_score", onEstimating);
             controller.goban.off("mode", checkMode);
+            controller.goban.off("update", followLiveMove);
             controller.goban.off("score_estimate", redrawEstimate);
             source.goban.off("phase", checkAccess);
             source.goban.off("load", checkAccess);
