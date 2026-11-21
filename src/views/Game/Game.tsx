@@ -942,7 +942,7 @@ export function Game(): React.ReactElement | null {
         channel: game_id ? `game-${game_id}` : `review-${review_id}`,
         game_id,
         review_id,
-        show_kibitz_rooms: Boolean(game_id),
+        show_kibitz_rooms: Boolean(game_id || review_id),
     };
 
     const moderator_panel = (

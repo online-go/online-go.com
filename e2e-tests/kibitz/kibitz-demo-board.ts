@@ -101,6 +101,12 @@ export const kibitzDemoBoardTest = async ({
     await waitForKibitzReady(watcherPage);
     await waitForKibitzLayoutStable(watcherPage);
 
+    // The demo board's own page now shows that a room is watching it, as a
+    // game's page does: the chat's user-list toggle takes the Kibitz icon.
+    await expect(
+        presenterPage.locator(".chat-input-player-list-toggle .KibitzUsersIcon"),
+    ).toBeVisible({ timeout: 15000 });
+
     // The watcher's board follows the presenter: the stone already placed,
     // then one placed while the watcher is in the room.
     const moveNumber = watcherPage.locator(".MoveNumberControl");
