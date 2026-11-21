@@ -31,7 +31,12 @@ off and it drops on its own when the chat panel is narrower than 22rem.
 The room chat shows only the latest game-switch warning for the active
 pending game. Once the switch completes or is cancelled, that warning is
 hidden, including when replaying chat history. Completed-switch messages
-and other system messages remain visible; stored chat history is unchanged.
+and other system messages remain visible. When game details are available,
+links to watched games show both players and their ranks. The Hide ranks
+preference hides the ranks. A distinct game title appears before the players.
+Chat displays the saved text if game details are unavailable. The room requests
+details for recent game notices in the background and uses cached details for
+older notices.
 
 Portrait: GobanView's `portraitSplit` layout — a board stage, a drag handle,
 and one panel area below it. `KibitzLeftAside` is landscape only. Six panes

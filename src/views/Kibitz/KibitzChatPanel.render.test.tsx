@@ -17,13 +17,24 @@
 
 import * as React from "react";
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import type { ChatMessage } from "@/lib/chat_manager";
-import type { KibitzRoomSummary, KibitzStreamItem, KibitzVariationSummary } from "@/models/kibitz";
+import { MemoryRouter } from "react-router-dom";
+import type { ChatMessage, ChatSystemLink } from "@/lib/chat_manager";
+import { system_line_markup } from "@/components/Chat/system_line_markup";
+import type {
+    KibitzRoomSummary,
+    KibitzStreamItem,
+    KibitzVariationSummary,
+    KibitzWatchedGame,
+} from "@/models/kibitz";
 import { KibitzChatPanel } from "./KibitzChatPanel";
 import { sanitizeMessage } from "@/lib/misc";
 
 jest.mock("@/lib/misc", () => ({
     sanitizeMessage: jest.fn((text: string) => text.trim()),
+}));
+
+jest.mock("@/lib/profanity_filter", () => ({
+    profanity_filter: (text: string) => text,
 }));
 
 let observedWidth = 600;
@@ -61,17 +72,31 @@ jest.mock("@/components/Chat", () => ({
         line,
         lastLine,
         goban,
+        systemLinkLabel,
     }: {
         line: ChatMessage;
         lastLine?: ChatMessage;
         goban?: { game_id: number } | null;
+        systemLinkLabel?: (link: ChatSystemLink) => string | undefined;
     }) => (
         <div
             data-testid="chat-line"
             data-last-line-t={lastLine ? String(lastLine.message.t) : ""}
             data-board={goban?.game_id ?? ""}
         >
-            {typeof line.message.m === "string" ? line.message.m : line.message.m.type}
+            {typeof line.message.m === "string" ? (
+                line.message.m
+            ) : line.message.m.type === "system" ? (
+                <MemoryRouter>
+                    {system_line_markup(
+                        line.message.m.text ?? "",
+                        line.message.m.links,
+                        systemLinkLabel,
+                    )}
+                </MemoryRouter>
+            ) : (
+                line.message.m.type
+            )}
         </div>
     ),
 }));
@@ -131,13 +156,21 @@ jest.mock("@/lib/hooks", () => ({
     useUser: () => mockChatUser,
 }));
 
+let mockHideRanks = false;
+jest.mock("@/lib/preferences", () => ({
+    usePreference: () => [mockHideRanks, jest.fn()],
+}));
+
 jest.mock("@/lib/translate", () => ({
     __esModule: true,
-    interpolate: (template: string, values: Record<string, string | number>) =>
-        Object.entries(values).reduce(
-            (result, [key, value]) => result.replace(`{{${key}}}`, String(value)),
-            template,
-        ),
+    _: (text: string) => text,
+    interpolate: (template: string, values: Record<string, string | number> | number[]) =>
+        Array.isArray(values)
+            ? template.replace(/%s/g, () => String(values.shift()))
+            : Object.entries(values).reduce(
+                  (result, [key, value]) => result.replace(`{{${key}}}`, String(value)),
+                  template,
+              ),
     moment: (value: Date | number) => ({
         format: (pattern: string) => {
             const date = typeof value === "number" ? new Date(value) : value;
@@ -244,6 +277,131 @@ function baseProps() {
         showPeople: false,
     };
 }
+
+describe("KibitzChatPanel watched games", () => {
+    const game: KibitzWatchedGame = {
+        game_id: 42,
+        board_size: "19x19",
+        title: "Summer Cup Final",
+        black: { id: 10, username: "Alice", ranking: 32, professional: false, ui_class: "" },
+        white: { id: 20, username: "Bob", ranking: 31, professional: false, ui_class: "" },
+    };
+    const item: KibitzStreamItem = {
+        id: "watched-game",
+        room_id: "room-1",
+        type: "system",
+        created_at: Date.UTC(2026, 4, 18, 12, 34, 0),
+        text: "Alice changed the watched game to Summer Cup Final. See the bracket",
+        links: [
+            { text: "Summer Cup Final", href: "/game/view/42?tab=analysis" },
+            { text: "the bracket", href: "/tournament/12" },
+        ],
+    };
+
+    test("updates the saved title in place when history metadata arrives", () => {
+        const props = { ...baseProps(), items: [item], mode: "room" as const };
+        const { container, rerender } = render(
+            <KibitzChatPanel {...props} getHistoryGame={() => undefined} />,
+        );
+        expect(screen.getByRole("link", { name: game.title })).toHaveAttribute(
+            "href",
+            "/game/view/42?tab=analysis",
+        );
+
+        const log = container.querySelector<HTMLDivElement>(".chat-lines")!;
+        Object.defineProperty(log, "scrollHeight", { value: 1000 });
+        rerender(
+            <KibitzChatPanel {...props} getHistoryGame={(id) => (id === 42 ? game : undefined)} />,
+        );
+
+        expect(
+            screen.getByRole("link", { name: "Summer Cup Final: Alice [3d] vs Bob [2d]" }),
+        ).toHaveAttribute("href", "/game/view/42?tab=analysis");
+        expect(screen.getByRole("link", { name: "the bracket" })).toHaveAttribute(
+            "href",
+            "/tournament/12",
+        );
+        expect(screen.getByTestId("chat-line")).toHaveTextContent(
+            "Alice changed the watched game to Summer Cup Final: Alice [3d] vs Bob [2d]. See the bracket",
+        );
+        expect(log.scrollTop).toBe(1000);
+        expect(item.links?.[0].text).toBe("Summer Cup Final");
+    });
+
+    test("keeps the title and names when ranks are hidden", () => {
+        mockHideRanks = true;
+        try {
+            render(
+                <KibitzChatPanel
+                    {...baseProps()}
+                    items={[item]}
+                    mode="room"
+                    getHistoryGame={() => game}
+                />,
+            );
+            expect(
+                screen.getByRole("link", { name: "Summer Cup Final: Alice vs Bob" }),
+            ).toBeInTheDocument();
+        } finally {
+            mockHideRanks = false;
+        }
+    });
+
+    test("uses the structured game id on a linkless completion notice", () => {
+        const completed = {
+            ...item,
+            text: "The watched game changed to Friendly Match",
+            game_id: 42,
+            links: undefined,
+        };
+        render(
+            <KibitzChatPanel
+                {...baseProps()}
+                items={[completed]}
+                mode="room"
+                getHistoryGame={() => game}
+            />,
+        );
+        expect(screen.getByRole("link", { name: "Alice [3d] vs Bob [2d]" })).toHaveAttribute(
+            "href",
+            "/game/42",
+        );
+    });
+
+    test.each([
+        ["review", { ...item, links: [{ text: game.title, href: "/review/42" }] }],
+        [
+            "unrelated game link",
+            {
+                ...item,
+                text: "Report this game",
+                links: [{ text: "Report this game", href: "/game/42" }],
+            },
+        ],
+        [
+            "plain chat",
+            {
+                ...item,
+                links: undefined,
+                author: game.black,
+                type: "chat" as const,
+                text: "The watched game changed to Summer Cup Final",
+                game_id: 42,
+            },
+        ],
+    ])("keeps %s labels as saved", (_description, message) => {
+        render(
+            <KibitzChatPanel
+                {...baseProps()}
+                items={[message]}
+                mode="room"
+                getHistoryGame={() => game}
+            />,
+        );
+        expect(screen.getByTestId("chat-line")).toHaveTextContent(message.text);
+        expect(screen.queryByText(/Alice \[3d\]/)).not.toBeInTheDocument();
+    });
+});
 
 describe("KibitzChatPanel variation posts", () => {
     test("styles room system messages separately from proposal results and conversation", () => {
