@@ -1,0 +1,32 @@
+#!/bin/sh
+# Restarts the local dev stack's web container (ogs_ui_1) after git has
+# replaced the files of the checkout it serves.
+#
+# The container's type checker runs TypeScript in watch mode on files shared
+# from the host. Docker Desktop drops some of the file events that a branch
+# switch produces, so the checker goes on checking deleted files and old copies
+# of changed ones, and shows errors that are not in the code, until it
+# restarts. See docs/dev-stack-file-watching.md.
+#
+# Acts only when the checkout reaches the container through Docker Desktop for
+# Mac's file sharing, the one setup where the problem is confirmed. Native
+# Docker on Linux shares the host's filesystem directly and does not need it.
+# Does nothing when docker is not installed, when the container is not running,
+# when it serves another checkout (a worktree, for example), or on the e2e
+# server, whose test runner switches branches while it owns the stack.
+
+container=ogs_ui_1
+
+test "$(hostname)" = "e2eserver" && exit 0
+command -v docker >/dev/null 2>&1 || exit 0
+
+mounted=$(docker inspect -f '{{if .State.Running}}{{range .Mounts}}{{if eq .Destination "/ogs-ui"}}{{.Source}}{{end}}{{end}}{{end}}' "$container" 2>/dev/null) || exit 0
+# Docker Desktop for Mac reports the shared host path under /host_mnt.
+case "$mounted" in
+    /host_mnt/*) ;;
+    *) exit 0 ;;
+esac
+test "${mounted#/host_mnt}" = "$(git rev-parse --show-toplevel)" || exit 0
+
+echo "Restarting $container so its type checker sees the new files."
+docker restart "$container" </dev/null >/dev/null 2>&1 &
