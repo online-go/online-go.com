@@ -31,7 +31,12 @@ off and it drops on its own when the chat panel is narrower than 22rem.
 The room chat shows only the latest game-switch warning for the active
 pending game. Once the switch completes or is cancelled, that warning is
 hidden, including when replaying chat history. Completed-switch messages
-and other system messages remain visible; stored chat history is unchanged.
+and other system messages remain visible. When game details are available,
+links to watched games show both players and their ranks. The Hide ranks
+preference hides the ranks. A distinct game title appears before the players.
+Chat displays the saved text if game details are unavailable. The room requests
+details for recent game notices in the background and uses cached details for
+older notices.
 
 Portrait: GobanView's `portraitSplit` layout — a board stage, a drag handle,
 and one panel area below it. `KibitzLeftAside` is landscape only. Six panes
@@ -76,6 +81,18 @@ stays level with the name beside it. `ChatDateLine` and `GameChatMoveNumber`
 the same two components for the logs that keep their separators inline. A log
 does not open with today's date — only with an older one. A posted variation
 is laid out the same way, so its link lines up with the chat around it.
+
+Kibitz chat puts a link to the game above the first comment in each group
+about a previous game. The group uses the watched game ID saved with each
+comment, even if its move number is missing. System notices, proposals and
+variation posts do not start or split groups. Older comments without a saved
+game ID keep their place in the log and break the group. A later comment with
+the same historical game ID starts a new group. When comments return directly
+to the current game after a historical group, a plain “Current game” divider
+marks the start of the current game comments.
+Historical game links use the same title and player labels as game-switch
+notices, including the Hide ranks preference. The link shows the title alone
+if the player names are missing, or the game number if no title is available.
 
 The left aside has two collapsible sections, Rooms and Variations, laid out
 like the chat page's channel list, each with a quiet "+ Room" / "+ Variation"
