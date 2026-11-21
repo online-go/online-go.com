@@ -64,3 +64,14 @@ export function boardChatLabel(onReview: boolean): string {
           )
         : pgettext("Kibitz chat tab for the watched game's chat", "Game chat");
 }
+
+/** True when `userId` is the presenter of the review on `goban`: its current
+ *  controller, who may have been handed control by the owner. */
+export function isReviewPresenter(
+    goban: Pick<GobanController["goban"], "review_id" | "review_controller_id"> | null | undefined,
+    userId: number | null | undefined,
+): boolean {
+    return Boolean(
+        goban?.review_id && userId && userId > 0 && goban.review_controller_id === userId,
+    );
+}

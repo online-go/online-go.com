@@ -18,6 +18,7 @@
 import * as React from "react";
 import type { GobanRendererConfig, LabelPosition, MoveTree } from "goban";
 import { GobanController, getMoveTreeTrunkTail } from "@/lib/GobanController";
+import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
 import { toast } from "@/lib/toast";
 import { pgettext } from "@/lib/translate";
@@ -38,7 +39,7 @@ import {
     type AppliedKibitzVariation,
 } from "./kibitzVariationTree";
 import { boardIdsFromKey, boardKey, sameBoard, type KibitzBoardKey } from "./kibitzBoardRef";
-import { reviewPresenterNode } from "./kibitzReviewBoard";
+import { isReviewPresenter, reviewPresenterNode } from "./kibitzReviewBoard";
 
 export type KibitzCenterMode = "main" | "draft" | "variation";
 
@@ -275,13 +276,25 @@ export function useKibitzGobans({
             setMain(null);
             return;
         }
-        const controller = new GobanController({
+        const boardIds = boardIdsFromKey(mainBoard);
+        const currentUserId = () => data.get("user")?.id;
+        const controller: GobanController = new GobanController({
             ...baseConfig(latest.current.currentGame),
             board_div: document.createElement("div"),
             interactive: true,
             mode: "analyze",
             connect_to_chat: true,
-            ...boardIdsFromKey(mainBoard),
+            ...boardIds,
+            // As on the review page: the review's controller presents from
+            // this board, and its moves and navigation go to the review.
+            // Everyone else's board follows.
+            ...(boardIds.review_id
+                ? {
+                      isPlayerOwner: () => controller.goban.review_owner_id === currentUserId(),
+                      isPlayerController: () =>
+                          isReviewPresenter(controller.goban, currentUserId()),
+                  }
+                : {}),
         });
         // A snapshot clones the whole trunk, so only take one when the trunk
         // has actually moved on since the last one that was accepted. On a

@@ -61,6 +61,19 @@
         white-space: nowrap;
     }
 
+    /* A demo board's presenter: their stones on the main board go to the
+       review rather than into a draft. */
+    .Kibitz-header-presenting {
+        flex: 0 0 auto;
+        padding: 0 0.4rem;
+        border: 1px solid var(--primary);
+        border-radius: 0.6rem;
+        color: var(--primary);
+        font-size: 0.7rem;
+        font-weight: bold;
+        white-space: nowrap;
+    }
+
     .Kibitz-header-result {
         flex: 0 0 auto;
         margin-left: auto;

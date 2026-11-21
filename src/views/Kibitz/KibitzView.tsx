@@ -53,6 +53,7 @@ import { useKibitzScoreEstimation } from "./useKibitzScoreEstimation";
 import { useKibitzHelp } from "./useKibitzHelp";
 import { boardKey, gobanBoardKey, isReviewBoard } from "./kibitzBoardRef";
 import { boardChatLabel, reviewPresenterNode } from "./kibitzReviewBoard";
+import { useKibitzReviewPresenter } from "./useKibitzReviewPresenter";
 import "./KibitzView.css";
 import "@/views/Game/Players.css";
 
@@ -208,6 +209,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const [themeSettingsOpen, setThemeSettingsOpen] = React.useState(false);
     const settingsPopoverRef = React.useRef<PopOver | null>(null);
     const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
+    const isPresenter = useKibitzReviewPresenter(gobans.main?.goban ?? null);
     const behindLive = useBehindLive(
         gobans.centerMode === "main" ? (gobans.main?.goban ?? null) : null,
     );
@@ -610,6 +612,20 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                             >
                                 {room.title}
                             </span>
+                            {isPresenter ? (
+                                <span
+                                    className="Kibitz-header-presenting"
+                                    title={pgettext(
+                                        "Tooltip on the badge a demo board's presenter sees in a Kibitz room",
+                                        "Stones you place on this board go to the demo board, for everyone in the room.",
+                                    )}
+                                >
+                                    {pgettext(
+                                        "Badge a demo board's presenter sees beside the Kibitz room title",
+                                        "Presenting",
+                                    )}
+                                </span>
+                            ) : null}
                             {resultLine ? (
                                 <span className="Kibitz-header-result">{resultLine}</span>
                             ) : null}

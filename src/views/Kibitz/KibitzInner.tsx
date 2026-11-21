@@ -70,6 +70,7 @@ import {
 } from "./kibitzCurrentGameBaseSnapshot";
 import { openKibitzChatMove } from "./kibitzChatMove";
 import { returnToReviewPresenter } from "./kibitzReviewBoard";
+import { useKibitzReviewPresenter } from "./useKibitzReviewPresenter";
 import { boardIdsFromKey, boardKey, gobanBoardKey, type KibitzBoardKey } from "./kibitzBoardRef";
 import "./KibitzInner.css";
 
@@ -986,6 +987,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     // The snapshot getter changes with every live move. Read it through a ref
     // so the main board is not re-enabled per move, which would reset its
     // mode and end a running score estimate.
+    const isPresenter = useKibitzReviewPresenter(gobans.main?.goban ?? null);
     const mainBoardPlacementDepsRef = React.useRef({
         getCurrentGameBaseSnapshotForVariation,
         showCurrentGameBaseNotReadyToast,
@@ -1004,6 +1006,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             board.disableStonePlacement();
             return;
         }
+        // The presenter's stones are the review's moves, sent by the board
+        // itself. Theirs is the one main board where a stone is not a draft.
+        if (isPresenter) {
+            return observeKibitzMainBoardPlacement(board, () => false);
+        }
         return observeKibitzMainBoardPlacement(board, (path) => {
             const { getCurrentGameBaseSnapshotForVariation, showCurrentGameBaseNotReadyToast } =
                 mainBoardPlacementDepsRef.current;
@@ -1020,7 +1027,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 moveTreeIdAsNumber(snapshot.moveTreeId),
             );
         });
-    }, [centerMode, gobans.main, controller]);
+    }, [centerMode, gobans.main, controller, isPresenter]);
 
     const onCreateVariationFromPostedVariation = React.useCallback(
         (variation: KibitzVariationSummary, fromPath?: string) => {

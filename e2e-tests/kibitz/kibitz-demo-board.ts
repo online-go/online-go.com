@@ -30,8 +30,9 @@ import { waitForKibitzLayoutStable, waitForKibitzReady } from "./kibitz-helpers"
 
 /*
  * A Kibitz room on a demo board: a presenter places stones on their demo
- * board, a watcher creates a room on it from the board's URL, sees the
- * presenter's stones arrive, and shares a variation of the position.
+ * board, a watcher creates a room on it from the board's URL and sees the
+ * presenter's stones arrive, the presenter goes on presenting from the room's
+ * own board, and the watcher shares a variation of the position.
  */
 export const kibitzDemoBoardTest = async ({
     createContext,
@@ -110,6 +111,27 @@ export const kibitzDemoBoardTest = async ({
     await clickOnGobanIntersection(presenterPage, "G5", "9x9", presenterGoban);
     await expect(moveNumber).toHaveText(/Move 2\b/, { timeout: 15000 });
 
+    // The presenter joins the room. Their stone on its main board is a move
+    // of the demo board, not a draft of their own.
+    const roomUrl = new URL(watcherPage.url()).pathname;
+    await presenterPage.setViewportSize({ width: 1920, height: 1080 });
+    await load(presenterPage, roomUrl);
+    await waitForKibitzReady(presenterPage);
+    await waitForKibitzLayoutStable(presenterPage);
+    await expect(presenterPage.locator(".Kibitz-header-presenting")).toBeVisible({
+        timeout: 15000,
+    });
+    await expect(presenterPage.locator(".MoveNumberControl")).toHaveText(/Move 2\b/, {
+        timeout: 15000,
+    });
+    const presenterRoomGoban = presenterPage.locator(".GobanView-center [data-pointers-bound]");
+    await expect(presenterRoomGoban).toBeVisible({ timeout: 15000 });
+    console.log("[kibitz demo] presenter placing E7 from the room");
+    await clickOnGobanIntersection(presenterPage, "E7", "9x9", presenterRoomGoban);
+    await expect(moveNumber).toHaveText(/Move 3\b/, { timeout: 15000 });
+    await expect(presenterPage.locator(".KibitzVariationPanel.draft")).toBeHidden();
+    await expect(watcherPage.locator(".Kibitz-header-presenting")).toBeHidden();
+
     // A variation of the presenter's position, posted to the room.
     const variationList = watcherPage.locator(".KibitzVariationList");
     const newVariationButton = variationList.getByRole("button", {
@@ -121,12 +143,12 @@ export const kibitzDemoBoardTest = async ({
         await newVariationButton.click();
         await expect(draftPanel).toBeVisible({ timeout: 1000 });
     }).toPass({ timeout: 20000, intervals: [500, 1000, 2000] });
-    await expect(moveNumber).toHaveText(/Move 2\b/, { timeout: 15000 });
+    await expect(moveNumber).toHaveText(/Move 3\b/, { timeout: 15000 });
 
     const draftGoban = watcherPage.locator(".GobanView-center [data-pointers-bound]");
     await expect(draftGoban).toBeVisible({ timeout: 15000 });
     await clickOnGobanIntersection(watcherPage, "C3", "9x9", draftGoban);
-    await expect(moveNumber).toHaveText(/Move 3\b/, { timeout: 15000 });
+    await expect(moveNumber).toHaveText(/Move 4\b/, { timeout: 15000 });
 
     const postVariationButton = await expectOGSClickableByName(watcherPage, /^Post variation$/);
     await expect(postVariationButton).toBeEnabled();
@@ -136,7 +158,7 @@ export const kibitzDemoBoardTest = async ({
     await expect(watcherPage.locator(".KibitzVariationPanel.variation")).toBeVisible({
         timeout: 15000,
     });
-    // The two presenter stones and the variation's own: the variation sits on
-    // the presenter's position, not on an empty board.
-    await expect(moveNumber).toHaveText(/Move 3\b/, { timeout: 15000 });
+    // The three presenter stones and the variation's own: the variation sits
+    // on the presenter's position, not on an empty board.
+    await expect(moveNumber).toHaveText(/Move 4\b/, { timeout: 15000 });
 };
