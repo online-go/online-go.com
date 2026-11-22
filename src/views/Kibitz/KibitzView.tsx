@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C)  Online-Go.com
  *
@@ -176,11 +177,14 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const { room, gobans, isPortrait } = props;
     const help = useKibitzHelp(gobans.centerMode === "variation");
     const thinHeader = useKibitzThinHeader();
+
     React.useEffect(() => {
         document.documentElement.classList.toggle("kibitz-thin-header", thinHeader);
         return () => document.documentElement.classList.remove("kibitz-thin-header");
     }, [thinHeader]);
+
     const [scrollToNavigate] = usePreference("scroll-to-navigate");
+
     const onWheel: React.WheelEventHandler<HTMLDivElement> = React.useCallback(
         (event) => {
             if (!scrollToNavigate) {
@@ -194,27 +198,33 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         },
         [scrollToNavigate, gobans.center],
     );
+
     const scoreSource = gobans.playerBars ?? gobans.center;
     const scoreEstimation = useKibitzScoreEstimation(gobans.center, scoreSource, room.channel);
+
     const stopEstimate = React.useCallback(() => {
         if (gobans.center?.estimating_score) {
             gobans.center.stopEstimatingScore();
         }
     }, [gobans.center]);
+
     const coordinateGoban =
         gobanBoardKey(scoreSource?.goban) === boardKey(room.current_game)
             ? (gobans.center?.goban ?? null)
             : null;
+
     const gobanViewRef = React.useRef<GobanViewRef>(null);
     const [themeSettingsOpen, setThemeSettingsOpen] = React.useState(false);
     const settingsPopoverRef = React.useRef<PopOver | null>(null);
     const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
     const isPresenter = useKibitzReviewPresenter(gobans.main?.goban ?? null);
+
     const behindLive = useBehindLive(
         gobans.centerMode === "main" ? (gobans.main?.goban ?? null) : null,
     );
 
     const { onExitVariation, onRoomsOpened, roomSettings } = props;
+
     const onCreateVariation = React.useCallback(() => {
         stopEstimate();
         if (gobans.centerMode === "variation" && props.onBranchFromVariation) {
@@ -229,6 +239,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         props.leftAside.onCreateVariation,
         stopEstimate,
     ]);
+
     const onBranchFromVariation = React.useCallback(() => {
         stopEstimate();
         props.onBranchFromVariation?.();
@@ -241,19 +252,23 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const [leftAsideCollapsed, setLeftAsideCollapsed] = React.useState(
         () => data.get("kibitz.left_aside.hidden", false) === true,
     );
+
     const toggleLeftAside = () => {
         const next = !leftAsideCollapsed;
         data.set("kibitz.left_aside.hidden", next);
         setLeftAsideCollapsed(next);
     };
+
     // Posting ends the composing session, and the post itself lands in the
     // Kibitz chat, so that is where the reader is sent. The flag carries that
     // through the render where the posted variation arrives as a controller
     // of its own, which would otherwise pull the analysis pane forward again.
     const chatAfterPost = React.useRef(false);
+
     // What was on screen before the pane that is on it now, so a list that
     // opens over the reader's reading can put it back.
     const paneBefore = React.useRef<KibitzPortraitPane | null>(null);
+
     const selectPane = React.useCallback((next: KibitzPortraitPane) => {
         setPane((current) => {
             if (current !== next) {
@@ -278,6 +293,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const paneBeforeAnalysis = React.useRef<KibitzPortraitPane | null>(null);
     const centerShowsVariation = gobans.centerMode !== "main";
     const secondaryController = gobans.secondary;
+
     // The pane state stores reader intent. Analysis is a presentation of a
     // non-live centre, so derive it for this render instead of first
     // rendering an invalid pane and repairing it in an effect.
@@ -285,11 +301,14 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         !centerShowsVariation && pane === "analysis"
             ? (paneBeforeAnalysis.current ?? readPortraitPane())
             : pane;
+
     React.useEffect(() => {
         if (!isPortrait) {
             return;
         }
+
         const posted = chatAfterPost.current;
+
         // Posting tears the draft down a render before the posted variation
         // arrives with a controller of its own. The intent has to outlive
         // that gap, so it is spent on the controller that lands, not on the
@@ -298,13 +317,16 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             paneBeforeAnalysis.current = null;
             return;
         }
+
         chatAfterPost.current = false;
+
         if (centerShowsVariation) {
             if (posted) {
                 // The reader is on the chat and left no pane behind.
                 paneBeforeAnalysis.current = null;
                 return;
             }
+
             setPane((current) => {
                 if (current === "analysis") {
                     return current;
@@ -314,6 +336,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             });
             return;
         }
+
         setPane((current) => {
             if (current !== "analysis") {
                 return current;
@@ -325,6 +348,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     }, [isPortrait, centerShowsVariation, secondaryController]);
 
     const propsOnPostVariation = props.onPostVariation;
+
     const onPostVariation = React.useCallback(
         (boardController: GobanController) => {
             stopEstimate();
@@ -344,6 +368,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     // after a post — which goes through neither of these — leaves the reader
     // where the post put them.
     const chatOnOpenVariation = props.chat.onOpenVariation;
+
     const onOpenVariationByReader = React.useCallback(
         (variationId: string, focusVariation?: boolean) => {
             stopEstimate();
@@ -352,7 +377,9 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         },
         [chatOnOpenVariation, stopEstimate],
     );
+
     const asideOnRecallVariation = props.leftAside.onRecallVariation;
+
     const onRecallVariationByReader = React.useCallback(
         (variationId: string) => {
             stopEstimate();
@@ -368,6 +395,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     // draft it opened. Analysis is only worth returning to while the centre
     // still holds something to analyze.
     const centerHoldsVariation = gobans.centerMode !== "main";
+
     const togglePane = React.useCallback(
         (id: KibitzPortraitPane) => {
             if (pane !== id) {
@@ -393,6 +421,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const [showPeople, setShowPeople] = React.useState(() =>
         data.get("kibitz.people_column", true),
     );
+
     const togglePeople = React.useCallback(() => {
         setShowPeople((previous) => {
             const next = !previous;
@@ -498,9 +527,11 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     );
 
     const viewingOther = gobans.centerMode !== "main";
+
     // Player information intentionally follows useKibitzGobans' selection,
     // which can differ from the centre board when analyzing the live game.
     const playerInfoController = gobans.playerBars ?? gobans.center;
+
     // Landscape only: the thumbnail keeps the live game in view beside a
     // variation, and portrait has no width to spare for it — the analysis
     // pane's Back to game button is the way back there.
@@ -509,8 +540,10 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     // the mode has changed but the secondary controller does not exist yet.
     // Mounting one board div in both places breaks the next unmount.
     const miniBoardController = !isPortrait && gobans.center !== gobans.main ? gobans.main : null;
+
     const panelVariationId =
         gobans.centerMode === "variation" ? props.leftAside.selectedVariationId : null;
+
     const panelColorIndex = panelVariationId
         ? (props.leftAside.variationColorIndexes[panelVariationId] ?? null)
         : null;
@@ -518,11 +551,14 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const selectedVariation = panelVariationId
         ? (props.leftAside.variations.find((v) => v.id === panelVariationId) ?? null)
         : null;
+
     const chipBoard = boardKey(selectedVariation);
+
     const chipOtherGame =
         chipBoard != null && chipBoard !== boardKey(room.current_game)
             ? (props.leftAside.variationGameById.get(chipBoard) ?? null)
             : null;
+
     const variationPanel =
         viewingOther && gobans.secondary ? (
             <KibitzVariationPanel
@@ -544,6 +580,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const resultEngine = gobans.main?.goban.engine ?? null;
     const outcome =
         resultEngine && resultEngine.phase === "finished" ? (resultEngine.outcome ?? "") : "";
+
     const resultWinner =
         resultEngine && resultEngine.winner != null
             ? resultEngine.players.black.id === Number(resultEngine.winner)
@@ -552,6 +589,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                   ? resultEngine.players.white
                   : null
             : null;
+
     const resultLine = outcome
         ? resultWinner
             ? interpolate(
@@ -648,6 +686,8 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                     estimatingScore={
                         scoreEstimation.estimating && playerInfoController === gobans.center
                     }
+                    blackPlayer={room.current_game?.black}
+                    whitePlayer={room.current_game?.white}
                 />
             }
             belowBoard={
@@ -662,6 +702,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             portraitPanelMinHeightRem={thinHeader ? 6 : undefined}
         >
             {gobans.center && <KibitzKeyboardShortcuts />}
+
             {(viewingOther || scoreEstimation.estimating) && (
                 <KBShortcut shortcut="esc" action={onEscape} />
             )}
@@ -673,11 +714,15 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         scoreEstimation.estimating && playerInfoController === gobans.center
                     }
                 />
+
                 {!isPortrait && scoreEstimation.estimating && gobans.center && (
                     <KibitzScoreEstimate controller={gobans.center} />
                 )}
+
                 <KibitzProposalPanel {...props.proposals} />
+
                 {!isPortrait && variationPanel}
+
                 {isPortrait ? (
                     <KibitzPortraitPanes
                         active={displayedPane}
@@ -792,10 +837,12 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                             }
                             return;
                         }
+
                         if (isPortrait && viewingOther) {
                             selectPane("analysis");
                             return;
                         }
+
                         onCreateVariation();
                     }}
                 />
