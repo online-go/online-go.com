@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C)  Online-Go.com
  *
@@ -13,21 +14,28 @@ import { CompactPlayerHeader } from "@/views/Game/CompactPlayerHeader";
 import type { GobanController } from "@/lib/GobanController";
 import { pgettext } from "@/lib/translate";
 import { KibitzThinPlayer } from "./KibitzThinPlayer";
+import type { KibitzRoomUser } from "@/models/kibitz";
 import { setKibitzHeaderOverride, useKibitzThinHeader } from "./kibitzThinHeader";
 import "./KibitzStackedPlayerHeader.css";
 
 export function KibitzStackedPlayerHeader({
     controller,
     estimatingScore,
+    blackPlayer,
+    whitePlayer,
 }: {
     controller: GobanController | null;
     estimatingScore: boolean;
+    blackPlayer?: KibitzRoomUser;
+    whitePlayer?: KibitzRoomUser;
 }): React.ReactElement | null {
     const { mode } = useGobanViewLayout();
     const thin = useKibitzThinHeader();
+
     if (mode !== "stacked" || !controller) {
         return null;
     }
+
     const fullHeader = (
         <CompactPlayerHeader
             historical_black={null}
@@ -37,6 +45,7 @@ export function KibitzStackedPlayerHeader({
             controller={controller}
         />
     );
+
     return (
         <div
             className={`KibitzStackedPlayerHeader${thin ? "" : " KibitzStackedPlayerHeader-full"}`}
@@ -47,16 +56,19 @@ export function KibitzStackedPlayerHeader({
                         key={`black-${controller.goban.game_id}`}
                         controller={controller}
                         color="black"
+                        fallbackPlayer={blackPlayer}
                     />
                     <KibitzThinPlayer
                         key={`white-${controller.goban.game_id}`}
                         controller={controller}
                         color="white"
+                        fallbackPlayer={whitePlayer}
                     />
                 </div>
             ) : (
                 fullHeader
             )}
+
             <button
                 type="button"
                 className="KibitzStackedPlayerHeader-toggle"
