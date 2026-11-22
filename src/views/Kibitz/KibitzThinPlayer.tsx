@@ -1,9 +1,9 @@
+
 /*
  * Copyright (C)  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or (at your
+ * it under the terms of the GNU Affero General Public License, either version 3 of the License, or (at your
  * option) any later version.
  */
 
@@ -16,18 +16,22 @@ import { subscribeAllEvents } from "@/components/GobanView";
 import { usePhase, usePlayerToMoveOnOfficialBranch } from "@/views/Game/GameHooks";
 import { interpolate, npgettext, pgettext } from "@/lib/translate";
 import type { GobanController } from "@/lib/GobanController";
+import type { KibitzRoomUser } from "@/models/kibitz";
 import "./KibitzThinPlayer.css";
 
 export function KibitzThinPlayer({
     controller,
     color,
+    fallbackPlayer,
 }: {
     controller: GobanController;
     color: "black" | "white";
+    fallbackPlayer?: KibitzRoomUser;
 }): React.ReactElement {
     const goban = controller.goban;
     const phase = usePhase(goban);
     const playerToMove = usePlayerToMoveOnOfficialBranch(goban);
+
     const readPlayer = React.useCallback(
         () => ({
             player: { ...goban.engine.players[color] },
@@ -35,6 +39,7 @@ export function KibitzThinPlayer({
         }),
         [goban, color],
     );
+
     const [state, setState] = React.useState(readPlayer);
     const [paused, setPaused] = React.useState(false);
     const [compactCaptures, setCompactCaptures] = React.useState(false);
@@ -46,14 +51,18 @@ export function KibitzThinPlayer({
         const sync = () => setState(readPlayer());
         sync();
         setPaused(false);
+
         const onClock = (clock: JGOFClockWithTransmitting | null) =>
             setPaused(Boolean(clock?.pause_state));
+
         goban.on("clock", onClock);
+
         const unsubscribe = subscribeAllEvents(
             goban,
             ["cur_move", "gamedata", "phase", "mode", "stone-removal.updated"],
             sync,
         );
+
         return () => {
             unsubscribe();
             goban.off("clock", onClock);
@@ -64,23 +73,33 @@ export function KibitzThinPlayer({
         const summary = summaryRef.current;
         const clock = clockRef.current;
         const captures = capturesRef.current;
+
         if (!summary || !clock || !captures) {
             return;
         }
+
         const measure = () =>
-            setCompactCaptures(clock.offsetWidth + captures.offsetWidth + 8 > summary.clientWidth);
+            setCompactCaptures(
+                clock.offsetWidth + captures.offsetWidth + 8 > summary.clientWidth,
+            );
+
         measure();
+
         if (typeof ResizeObserver === "undefined") {
             return;
         }
+
         const observer = new ResizeObserver(measure);
+
         for (const element of [summary, clock, captures]) {
             observer.observe(element);
         }
+
         return () => observer.disconnect();
     }, [state.captures]);
 
     const theirTurn = phase === "play" && playerToMove === state.player.id;
+
     const captureText = interpolate(
         npgettext(
             "Kibitz player captures",
@@ -90,6 +109,10 @@ export function KibitzThinPlayer({
         ),
         { count: state.captures },
     );
+
+    const playerId = state.player.id || fallbackPlayer?.id;
+    const playerName =
+        state.player.username?.trim() || fallbackPlayer?.username || "";
 
     return (
         <div
@@ -106,23 +129,32 @@ export function KibitzThinPlayer({
             }
         >
             <div className="KibitzThinPlayer-avatar" aria-hidden="true">
-                <PlayerIcon id={state.player.id} size={32} />
+                <PlayerIcon id={playerId} size={32} />
             </div>
+
             <div className="KibitzThinPlayer-name">
                 <span className="KibitzThinPlayer-stone" aria-hidden="true" />
-                {state.player.id ? (
+
+                {playerId ? (
                     <Player
-                        user={state.player.id}
-                        historical={state.player}
+                        user={playerId}
+                        historical={{
+                            ...state.player,
+                            id: playerId,
+                            username: playerName,
+                        }}
                         gameId={goban.game_id}
                         flag={false}
                         flare={false}
                         online={false}
                     />
                 ) : (
-                    <span className="KibitzThinPlayer-name-plain">{state.player.username}</span>
+                    <span className="KibitzThinPlayer-name-plain">
+                        {playerName || (color === "black" ? "Black" : "White")}
+                    </span>
                 )}
             </div>
+
             <div className="KibitzThinPlayer-summary" ref={summaryRef}>
                 <span className="KibitzThinPlayer-time" ref={clockRef}>
                     {phase !== "finished" && !goban.review_id ? (
@@ -135,11 +167,13 @@ export function KibitzThinPlayer({
                         pgettext("Kibitz game clock", "No clock")
                     )}
                 </span>
+
                 {paused && (
                     <span className="KibitzThinPlayer-paused">
                         {pgettext("Kibitz game clock", "Paused")}
                     </span>
                 )}
+
                 <span
                     className={
                         "KibitzThinPlayer-captures" +
@@ -155,6 +189,7 @@ export function KibitzThinPlayer({
                     >
                         {captureText}
                     </span>
+
                     <span
                         className="KibitzThinPlayer-capture-short"
                         role="img"
