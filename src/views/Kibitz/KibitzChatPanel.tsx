@@ -29,10 +29,12 @@ import {
     chat_manager,
     ChatChannelProxy,
     ChatMessage,
+    type ChatSystemLink,
     type ChatViewingPosition,
 } from "@/lib/chat_manager";
 import * as data from "@/lib/data";
 import { useUser } from "@/lib/hooks";
+import { usePreference } from "@/lib/preferences";
 import type { GobanController } from "@/lib/GobanController";
 import { interpolate, moment, pgettext } from "@/lib/translate";
 import { protocol, type Goban } from "goban";
@@ -41,12 +43,14 @@ import type {
     KibitzStreamItem,
     KibitzStreamItemSource,
     KibitzVariationSummary,
+    KibitzWatchedGame,
 } from "@/models/kibitz";
 import { formatVariationBranchLabel, formatVariationLengthLabel } from "./kibitzVariationQuickList";
 import { KibitzVariationSwatch } from "./KibitzVariationSwatch";
 import { kibitzTelemetry } from "./kibitzTelemetry";
 import { getVisibleKibitzStreamItems } from "./kibitzVisibleStreamItems";
 import { boardKey, gobanBoardKey, isReviewBoard } from "./kibitzBoardRef";
+import { watchedGameChatLabel, watchedGameChatLink } from "./kibitzWatchedGameChat";
 import { boardChatLabel } from "./kibitzReviewBoard";
 import "./KibitzChatPanel.css";
 import "@/components/Chat/ChatLog.css";
@@ -69,6 +73,7 @@ type PaneEntry =
           position?: { game_id: number; move_number: number };
           viewingPosition?: ChatViewingPosition;
           routineSystem?: boolean;
+          systemLinkLabel?: (link: ChatSystemLink) => string | undefined;
       }
     | {
           kind: "variation";
@@ -80,6 +85,7 @@ type PaneEntry =
 export interface KibitzChatPanelProps {
     room: KibitzRoomSummary;
     items: KibitzStreamItem[];
+    getHistoryGame?: (gameId: number) => KibitzWatchedGame | undefined;
     variations: KibitzVariationSummary[];
     onOpenVariation: (variationId: string, focusVariation?: boolean) => void;
     onOpenChatMove?: (gameId: number, moveNumber: number) => void;
@@ -209,14 +215,23 @@ function createChatLineFromItem(
     room: KibitzRoomSummary,
     item: KibitzStreamItem,
     source: KibitzStreamItemSource,
+    getHistoryGame?: KibitzChatPanelProps["getHistoryGame"],
+    hideRanks = false,
 ): PaneEntry | null {
     if (!item.author && item.type !== "system" && item.type !== "proposal_result") {
         return null;
     }
 
+    const match = getHistoryGame && watchedGameChatLink(item);
+    const label =
+        match && watchedGameChatLabel(item, match.link, getHistoryGame?.(match.gameId), hideRanks);
+    const links = item.links?.length ? item.links : match && label ? [match.link] : undefined;
+
     return {
         kind: "chat",
         key: item.id,
+        systemLinkLabel:
+            match && label ? (link) => (link === match.link ? label : undefined) : undefined,
         createdAt: item.created_at,
         source,
         routineSystem: item.type === "system" && source !== "game-chat",
@@ -246,8 +261,8 @@ function createChatLineFromItem(
                 // A system line with links keeps its typed body so ChatLine can
                 // render them; everything else stays plain text.
                 m:
-                    item.type === "system" && item.links?.length
-                        ? { type: "system", text: item.text, links: item.links }
+                    item.type === "system" && links?.length
+                        ? { type: "system", text: item.text, links }
                         : item.text,
             },
         },
@@ -273,6 +288,7 @@ function isAtBottom(container: HTMLDivElement | null): boolean {
 export function KibitzChatPanel({
     room,
     items,
+    getHistoryGame,
     variations,
     onOpenVariation,
     onOpenChatMove,
@@ -287,6 +303,7 @@ export function KibitzChatPanel({
     onUnreadChange,
 }: KibitzChatPanelProps): React.ReactElement {
     const user = useUser();
+    const [hideRanks] = usePreference("hide-ranks");
     const chatDisabled = user.anonymous || !user.email_validated;
     // The watched-game's GobanController is passed in by KibitzInner. The
     // game tab reads chat off goban.chat_log (which is fed by game-server
@@ -344,14 +361,14 @@ export function KibitzChatPanel({
                 continue;
             }
 
-            const chatEntry = createChatLineFromItem(room, item, source);
+            const chatEntry = createChatLineFromItem(room, item, source, getHistoryGame, hideRanks);
             if (chatEntry) {
                 entries.push(chatEntry);
             }
         }
 
         return entries.sort(sortEntries);
-    }, [items, room]);
+    }, [getHistoryGame, hideRanks, items, room]);
     const gameEntries = React.useMemo<PaneEntry[]>(() => {
         const entries: PaneEntry[] = [];
 
@@ -600,7 +617,7 @@ export function KibitzChatPanel({
                 roomScrollRef.current.scrollTop = roomScrollRef.current.scrollHeight;
             }
         });
-    }, [roomChannel, roomEntries.length, roomFollowLatest, roomVisible]);
+    }, [getHistoryGame, hideRanks, roomChannel, roomEntries.length, roomFollowLatest, roomVisible]);
 
     React.useLayoutEffect(() => {
         const container = gameScrollRef.current;
@@ -924,6 +941,7 @@ export function KibitzChatPanel({
                                     <ChatLine
                                         line={entry.line}
                                         lastLine={previousRoomLine}
+                                        systemLinkLabel={entry.systemLinkLabel}
                                         showDate={false}
                                         showRank
                                         goban={
