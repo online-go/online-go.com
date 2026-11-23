@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { configure_goban } from "./configure-goban";
+import { configure_goban, coordinateChatInput } from "./configure-goban";
 import * as data from "@/lib/data";
 import { callbacks, GobanEngine } from "goban";
 import type { GobanBase, GobanEngineConfig } from "goban";
@@ -127,5 +127,72 @@ describe("isAnalysisDisabled", () => {
         const goban = makeGoban();
 
         expect(isAnalysisDisabled(goban, true)).toBe(true);
+    });
+});
+
+describe("coordinateChatInput", () => {
+    function render(html: string): Document {
+        document.body.innerHTML = html;
+        return document;
+    }
+
+    afterEach(() => {
+        document.body.innerHTML = "";
+    });
+
+    test("returns the only chat input on a game page", () => {
+        const doc = render(`<input class="chat-input" id="game" />`);
+        expect(coordinateChatInput(doc)?.id).toBe("game");
+    });
+
+    test("skips a composer inside a hidden element", () => {
+        const doc = render(`
+            <div hidden><textarea class="chat-input" id="room"></textarea></div>
+            <div><textarea class="chat-input main" id="board"></textarea></div>
+        `);
+        expect(coordinateChatInput(doc)?.id).toBe("board");
+    });
+
+    test("prefers the shown composer over an earlier hidden pane", () => {
+        const doc = render(`
+            <div hidden><div><textarea class="chat-input main" id="board"></textarea></div></div>
+            <div><div><textarea class="chat-input" id="room"></textarea></div></div>
+        `);
+        expect(coordinateChatInput(doc)?.id).toBe("room");
+    });
+
+    test("prefers the focused input", () => {
+        const doc = render(`
+            <textarea class="chat-input" id="room"></textarea>
+            <textarea class="chat-input main" id="board"></textarea>
+        `);
+        (doc.getElementById("board") as HTMLTextAreaElement).focus();
+        expect(coordinateChatInput(doc)?.id).toBe("board");
+    });
+
+    test("ignores disabled inputs", () => {
+        const doc = render(`
+            <textarea class="chat-input" id="room" disabled></textarea>
+            <textarea class="chat-input main" id="board"></textarea>
+        `);
+        expect(coordinateChatInput(doc)?.id).toBe("board");
+    });
+
+    test("returns null when every chat input is hidden or disabled", () => {
+        const doc = render(`
+            <div hidden><textarea class="chat-input" id="room"></textarea></div>
+            <textarea class="chat-input main" id="board" disabled></textarea>
+        `);
+        expect(coordinateChatInput(doc)).toBeNull();
+    });
+
+    test("adds coordinates to the shown composer through the goban callback", () => {
+        render(`
+            <div hidden><textarea class="chat-input" id="room">hello</textarea></div>
+            <div><textarea class="chat-input main" id="board">see</textarea></div>
+        `);
+        callbacks.addCoordinatesToChatInput?.("D4");
+        expect((document.getElementById("board") as HTMLTextAreaElement).value).toBe("see D4");
+        expect((document.getElementById("room") as HTMLTextAreaElement).value).toBe("hello");
     });
 });
