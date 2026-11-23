@@ -27,6 +27,9 @@ import type { KibitzRoomUser, KibitzVariationSummary, KibitzWatchedGame } from "
 import { KIBITZ_INTRO_FLOW, KIBITZ_ROOM_SWITCHER_TARGET } from "./KibitzHelpFlows";
 import { KibitzView, KibitzViewProps } from "./KibitzView";
 
+jest.mock("./KibitzEvaluation", () => ({
+    KibitzEvaluation: () => <div data-testid="evaluation" />,
+}));
 jest.mock("@/components/Player", () => ({
     __esModule: true,
     Player: ({ user }: { user?: { username?: string } }) => (
@@ -276,9 +279,30 @@ describe("KibitzView", () => {
         expect(screen.getByText("Next game in 0:30").closest(".Kibitz-header")).not.toBeNull();
     });
 
+    test("offers the score bar on a game but not on a review or demo board", () => {
+        const props = baseProps();
+        const { rerender } = render(<KibitzView {...props} />);
+        expect(screen.getByTitle("Score bar")).toBeInTheDocument();
+        expect(screen.getByTestId("evaluation")).toBeInTheDocument();
+        rerender(
+            <KibitzView
+                {...props}
+                room={{
+                    ...props.room,
+                    current_game: { ...props.room.current_game!, game_id: undefined, review_id: 7 },
+                }}
+            />,
+        );
+        expect(screen.queryByTitle("Score bar")).toBeNull();
+        expect(screen.queryByTestId("evaluation")).toBeNull();
+    });
+
     test("horizontal mode shows sidebar cards before Kibitz content and no board bars", () => {
         const props = baseProps({ banner: <div data-testid="banner" /> });
         const { container } = render(<KibitzView {...props} />);
+        expect(container.querySelector(".Kibitz-header")).toContainElement(
+            screen.getByTestId("evaluation"),
+        );
         expect(screen.getByTestId("goban-container")).toBeInTheDocument();
         expect(screen.getByTestId("player-cards")).toHaveAttribute("data-game-id", "100");
         expect(container.querySelectorAll(".player-container")).toHaveLength(2);

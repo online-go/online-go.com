@@ -41,9 +41,18 @@ class FakeGoban extends EventEmitter {
         this.on("load", () => this.setSquareSizeBasedOnDisplayWidth(this.display_width));
     }
 
+    evaluation_bar = false;
+
     setSquareSizeBasedOnDisplayWidth(display_width: number): void {
         this.display_width = display_width;
-        this.square_size = Math.floor(display_width / (this.board_size + 2));
+        const reserved = this.evaluation_bar ? 2 * (Math.round(display_width * 0.03) + 8) : 0;
+        this.square_size = Math.floor((display_width - reserved) / (this.board_size + 2));
+    }
+
+    setEvaluationBar(shown: boolean): void {
+        this.evaluation_bar = shown;
+        this.setSquareSizeBasedOnDisplayWidth(this.display_width);
+        this.emit("evaluation-bar.updated", shown);
     }
 
     computeMetrics(): { width: number; height: number } {
@@ -100,4 +109,38 @@ test("recenters the board when the loaded game changes the board size", () => {
 
     expect(goban.square_size).toBe(72);
     expectCentered(goban);
+});
+
+test("recenters the board when the evaluation bar is shown and hidden", () => {
+    const goban = new FakeGoban();
+    render(<GobanContainer goban={goban as unknown as GobanRenderer} respectContainerBounds />);
+    const side = goban.computeMetrics().width;
+
+    act(() => goban.setEvaluationBar(true));
+    expect(goban.computeMetrics().width).toBeLessThan(side);
+    expectCentered(goban);
+
+    act(() => goban.setEvaluationBar(false));
+    expect(goban.computeMetrics().width).toBe(side);
+    expectCentered(goban);
+});
+
+test("keeps writing the offsets to the positioned wrapper once the board div is positioned too", () => {
+    const goban = new FakeGoban();
+    render(<GobanContainer goban={goban as unknown as GobanRenderer} respectContainerBounds />);
+    const board_div = goban.config.board_div;
+    const wrapper = board_div.parentElement!;
+    wrapper.style.position = "absolute";
+    act(() => goban.emit("load", {}));
+    const left = wrapper.style.left;
+    const board_left = board_div.style.left;
+    expect(left).not.toBe("");
+
+    // Goban positions the board div itself when it shows the evaluation bar.
+    board_div.style.position = "relative";
+    act(() => goban.setEvaluationBar(true));
+    expect(board_div.style.left).toBe(board_left);
+    expect(wrapper.style.left).not.toBe(left);
+    const side = goban.computeMetrics().width;
+    expect(wrapper.style.left).toBe(`${Math.ceil((CONTAINER_WIDTH - side) / 2)}px`);
 });

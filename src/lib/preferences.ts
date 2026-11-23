@@ -32,6 +32,7 @@ import type {
 export const defaults = {
     "ai-review-enabled": true,
     "ai-review-use-score": true,
+    "kibitz-score-bar-mode": "score" as "score" | "win-rate",
     "ai-review-show-visit-counts": false,
     "ai-review-show-on-board": true,
     "ai-review-show-playouts": true,

@@ -42,6 +42,8 @@ interface GobanContainerProps {
     respectContainerBounds?: boolean;
 }
 
+const POSITIONED = new Set(["absolute", "relative", "fixed", "sticky"]);
+
 /**
  * Takes a Goban and its div element, and handles resizes as necessary.
  */
@@ -127,13 +129,17 @@ export function GobanContainer({
         // The offsets have to land on whichever element the stylesheet
         // positions. Consumers that put `.Goban` on the div they pass here
         // position that div themselves; consumers that pass a bare div leave
-        // it static inside PersistentElement's positioned wrapper, and
-        // writing top/left on a static element does nothing — the board then
-        // sits against the container's top-left corner with the whole
-        // rounding remainder on its right and bottom.
+        // it inside PersistentElement's positioned wrapper, and writing
+        // top/left on a static element does nothing — the board then sits
+        // against the container's top-left corner with the whole rounding
+        // remainder on its right and bottom. The wrapper is preferred while
+        // it is positioned: goban makes the bare div `relative` when it shows
+        // the evaluation bar, and offsets written to both elements would add
+        // up.
+        const wrapper = goban_div.parentElement;
         const positioned_div =
-            window.getComputedStyle(goban_div).position === "static"
-                ? (goban_div.parentElement ?? goban_div)
+            wrapper && POSITIONED.has(window.getComputedStyle(wrapper).position)
+                ? wrapper
                 : goban_div;
 
         goban_div.style.transformOrigin = "top left";
@@ -239,15 +245,18 @@ export function GobanContainer({
      * size the goban derives from the last display width, but the container
      * does not resize, so nothing else recenters the board. Sizing again on
      * load keeps the board centered no matter which arrives first, the data
-     * or the container's debounced resize. */
+     * or the container's debounced resize. Showing or hiding the evaluation
+     * bar changes the board's size the same way. */
     React.useEffect(() => {
         if (!goban) {
             return;
         }
-        const onLoad = () => onResizeRef.current(/* no_debounce */ true, /* do_cb */ false);
-        goban.on("load", onLoad);
+        const resize = () => onResizeRef.current(/* no_debounce */ true, /* do_cb */ false);
+        goban.on("load", resize);
+        goban.on("evaluation-bar.updated", resize);
         return () => {
-            goban.off("load", onLoad);
+            goban.off("load", resize);
+            goban.off("evaluation-bar.updated", resize);
         };
     }, [goban]);
 
