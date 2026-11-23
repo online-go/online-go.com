@@ -87,6 +87,7 @@ export interface KibitzViewProps {
     /** True when the layout has no left aside (see `leftAsideAllowed`), so
      *  the rooms and variations lists go in the panes instead. */
     isPortrait: boolean;
+    isStacked: boolean;
     leftAside: Omit<KibitzLeftAsideProps, "miniBoardController" | "onExitVariation">;
     chat: Omit<
         KibitzChatPanelProps,
@@ -173,8 +174,8 @@ const useBehindLive = generateGobanHook(
  * and chat on the right.
  */
 export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
-    const { room, gobans, isPortrait } = props;
-    const help = useKibitzHelp(gobans.centerMode === "variation");
+    const { room, gobans, isPortrait, isStacked } = props;
+    const help = useKibitzHelp(isStacked, gobans.centerMode === "variation");
     const thinHeader = useKibitzThinHeader();
     React.useEffect(() => {
         document.documentElement.classList.toggle("kibitz-thin-header", thinHeader);
@@ -739,10 +740,20 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         id={`kibitz-pane-${id}`}
                         type="action"
                         align="left"
+                        buttonRef={isStacked && id === "rooms" ? help.roomSwitcherRef : undefined}
                         icon={PANE_ICONS[id]}
-                        title={PANE_TITLES[id](isReviewBoard(room.current_game))}
+                        title={
+                            isStacked && id === "rooms"
+                                ? pgettext("Kibitz mobile toolbar button", "Switch rooms")
+                                : PANE_TITLES[id](isReviewBoard(room.current_game))
+                        }
                         active={pane === id}
-                        onClick={() => togglePane(id)}
+                        onClick={() => {
+                            if (id === "rooms") {
+                                help.acknowledgeRoomSwitcher();
+                            }
+                            togglePane(id);
+                        }}
                     />
                 ))}
 
