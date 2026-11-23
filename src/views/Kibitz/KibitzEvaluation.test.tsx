@@ -21,11 +21,13 @@ import EventEmitter from "eventemitter3";
 import type { GobanController } from "@/lib/GobanController";
 import { KibitzEvaluation } from "./KibitzEvaluation";
 
-const mockLocalScore = { value: -6.5 };
+const mockLocalScore = { value: -6.5, fail: false };
 jest.mock("goban", () => ({
     ...jest.requireActual("goban"),
     ScoreEstimator: jest.fn(() => ({
-        when_ready: Promise.resolve(),
+        when_ready: mockLocalScore.fail
+            ? Promise.reject(new Error("AI server down"))
+            : Promise.resolve(),
         amount: Math.abs(mockLocalScore.value),
         winner: mockLocalScore.value > 0 ? "Black" : "White",
     })),
@@ -50,8 +52,12 @@ function setup({ allowed = true, estimating = false } = {}) {
         engine: { cur_move: trunk, move_tree: trunk },
         width: 19,
         height: 19,
+        destroyed: false,
         evaluation: 0.5,
-        evaluation_bar_container: bar,
+        evaluation_bar_container: undefined as HTMLDivElement | undefined,
+        setEvaluationBar: jest.fn((enabled: boolean) => {
+            goban.evaluation_bar_container = enabled ? bar : undefined;
+        }),
         score_estimator: null as null | { amount: number; winner: string },
     });
     const controller = Object.assign(new EventEmitter(), {
@@ -91,23 +97,24 @@ function renderBar(asController: GobanController, enabled = true) {
 
 beforeEach(() => {
     mockLocalScore.value = -6.5;
+    mockLocalScore.fail = false;
     jest.mocked(ScoreEstimator).mockClear();
     onLabel.mockClear();
 });
 
-test("has no label and hides the bar until the score bar is enabled", async () => {
-    const { goban, bar, asController } = setup();
+test("has no label and no bar until the score bar is enabled", async () => {
+    const { goban, asController } = setup();
     const view = renderBar(asController, false);
     expect(label()).toBeNull();
-    expect(bar.style.visibility).toBe("hidden");
+    expect(goban.evaluation_bar_container).toBeUndefined();
     expect(goban.evaluation).toBe(0.5);
     view.rerender(barElement(asController, true));
     expect(label()).toContain("Black by 8.0 · AI review");
-    expect(bar.style.visibility).toBe("");
+    expect(goban.evaluation_bar_container).toBeDefined();
     expect(goban.evaluation).toBeGreaterThan(0.5);
     view.rerender(barElement(asController, false));
     expect(label()).toBeNull();
-    expect(bar.style.visibility).toBe("hidden");
+    expect(goban.evaluation_bar_container).toBeUndefined();
     await act(async () => {});
 });
 
@@ -147,7 +154,7 @@ test("estimates an unreviewed position without score estimation mode", async () 
     const { goban, unreviewed, asController } = setup();
     goban.engine.cur_move = unreviewed;
     const view = renderBar(asController);
-    expect(label()).toContain("Score unavailable");
+    expect(label()).toBe("Estimating...");
     await act(async () => {
         jest.advanceTimersByTime(250);
     });
@@ -171,7 +178,7 @@ test("uses the score estimation result while score estimation is on", async () =
     const { goban, unreviewed, asController } = setup({ estimating: true });
     goban.engine.cur_move = unreviewed;
     renderBar(asController);
-    expect(label()).toContain("Score unavailable");
+    expect(label()).toBe("Estimating...");
     act(() => {
         goban.score_estimator = { amount: 3, winner: "Black" };
         goban.emit("score_estimate");
@@ -183,6 +190,30 @@ test("uses the score estimation result while score estimation is on", async () =
     });
     expect(label()).toContain("Black by 3.0");
     await act(async () => {});
+});
+
+test("shows a failed estimate and drops the previous score", async () => {
+    jest.useFakeTimers();
+    const { goban, unreviewed, asController } = setup();
+    goban.engine.cur_move = unreviewed;
+    const view = renderBar(asController);
+    await act(async () => {
+        jest.advanceTimersByTime(250);
+    });
+    expect(label()).toContain("White by 6.5");
+    mockLocalScore.fail = true;
+    act(() => {
+        goban.engine.cur_move = { ...unreviewed, getMoveStringToThisPoint: () => "aabbcc" };
+        goban.emit("update");
+    });
+    expect(label()).toContain("White by 6.5");
+    await act(async () => {
+        jest.advanceTimersByTime(250);
+    });
+    expect(label()).toBe("Estimate failed");
+    expect(goban.evaluation).toBe(0.5);
+    view.unmount();
+    jest.useRealTimers();
 });
 
 test("withholds scores when score analysis is restricted", async () => {

@@ -23,7 +23,6 @@ import { useAIReviewData } from "@/components/AIReview/hooks";
 import { get } from "@/lib/requests";
 import { _, pgettext, interpolate } from "@/lib/translate";
 import { kibitzEvaluation } from "./kibitzEvaluationScale";
-import "./KibitzEvaluation.css";
 
 const usePosition = generateGobanHook(
     (goban) => ({ move: goban?.engine.cur_move }),
@@ -55,6 +54,9 @@ function useEstimating(controller: GobanController): boolean {
     }, [controller]);
     return estimating;
 }
+
+/** A detached estimate of one position: its score, or that the request failed. */
+type BarEstimate = { move: MoveTree; score: number } | { move: MoveTree; failed: true };
 
 export function KibitzEvaluation({
     controller,
@@ -112,10 +114,7 @@ export function KibitzEvaluation({
                   reviewData?.scores?.[move.move_number])
             : undefined;
     const scoreEstimatorScore = useEstimatedScore(goban);
-    const [barEstimate, setBarEstimate] = React.useState<{
-        move: typeof move;
-        score: number;
-    } | null>(null);
+    const [barEstimate, setBarEstimate] = React.useState<BarEstimate | null>(null);
     const needsBarEstimate = allowed && !estimating && !Number.isFinite(reviewedScore);
     const preferRemote = controller.prefersRemoteScoreEstimate(source);
     // Positions already estimated in this game, so going back and forth does
@@ -146,54 +145,58 @@ export function KibitzEvaluation({
                 .then(() => {
                     const score = estimatorScore(estimator);
                     if (score === undefined) {
-                        return;
+                        throw new Error("The estimate has no score");
                     }
                     estimateCache.set(move, score);
-                    if (active && goban.engine.cur_move === move) {
-                        setBarEstimate({ move, score });
-                    }
+                    return score;
                 })
-                .catch(() => {});
+                .then(
+                    (score) => {
+                        if (active && goban.engine.cur_move === move) {
+                            setBarEstimate({ move, score });
+                        }
+                    },
+                    () => {
+                        if (active && goban.engine.cur_move === move) {
+                            setBarEstimate({ move, failed: true });
+                        }
+                    },
+                );
         }, 250);
         return () => {
             active = false;
             window.clearTimeout(timer);
         };
     }, [goban, move, needsBarEstimate, preferRemote, estimateCache]);
+    const estimateForMove = barEstimate && barEstimate.move === move ? barEstimate : null;
+    const failed = needsBarEstimate && estimateForMove !== null && "failed" in estimateForMove;
     // While score estimation is on, use its estimate so the bar and the
     // banner agree.
     const currentEstimate = estimating
         ? scoreEstimatorScore
-        : barEstimate?.move === move
-          ? barEstimate?.score
+        : estimateForMove && "score" in estimateForMove
+          ? estimateForMove.score
           : undefined;
     // Keep the previous estimate while a new one is calculated, so the label
     // does not flicker when the position changes.
     const lastEstimate = React.useRef<number | undefined>(undefined);
-    if (!enabled) {
+    if (!enabled || failed) {
         lastEstimate.current = undefined;
     } else if (currentEstimate !== undefined) {
         lastEstimate.current = currentEstimate;
     }
     const estimatedScore = currentEstimate ?? lastEstimate.current;
     const score = Number.isFinite(reviewedScore) ? reviewedScore : estimatedScore;
-    const available = allowed && typeof score === "number" && Number.isFinite(score);
+    const available = allowed && !failed && typeof score === "number" && Number.isFinite(score);
     React.useEffect(() => {
+        if (goban.destroyed) {
+            return;
+        }
+        goban.setEvaluationBar(enabled);
         const bar = goban.evaluation_bar_container;
-        if (!bar) {
+        if (!enabled || !bar) {
             return;
         }
-        if (!enabled) {
-            bar.style.visibility = "hidden";
-            return;
-        }
-        // Goban places the bar 8px outside the space it reserves for it, so
-        // the bar can be cut off when the board fills its container.
-        const previousTransform = bar.style.transform;
-        const previousBoxSizing = bar.style.boxSizing;
-        bar.style.transform = "translateX(8px)";
-        bar.style.boxSizing = "border-box";
-        bar.style.visibility = "";
         const size = Math.max(goban.width, goban.height);
         const limit = size <= 9 ? 20 : size <= 13 ? 40 : 60;
         const marks = [...new Set([limit, limit / 2, 10, 0, -10, -limit / 2, -limit])];
@@ -264,9 +267,9 @@ export function KibitzEvaluation({
         return () => {
             resizeObserver?.disconnect();
             labels.forEach((label) => label.remove());
-            bar.style.transform = previousTransform;
-            bar.style.boxSizing = previousBoxSizing;
-            bar.style.visibility = "hidden";
+            if (!goban.destroyed) {
+                goban.setEvaluationBar(false);
+            }
         };
     }, [goban, enabled]);
     React.useEffect(() => {
@@ -289,7 +292,11 @@ export function KibitzEvaluation({
           ? Number.isFinite(reviewedScore)
               ? `${leadText} · ${pgettext("Kibitz score source", "AI review")}`
               : leadText
-          : pgettext("Kibitz evaluation", "Score unavailable");
+          : !allowed
+            ? pgettext("Kibitz evaluation", "Score unavailable")
+            : failed
+              ? pgettext("Kibitz evaluation", "Estimate failed")
+              : _("Estimating...");
     React.useEffect(() => {
         onLabelChange(label);
     }, [label, onLabelChange]);
