@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { Link } from "react-router-dom";
 import { ChatLine } from "@/components/Chat";
 import { GameChatLine } from "@/components/Chat/GameChatLine";
 import { ChatDateLine } from "@/components/Chat/ChatDateLine";
@@ -35,6 +36,7 @@ import {
 import * as data from "@/lib/data";
 import { useUser } from "@/lib/hooks";
 import { usePreference } from "@/lib/preferences";
+import { profanity_filter } from "@/lib/profanity_filter";
 import type { GobanController } from "@/lib/GobanController";
 import { interpolate, moment, pgettext } from "@/lib/translate";
 import { protocol, type Goban } from "goban";
@@ -50,7 +52,11 @@ import { KibitzVariationSwatch } from "./KibitzVariationSwatch";
 import { kibitzTelemetry } from "./kibitzTelemetry";
 import { getVisibleKibitzStreamItems } from "./kibitzVisibleStreamItems";
 import { boardKey, gobanBoardKey, isReviewBoard } from "./kibitzBoardRef";
-import { watchedGameChatLabel, watchedGameChatLink } from "./kibitzWatchedGameChat";
+import {
+    formatWatchedGameLabel,
+    watchedGameChatLabel,
+    watchedGameChatLink,
+} from "./kibitzWatchedGameChat";
 import { boardChatLabel } from "./kibitzReviewBoard";
 import "./KibitzChatPanel.css";
 import "@/components/Chat/ChatLog.css";
@@ -70,6 +76,7 @@ type PaneEntry =
           // matching GameChat.css's .chat-line.spectator rule.
           gobanChannel?: string;
           gobanLine?: protocol.GameChatLine;
+          gameId?: number;
           position?: { game_id: number; move_number: number };
           viewingPosition?: ChatViewingPosition;
           routineSystem?: boolean;
@@ -226,6 +233,13 @@ function createChatLineFromItem(
     const label =
         match && watchedGameChatLabel(item, match.link, getHistoryGame?.(match.gameId), hideRanks);
     const links = item.links?.length ? item.links : match && label ? [match.link] : undefined;
+    const gameId =
+        item.type === "chat" &&
+        typeof item.game_id === "number" &&
+        Number.isSafeInteger(item.game_id) &&
+        item.game_id > 0
+            ? item.game_id
+            : undefined;
 
     return {
         kind: "chat",
@@ -236,15 +250,13 @@ function createChatLineFromItem(
         source,
         routineSystem: item.type === "system" && source !== "game-chat",
         viewingPosition: item.type === "chat" ? item.viewing_position : undefined,
+        gameId,
         position:
-            item.type === "chat" &&
-            typeof item.game_id === "number" &&
-            Number.isSafeInteger(item.game_id) &&
-            item.game_id > 0 &&
+            gameId !== undefined &&
             typeof item.move_number === "number" &&
             Number.isSafeInteger(item.move_number) &&
             item.move_number >= 0
-                ? { game_id: item.game_id, move_number: item.move_number }
+                ? { game_id: gameId, move_number: item.move_number }
                 : undefined,
         line: {
             channel: room.channel,
@@ -617,7 +629,15 @@ export function KibitzChatPanel({
                 roomScrollRef.current.scrollTop = roomScrollRef.current.scrollHeight;
             }
         });
-    }, [getHistoryGame, hideRanks, roomChannel, roomEntries.length, roomFollowLatest, roomVisible]);
+    }, [
+        getHistoryGame,
+        hideRanks,
+        roomChannel,
+        room.current_game?.game_id,
+        roomEntries.length,
+        roomFollowLatest,
+        roomVisible,
+    ]);
 
     React.useLayoutEffect(() => {
         const container = gameScrollRef.current;
@@ -736,6 +756,7 @@ export function KibitzChatPanel({
 
     const renderEntries = (entries: PaneEntry[], source: "room" | "game") => {
         let previousPosition: { game_id: number; move_number: number } | undefined;
+        let previousCommentGameId: number | undefined;
         if (entries.length === 0) {
             return (
                 <div className="stream-empty">
@@ -830,6 +851,24 @@ export function KibitzChatPanel({
                         );
                     }
 
+                    const gameId = entry.gameId;
+                    const isCurrentGame = gameId === room.current_game?.game_id;
+                    const showGameDivider =
+                        source === "room" &&
+                        gameId !== undefined &&
+                        gameId !== previousCommentGameId &&
+                        (!isCurrentGame || previousCommentGameId !== undefined);
+                    const historyGame =
+                        showGameDivider && !isCurrentGame ? getHistoryGame?.(gameId) : undefined;
+                    const historyTitle = historyGame?.title?.trim() ?? "";
+                    const historyLabel =
+                        (historyGame &&
+                            formatWatchedGameLabel(historyTitle, historyGame, hideRanks)) ||
+                        historyTitle;
+                    if (source === "room" && !entry.line.system) {
+                        previousCommentGameId = gameId;
+                    }
+
                     const position = source === "room" ? entry.position : undefined;
                     const showPosition =
                         position &&
@@ -861,6 +900,19 @@ export function KibitzChatPanel({
                     } else if (entry.gobanLine) {
                         gameLastLine = entry.gobanLine;
                     }
+                    const dateLine = (
+                        <ChatDateLine
+                            timestamp={entry.gobanLine?.date ?? entry.line.message.t}
+                            previousTimestamp={
+                                entry.gobanLine
+                                    ? previousGameLine?.date
+                                    : previousRoomLine?.message.t
+                            }
+                            hasPreviousLine={Boolean(
+                                entry.gobanLine ? previousGameLine : previousRoomLine,
+                            )}
+                        />
+                    );
 
                     // The date and the move number head a run of lines, so
                     // they stand outside the row the line shares with its
@@ -868,6 +920,26 @@ export function KibitzChatPanel({
                     // separator instead of the name beside it.
                     return (
                         <React.Fragment key={entry.key}>
+                            {showGameDivider && dateLine}
+                            {showGameDivider && (
+                                <LineText className="kibitz-chat-game-divider">
+                                    {isCurrentGame ? (
+                                        pgettext("Kibitz chat game divider", "Current game")
+                                    ) : (
+                                        <Link to={`/game/${gameId}`}>
+                                            {historyLabel
+                                                ? profanity_filter(historyLabel)
+                                                : interpolate(
+                                                      pgettext(
+                                                          "Kibitz chat game divider",
+                                                          "Game #{{id}}",
+                                                      ),
+                                                      { id: gameId },
+                                                  )}
+                                        </Link>
+                                    )}
+                                </LineText>
+                            )}
                             {entry.gobanLine && (
                                 <GameChatMoveNumber
                                     line={entry.gobanLine}
@@ -904,17 +976,7 @@ export function KibitzChatPanel({
                                     )}
                                 </LineText>
                             )}
-                            <ChatDateLine
-                                timestamp={entry.gobanLine?.date ?? entry.line.message.t}
-                                previousTimestamp={
-                                    entry.gobanLine
-                                        ? previousGameLine?.date
-                                        : previousRoomLine?.message.t
-                                }
-                                hasPreviousLine={Boolean(
-                                    entry.gobanLine ? previousGameLine : previousRoomLine,
-                                )}
-                            />
+                            {!showGameDivider && dateLine}
                             <div
                                 className={
                                     "kibitz-chat-entry " +

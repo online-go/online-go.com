@@ -189,6 +189,13 @@
         text-decoration: none;
     }
 
+    .kibitz-chat-game-divider {
+        margin-top: 0.35rem;
+        overflow-wrap: anywhere;
+        font-size: var(--font-size-smaller);
+        text-align: center;
+    }
+
     .kibitz-viewing-position button {
         background: none;
         border: 0;
