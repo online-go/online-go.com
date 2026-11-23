@@ -219,11 +219,13 @@ export function KibitzEvaluation({
                 left: "0",
                 right: "0",
                 zIndex: "1001",
-                top: `${(1 - kibitzEvaluation(points, size)) * 100}%`,
+                // Black fills the bar from the top, so a Black lead marks
+                // lower down.
+                top: `${kibitzEvaluation(points, size) * 100}%`,
                 transform:
-                    points === limit
+                    points === -limit
                         ? ""
-                        : points === -limit
+                        : points === limit
                           ? "translateY(-100%)"
                           : "translateY(-50%)",
                 font: "9px/12px sans-serif",
