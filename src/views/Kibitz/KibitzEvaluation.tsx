@@ -21,6 +21,7 @@ import type { GobanController } from "@/lib/GobanController";
 import { generateGobanHook } from "@/components/GobanView";
 import { useAIReviewData } from "@/components/AIReview/hooks";
 import { get } from "@/lib/requests";
+import { usePreference } from "@/lib/preferences";
 import { _, pgettext, interpolate } from "@/lib/translate";
 import { kibitzEvaluation } from "./kibitzEvaluationScale";
 
@@ -29,17 +30,25 @@ const usePosition = generateGobanHook(
     ["update", "phase"],
 );
 
-/** The signed estimate (positive for Black), as the score estimate banner shows it. */
-function estimatorScore(estimator: ScoreEstimator | null | undefined): number | undefined {
-    if (!estimator || !Number.isFinite(estimator.amount)) {
-        return undefined;
-    }
-    // `winner` and `amount` hold the AI score when the server sends one.
-    return estimator.winner === translate._("Black") ? estimator.amount : -estimator.amount;
+/** A position's assessment: the signed score (positive for Black) and
+ *  Black's win rate, each when known. */
+interface Assessment {
+    score?: number;
+    win_rate?: number;
 }
 
-const useEstimatedScore = generateGobanHook(
-    (goban) => estimatorScore(goban?.score_estimator),
+/** The estimator's assessment, as the score estimate banner shows it. */
+function estimatorAssessment(estimator: ScoreEstimator | null | undefined): Assessment {
+    if (!estimator || !Number.isFinite(estimator.amount)) {
+        return {};
+    }
+    // `winner` and `amount` hold the AI score when the server sends one.
+    const score = estimator.winner === translate._("Black") ? estimator.amount : -estimator.amount;
+    return { score, win_rate: estimator.win_rate };
+}
+
+const useEstimatorAssessment = generateGobanHook(
+    (goban) => estimatorAssessment(goban?.score_estimator),
     ["score_estimate"],
 );
 
@@ -55,8 +64,65 @@ function useEstimating(controller: GobanController): boolean {
     return estimating;
 }
 
-/** A detached estimate of one position: its score, or that the request failed. */
-type BarEstimate = { move: MoveTree; score: number } | { move: MoveTree; failed: true };
+/** A detached estimate of one position, or that its request failed. */
+type BarEstimate = { move: MoveTree; assessment: Assessment } | { move: MoveTree; failed: true };
+
+/** A mark on the bar: where it sits (Black's share, 0 to 1) and its text. */
+interface BarMark {
+    position: number;
+    label: string;
+    /** The text once the bar is too narrow for `label` */
+    shortLabel: string;
+    title: string;
+}
+
+/** Pointer events goban handles on the board; a click on the bar must not
+ *  reach them. */
+const BOARD_POINTER_EVENTS = [
+    "mousedown",
+    "mouseup",
+    "mousemove",
+    "click",
+    "dblclick",
+    "touchstart",
+    "touchend",
+];
+
+function scoreMarks(size: number): BarMark[] {
+    const limit = size <= 9 ? 20 : size <= 13 ? 40 : 60;
+    const points = [...new Set([limit, limit / 2, 10, 0, -10, -limit / 2, -limit])];
+    return points.map((value) => ({
+        position: kibitzEvaluation(value, size),
+        label: value > 0 ? `+${value}` : `${value}`,
+        shortLabel: `${Math.abs(value)}`,
+        title:
+            value === 0
+                ? pgettext("Kibitz score scale", "Even score")
+                : interpolate(pgettext("Kibitz score scale", "{{color}} +{{score}}"), {
+                      color:
+                          value > 0 ? pgettext("Go color", "Black") : pgettext("Go color", "White"),
+                      score: Math.abs(value),
+                  }),
+    }));
+}
+
+function winRateMarks(): BarMark[] {
+    return [0.75, 0.5, 0.25].map((position) => ({
+        position,
+        label: `${Math.round(Math.max(position, 1 - position) * 100)}%`,
+        shortLabel: `${Math.round(Math.max(position, 1 - position) * 100)}`,
+        title:
+            position === 0.5
+                ? pgettext("Kibitz win rate scale", "Even")
+                : interpolate(pgettext("Kibitz win rate scale", "{{color}} {{percent}}%"), {
+                      color:
+                          position > 0.5
+                              ? pgettext("Go color", "Black")
+                              : pgettext("Go color", "White"),
+                      percent: Math.round(Math.max(position, 1 - position) * 100),
+                  }),
+    }));
+}
 
 export function KibitzEvaluation({
     controller,
@@ -75,6 +141,7 @@ export function KibitzEvaluation({
     const goban = controller.goban;
     const { move } = usePosition(goban);
     const estimating = useEstimating(controller);
+    const [mode, setMode] = usePreference("kibitz-score-bar-mode");
     const allowed = enabled && controller.canEstimateScore(source);
     const { reviewData, setSelectedAIReview } = useAIReviewData({
         gameId,
@@ -106,23 +173,26 @@ export function KibitzEvaluation({
         move && branch && move !== branch
             ? `${branch.move_number}-${move.getMoveStringToThisPoint().slice(branch.getMoveStringToThisPoint().length)}`
             : null;
-    const reviewedScore =
+    const reviewed: Assessment | undefined =
         allowed && move
             ? variation
-                ? reviewData?.analyzed_variations?.[variation]?.score
-                : (reviewData?.moves[move.move_number]?.score ??
-                  reviewData?.scores?.[move.move_number])
+                ? reviewData?.analyzed_variations?.[variation]
+                : (reviewData?.moves[move.move_number] ?? {
+                      score: reviewData?.scores?.[move.move_number],
+                      win_rate: reviewData?.win_rates?.[move.move_number],
+                  })
             : undefined;
-    const scoreEstimatorScore = useEstimatedScore(goban);
+    const hasReview = Number.isFinite(reviewed?.score);
+    const estimatorScore = useEstimatorAssessment(goban);
     const [barEstimate, setBarEstimate] = React.useState<BarEstimate | null>(null);
-    const needsBarEstimate = allowed && !estimating && !Number.isFinite(reviewedScore);
+    const needsBarEstimate = allowed && !estimating && !hasReview;
     const preferRemote = controller.prefersRemoteScoreEstimate(source);
     // Positions already estimated in this game, so going back and forth does
     // not request the same estimate again. AI and local estimates are kept
     // apart, so a game that finishes does not reuse local estimates.
     const estimateCaches = React.useRef({
-        remote: new WeakMap<MoveTree, number>(),
-        local: new WeakMap<MoveTree, number>(),
+        remote: new WeakMap<MoveTree, Assessment>(),
+        local: new WeakMap<MoveTree, Assessment>(),
     });
     const estimateCache = preferRemote
         ? estimateCaches.current.remote
@@ -134,7 +204,7 @@ export function KibitzEvaluation({
         }
         const cached = estimateCache.get(move);
         if (cached !== undefined) {
-            setBarEstimate({ move, score: cached });
+            setBarEstimate({ move, assessment: cached });
             return;
         }
         const timer = window.setTimeout(() => {
@@ -143,17 +213,17 @@ export function KibitzEvaluation({
             const estimator = new ScoreEstimator(goban.engine, undefined, 1000, 0.25, preferRemote);
             void estimator.when_ready
                 .then(() => {
-                    const score = estimatorScore(estimator);
-                    if (score === undefined) {
+                    const assessment = estimatorAssessment(estimator);
+                    if (assessment.score === undefined) {
                         throw new Error("The estimate has no score");
                     }
-                    estimateCache.set(move, score);
-                    return score;
+                    estimateCache.set(move, assessment);
+                    return assessment;
                 })
                 .then(
-                    (score) => {
+                    (assessment) => {
                         if (active && goban.engine.cur_move === move) {
-                            setBarEstimate({ move, score });
+                            setBarEstimate({ move, assessment });
                         }
                     },
                     () => {
@@ -172,48 +242,52 @@ export function KibitzEvaluation({
     const failed = needsBarEstimate && estimateForMove !== null && "failed" in estimateForMove;
     // While score estimation is on, use its estimate so the bar and the
     // banner agree.
-    const currentEstimate = estimating
-        ? scoreEstimatorScore
-        : estimateForMove && "score" in estimateForMove
-          ? estimateForMove.score
+    const currentEstimate: Assessment | undefined = estimating
+        ? estimatorScore
+        : estimateForMove && "assessment" in estimateForMove
+          ? estimateForMove.assessment
           : undefined;
     // Keep the previous estimate while a new one is calculated, so the label
     // does not flicker when the position changes.
-    const lastEstimate = React.useRef<number | undefined>(undefined);
+    const lastEstimate = React.useRef<Assessment | undefined>(undefined);
     if (!enabled || failed) {
         lastEstimate.current = undefined;
-    } else if (currentEstimate !== undefined) {
+    } else if (currentEstimate?.score !== undefined) {
         lastEstimate.current = currentEstimate;
     }
-    const estimatedScore = currentEstimate ?? lastEstimate.current;
-    const score = Number.isFinite(reviewedScore) ? reviewedScore : estimatedScore;
-    const available = allowed && !failed && typeof score === "number" && Number.isFinite(score);
+    const assessment: Assessment | undefined = hasReview
+        ? reviewed
+        : ((currentEstimate?.score !== undefined ? currentEstimate : undefined) ??
+          lastEstimate.current);
+    const winRate = mode === "win-rate";
+    const value = winRate ? assessment?.win_rate : assessment?.score;
+    const available = allowed && !failed && typeof value === "number" && Number.isFinite(value);
+    // A score without a win rate comes from the local estimator, which has
+    // none; a newer estimate will not bring one either.
+    const winRateUnavailable =
+        winRate && !available && assessment !== undefined && Number.isFinite(assessment.score);
     React.useEffect(() => {
         if (goban.destroyed) {
             return;
         }
         goban.setEvaluationBar(enabled);
+        return () => {
+            if (!goban.destroyed) {
+                goban.setEvaluationBar(false);
+            }
+        };
+    }, [goban, enabled]);
+    React.useEffect(() => {
         const bar = goban.evaluation_bar_container;
         if (!enabled || !bar) {
             return;
         }
         const size = Math.max(goban.width, goban.height);
-        const limit = size <= 9 ? 20 : size <= 13 ? 40 : 60;
-        const marks = [...new Set([limit, limit / 2, 10, 0, -10, -limit / 2, -limit])];
-        const labels = marks.map((points) => {
+        const marks = winRate ? winRateMarks() : scoreMarks(size);
+        const labels = marks.map((mark) => {
             const label = document.createElement("span");
-            label.dataset.points = `${points}`;
-            label.textContent = points > 0 ? `+${points}` : `${points}`;
-            label.title =
-                points === 0
-                    ? pgettext("Kibitz score scale", "Even score")
-                    : interpolate(pgettext("Kibitz score scale", "{{color}} +{{score}}"), {
-                          color:
-                              points > 0
-                                  ? pgettext("Go color", "Black")
-                                  : pgettext("Go color", "White"),
-                          score: Math.abs(points),
-                      });
+            label.textContent = mark.label;
+            label.title = mark.title;
             Object.assign(label.style, {
                 position: "absolute",
                 left: "0",
@@ -221,11 +295,11 @@ export function KibitzEvaluation({
                 zIndex: "1001",
                 // Black fills the bar from the top, so a Black lead marks
                 // lower down.
-                top: `${kibitzEvaluation(points, size) * 100}%`,
+                top: `${mark.position * 100}%`,
                 transform:
-                    points === -limit
+                    mark.position <= 0
                         ? ""
-                        : points === limit
+                        : mark.position >= 1
                           ? "translateY(-100%)"
                           : "translateY(-50%)",
                 font: "9px/12px sans-serif",
@@ -237,8 +311,8 @@ export function KibitzEvaluation({
             bar.appendChild(label);
             return label;
         });
-        // A narrow bar (on phones) cannot hold "+60" at 9px. Drop the signs
-        // first, then shrink the font until every label fits.
+        // A narrow bar (on phones) cannot hold "+60" at 9px. Use the short
+        // text first, then shrink the font until every label fits.
         const fitLabels = () => {
             const width = bar.clientWidth;
             if (!width) {
@@ -246,15 +320,12 @@ export function KibitzEvaluation({
             }
             const fits = () => labels.every((label) => label.scrollWidth <= width);
             const attempts = [
-                { signed: true, font: 9 },
-                ...[9, 8, 7, 6].map((font) => ({ signed: false, font })),
+                { short: false, font: 9 },
+                ...[9, 8, 7, 6].map((font) => ({ short: true, font })),
             ];
-            for (const { signed, font } of attempts) {
-                labels.forEach((label) => {
-                    const points = Number(label.dataset.points);
-                    label.textContent = signed
-                        ? `${points > 0 ? "+" : ""}${points}`
-                        : `${Math.abs(points)}`;
+            for (const { short, font } of attempts) {
+                labels.forEach((label, index) => {
+                    label.textContent = short ? marks[index].shortLabel : marks[index].label;
                     label.style.fontSize = `${font}px`;
                 });
                 if (fits()) {
@@ -266,39 +337,61 @@ export function KibitzEvaluation({
         const resizeObserver =
             typeof ResizeObserver === "function" ? new ResizeObserver(fitLabels) : null;
         resizeObserver?.observe(bar);
+        // Clicking the bar switches between the score and the win rate.
+        bar.style.cursor = "pointer";
+        bar.title = winRate
+            ? pgettext("Tooltip on the Kibitz score bar", "Win rate. Click to show the score.")
+            : pgettext("Tooltip on the Kibitz score bar", "Score. Click to show the win rate.");
+        const stop = (event: Event) => event.stopPropagation();
+        const toggle = (event: Event) => {
+            event.stopPropagation();
+            setMode(winRate ? "score" : "win-rate");
+        };
+        BOARD_POINTER_EVENTS.forEach((type) => bar.addEventListener(type, stop));
+        bar.addEventListener("click", toggle);
         return () => {
             resizeObserver?.disconnect();
             labels.forEach((label) => label.remove());
-            if (!goban.destroyed) {
-                goban.setEvaluationBar(false);
-            }
+            BOARD_POINTER_EVENTS.forEach((type) => bar.removeEventListener(type, stop));
+            bar.removeEventListener("click", toggle);
+            bar.style.cursor = "";
+            bar.title = "";
         };
-    }, [goban, enabled]);
+    }, [goban, enabled, winRate, setMode]);
     React.useEffect(() => {
-        // Without a score the bar returns to even, so it does not show the
+        // Without a value the bar returns to even, so it does not show the
         // previous position. While a new estimate is calculated the previous
-        // score is still available and stays shown.
+        // one is still available and stays shown.
         goban.evaluation = available
-            ? kibitzEvaluation(score!, Math.max(goban.width, goban.height))
+            ? winRate
+                ? value!
+                : kibitzEvaluation(value!, Math.max(goban.width, goban.height))
             : 0.5;
-    }, [goban, available, score]);
-    const leadText = available
-        ? interpolate(_("{{winner}} by {{score}}"), {
-              winner: score! >= 0 ? _("Black") : _("White"),
-              score: Math.abs(score!).toFixed(1),
-          })
-        : null;
+    }, [goban, available, value, winRate]);
+    const leadText = !available
+        ? null
+        : winRate
+          ? interpolate(pgettext("Kibitz score bar win rate", "{{color}} {{percent}}%"), {
+                color: value! >= 0.5 ? _("Black") : _("White"),
+                percent: Math.round(Math.max(value!, 1 - value!) * 100),
+            })
+          : interpolate(_("{{winner}} by {{score}}"), {
+                winner: value! >= 0 ? _("Black") : _("White"),
+                score: Math.abs(value!).toFixed(1),
+            });
     const label = !enabled
         ? null
         : leadText
-          ? Number.isFinite(reviewedScore)
+          ? hasReview
               ? `${leadText} · ${pgettext("Kibitz score source", "AI review")}`
               : leadText
           : !allowed
             ? pgettext("Kibitz evaluation", "Score unavailable")
             : failed
               ? pgettext("Kibitz evaluation", "Estimate failed")
-              : _("Estimating...");
+              : winRateUnavailable
+                ? pgettext("Kibitz evaluation", "Win rate unavailable")
+                : _("Estimating...");
     React.useEffect(() => {
         onLabelChange(label);
     }, [label, onLabelChange]);

@@ -19,9 +19,10 @@ import * as React from "react";
 import { act, render } from "@testing-library/react";
 import EventEmitter from "eventemitter3";
 import type { GobanController } from "@/lib/GobanController";
+import * as preferences from "@/lib/preferences";
 import { KibitzEvaluation } from "./KibitzEvaluation";
 
-const mockLocalScore = { value: -6.5, fail: false };
+const mockLocalScore = { value: -6.5, winRate: undefined as number | undefined, fail: false };
 jest.mock("goban", () => ({
     ...jest.requireActual("goban"),
     ScoreEstimator: jest.fn(() => ({
@@ -30,11 +31,17 @@ jest.mock("goban", () => ({
             : Promise.resolve(),
         amount: Math.abs(mockLocalScore.value),
         winner: mockLocalScore.value > 0 ? "Black" : "White",
+        win_rate: mockLocalScore.winRate,
     })),
 }));
 import { ScoreEstimator } from "goban";
 const mockSelect = jest.fn();
-const mockReview = { moves: { 1: { score: 8 } }, scores: [], analyzed_variations: {} };
+const mockReview = {
+    moves: { 1: { score: 8, win_rate: 0.7 } },
+    scores: [],
+    win_rates: [],
+    analyzed_variations: {},
+};
 jest.mock("@/components/AIReview/hooks", () => ({
     useAIReviewData: () => ({ reviewData: mockReview, setSelectedAIReview: mockSelect }),
 }));
@@ -97,7 +104,9 @@ function renderBar(asController: GobanController, enabled = true) {
 
 beforeEach(() => {
     mockLocalScore.value = -6.5;
+    mockLocalScore.winRate = undefined;
     mockLocalScore.fail = false;
+    preferences.set("kibitz-score-bar-mode", "score");
     jest.mocked(ScoreEstimator).mockClear();
     onLabel.mockClear();
 });
@@ -211,6 +220,62 @@ test("shows a failed estimate and drops the previous score", async () => {
         jest.advanceTimersByTime(250);
     });
     expect(label()).toBe("Estimate failed");
+    expect(goban.evaluation).toBe(0.5);
+    view.unmount();
+    jest.useRealTimers();
+});
+
+test("clicking the bar switches between the score and the win rate", async () => {
+    const { goban, bar, asController } = setup();
+    const board = document.createElement("div");
+    const boardClick = jest.fn();
+    board.addEventListener("click", boardClick);
+    board.appendChild(bar);
+    renderBar(asController);
+    expect(label()).toBe("Black by 8.0 · AI review");
+    act(() => bar.click());
+    expect(label()).toBe("Black 70% · AI review");
+    expect(goban.evaluation).toBe(0.7);
+    expect([...bar.querySelectorAll("span")].map((span) => span.textContent)).toEqual([
+        "75%",
+        "50%",
+        "75%",
+    ]);
+    expect(preferences.get("kibitz-score-bar-mode")).toBe("win-rate");
+    expect(boardClick).not.toHaveBeenCalled();
+    act(() => bar.click());
+    expect(label()).toBe("Black by 8.0 · AI review");
+    await act(async () => {});
+});
+
+test("shows the AI server's win rate for an estimated position", async () => {
+    jest.useFakeTimers();
+    preferences.set("kibitz-score-bar-mode", "win-rate");
+    mockLocalScore.winRate = 0.42;
+    const { goban, unreviewed, asController } = setup();
+    goban.engine.cur_move = unreviewed;
+    const view = renderBar(asController);
+    expect(label()).toBe("Estimating...");
+    await act(async () => {
+        jest.advanceTimersByTime(250);
+    });
+    expect(label()).toBe("White 58%");
+    expect(goban.evaluation).toBe(0.42);
+    view.unmount();
+    jest.useRealTimers();
+});
+
+test("says the win rate is unavailable for a local estimate", async () => {
+    jest.useFakeTimers();
+    preferences.set("kibitz-score-bar-mode", "win-rate");
+    const { goban, unreviewed, controller, asController } = setup();
+    controller.prefersRemoteScoreEstimate.mockReturnValue(false);
+    goban.engine.cur_move = unreviewed;
+    const view = renderBar(asController);
+    await act(async () => {
+        jest.advanceTimersByTime(250);
+    });
+    expect(label()).toBe("Win rate unavailable");
     expect(goban.evaluation).toBe(0.5);
     view.unmount();
     jest.useRealTimers();
