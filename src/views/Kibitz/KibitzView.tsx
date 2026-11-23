@@ -197,6 +197,9 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     );
     const scoreSource = gobans.playerBars ?? gobans.center;
     const scoreEstimation = useKibitzScoreEstimation(gobans.center, scoreSource, room.channel);
+    // A review or demo board is not a game in play, so there is no result for
+    // the score bar to track.
+    const scoreBarAvailable = !isReviewBoard(room.current_game);
     const [showScoreBar, setShowScoreBar] = React.useState(false);
     const [scoreBarLabel, setScoreBarLabel] = React.useState<string | null>(null);
     const showScore = scoreEstimation.estimating || scoreBarLabel !== null;
@@ -613,7 +616,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 // the variation alone, since the room is what the reader
                 // closes back to rather than what they are looking at.
                 <div className="Kibitz-header" ref={help.roomRef}>
-                    {gobans.center && gobans.main && (
+                    {scoreBarAvailable && gobans.center && gobans.main && (
                         <KibitzEvaluation
                             controller={gobans.center}
                             source={
@@ -838,16 +841,18 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 onClick={scoreEstimation.toggle}
             />
 
-            <GobanView.Tab
-                id="kibitz-score-bar"
-                type="action"
-                align="center"
-                icon="balance-scale"
-                title={pgettext("Kibitz action that shows the score bar", "Score bar")}
-                active={showScoreBar}
-                disabled={scoreEstimation.disabled && !showScoreBar}
-                onClick={() => setShowScoreBar((shown) => !shown)}
-            />
+            {scoreBarAvailable && (
+                <GobanView.Tab
+                    id="kibitz-score-bar"
+                    type="action"
+                    align="center"
+                    icon="balance-scale"
+                    title={pgettext("Kibitz action that shows the score bar", "Score bar")}
+                    active={showScoreBar}
+                    disabled={scoreEstimation.disabled && !showScoreBar}
+                    onClick={() => setShowScoreBar((shown) => !shown)}
+                />
+            )}
 
             {!isPortrait && (
                 <GobanView.Tab
