@@ -10,6 +10,10 @@ board together, chat, and share variations. The board is a live game, or a
 public review: a demo board or a review of a game (see "Demo boards"). It
 renders through the shared `GobanView` layout (`src/components/GobanView`).
 
+On mobile, the Rooms tab shows a dot when a room is created or another room
+rises above 10 viewers. Open Rooms to see a `New` badge or an up arrow next to
+the affected room's viewer count. The markers clear when you leave the Rooms pane.
+
 ## Layout
 
 Landscape: a left aside with the room list, the variation list and, while

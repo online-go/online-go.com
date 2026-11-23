@@ -1543,6 +1543,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 onExitVariation={onExitVariation}
                 onReturnToLive={onReturnToLive}
                 onRoomsOpened={onRoomsOpened}
+                roomActivitySource={controller}
                 roomSettings={{
                     ready: activeRoom?.id === resolvedRoom.id,
                     canEditRoom: canManageRoom,

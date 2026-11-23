@@ -93,6 +93,11 @@
             }
         }
 
+        .room-activity {
+            margin-inline-end: 0.35rem;
+            font-weight: bold;
+        }
+
         .room-viewer-count {
             flex: 0 0 auto;
             min-width: 2rem;
