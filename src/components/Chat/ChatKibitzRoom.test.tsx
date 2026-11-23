@@ -82,12 +82,13 @@ const english_room = {
     id: "preset-english-chat-live",
     channel: "kibitz-preset-english-chat-live",
     title: "English chat game",
-    description: "A top live game, preferring games played by members of the English chat.",
+    description: "A live game played by a member of the English chat.",
     viewer_count: 7,
     preset: { preset_key: "english-chat-live" },
     current_game: {
         black: { username: "alice", ranking: 35, professional: false },
         white: { username: "bob", ranking: 33, professional: false },
+        live: true,
     },
 };
 
@@ -136,11 +137,35 @@ describe("ChatKibitzRoom", () => {
         );
     });
 
-    it("falls back to the room description when there is no current game", async () => {
+    it("renders nothing when the room has no current game", async () => {
         mockBackend({ rooms: [{ ...english_room, current_game: null }] });
-        render(<ChatKibitzRoom channel="global-english" />);
+        const { container } = render(<ChatKibitzRoom channel="global-english" />);
+        await waitFor(() => expect(mock_get).toHaveBeenCalledWith("kibitz/directory"));
+        expect(container).toBeEmptyDOMElement();
+    });
+
+    it("renders nothing when the room's game has ended", async () => {
+        mockBackend({
+            rooms: [
+                { ...english_room, current_game: { ...english_room.current_game, live: false } },
+            ],
+        });
+        const { container } = render(<ChatKibitzRoom channel="global-english" />);
+        await waitFor(() => expect(mock_get).toHaveBeenCalledWith("kibitz/directory"));
+        expect(container).toBeEmptyDOMElement();
+    });
+
+    it("hides the card when a room-updated push says the game has ended", async () => {
+        mockBackend();
+        const { container } = render(<ChatKibitzRoom channel="global-english" />);
         await screen.findByText("English chat game");
-        expect(screen.getByText(english_room.description)).toBeInTheDocument();
+        act(() => {
+            mock_push_manager.fire("room-updated", {
+                ...english_room,
+                current_game: { ...english_room.current_game, live: false },
+            });
+        });
+        expect(container).toBeEmptyDOMElement();
     });
 
     it("renders nothing when the directory has no matching room", async () => {
@@ -244,6 +269,7 @@ describe("ChatKibitzRoom", () => {
                 current_game: {
                     black: { username: "carol", ranking: 20, professional: false },
                     white: { username: "dave", ranking: 21, professional: false },
+                    live: true,
                 },
             });
         });

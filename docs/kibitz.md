@@ -280,7 +280,12 @@ queue, which also mounts `GameChat`, does not.
 `ChatKibitzRoom` on the Chat page is the sibling card, keyed by chat
 channel instead of game. It uses the same hook and the same
 `KibitzRoomCard` and `KibitzRoomCards` components
-(`src/components/KibitzRoomCard/`), and adds a player matchup line.
+(`src/components/KibitzRoomCard/`), and adds a player matchup line. It
+shows only while the room's game is live (`current_game.live` in the
+directory payload): the English chat room picks only its members' games,
+so a room holding a finished game, or still looking for one, has no card.
+The server pushes `room-updated` to the directory when a watched game
+ends, which hides the card at once.
 
 ## Game picker
 
