@@ -31,6 +31,28 @@ window.GobanEngine = GobanEngine;
 
 let previous_toast: any = null;
 
+type ChatInput = HTMLInputElement | HTMLTextAreaElement;
+
+/**
+ * The chat input that a modifier-click on the board adds coordinates to.
+ *
+ * A page can hold more than one `.chat-input`. Kibitz renders a composer for
+ * the room chat and one for the watched board's chat, and only the active
+ * tab's composer is shown; the other is `hidden`, as is the whole pane in
+ * portrait. The input the user is typing in wins; otherwise the first one
+ * that is enabled and not inside a `hidden` element.
+ */
+export function coordinateChatInput(doc: Document = document): ChatInput | null {
+    const inputs = Array.from(doc.querySelectorAll<ChatInput>(".chat-input")).filter(
+        (input) => !input.disabled,
+    );
+    const focused = inputs.find((input) => input === doc.activeElement);
+    if (focused) {
+        return focused;
+    }
+    return inputs.find((input) => input.closest("[hidden]") === null) ?? null;
+}
+
 export function configure_goban() {
     function syncGobanRenderer(v?: string) {
         if (v === "enabled") {
@@ -145,11 +167,10 @@ export function configure_goban() {
         customBlackStoneUrls: (): string[] => preferences.get("goban-theme-custom-black-urls"),
         customWhiteStoneUrls: (): string[] => preferences.get("goban-theme-custom-white-urls"),
         addCoordinatesToChatInput: (coordinates: string): void => {
-            const chat_input = document.querySelector(".chat-input") as HTMLInputElement;
+            const chat_input = coordinateChatInput();
 
-            if (chat_input && !chat_input.disabled) {
-                const txt = (chat_input.value.trim() + " " + coordinates).trim();
-                chat_input.value = txt;
+            if (chat_input) {
+                chat_input.value = (chat_input.value.trim() + " " + coordinates).trim();
             }
         },
 
