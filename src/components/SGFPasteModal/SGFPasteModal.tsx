@@ -62,7 +62,7 @@ export class SGFPasteModal extends Modal<Events, SGFPasteModalProperties, any> {
     extractFilename = (sgfData: string) => {
         const gameNameMatch = this.getSGFPropertyRegex("GN").exec(sgfData);
         if (gameNameMatch) {
-            return `${gameNameMatch[1]}.sgf"`;
+            return `${gameNameMatch[1]}.sgf`;
         }
         const playerBlackMatch = this.getSGFPropertyRegex("PB").exec(sgfData);
         const playerWhiteMatch = this.getSGFPropertyRegex("PW").exec(sgfData);

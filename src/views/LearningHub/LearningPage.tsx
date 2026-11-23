@@ -21,7 +21,7 @@ import { decodeMoves, GobanConfig } from "goban";
 import { sfx } from "@/lib/sfx";
 import { InstructionalGoban } from "./InstructionalGoban";
 import { browserHistory } from "@/lib/ogsHistory";
-import { setSectionPageCompleted, getSectionPageCompleted } from "./util";
+import { setSectionPageCompleted, getSectionPageCompleted, nextPageHref, pageHref } from "./util";
 import { _ } from "@/lib/translate";
 import * as preferences from "@/lib/preferences";
 
@@ -87,9 +87,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         this.wrong_answer_triggered = false;
 
         if (this.props.curPage + 1 < this.props.nPages) {
-            browserHistory.push(
-                window.location.pathname.replace(/\/[0-9]+/, "") + "/" + (this.props.curPage + 1),
-            );
+            browserHistory.push(nextPageHref(window.location.pathname, this.props.curPage + 1));
         } else {
             browserHistory.push("/learn-to-play-go/" + this.props.nextSection);
         }
@@ -130,7 +128,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         });
     };
     page_href(i: number): string {
-        return window.location.pathname.replace(/\/[0-9]*$/, "") + "/" + i;
+        return pageHref(window.location.pathname, i);
     }
 
     onCorrectAnswer = () => {

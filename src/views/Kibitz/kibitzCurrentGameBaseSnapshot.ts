@@ -23,6 +23,8 @@ import {
 } from "@/lib/GobanController";
 import type { KibitzWatchedGame } from "@/models/kibitz";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
+import { boardIdsFromKey, boardKey, isReviewBoard, type KibitzBoardKey } from "./kibitzBoardRef";
+import { returnToReviewPresenter, reviewPresenterNode } from "./kibitzReviewBoard";
 
 export function createCurrentGameMiniGobanSnapshotOverrides(
     snapshot: KibitzCurrentGameBaseSnapshot | null | undefined,
@@ -32,7 +34,7 @@ export function createCurrentGameMiniGobanSnapshotOverrides(
         return undefined;
     }
 
-    if (!snapshot || snapshot.gameId !== currentGameId) {
+    if (!snapshot || snapshot.board !== boardKey({ game_id: currentGameId })) {
         return new Map([[currentGameId, null]]);
     }
 
@@ -118,7 +120,7 @@ function buildSnapshotFromEngine({
     }
 
     return {
-        gameId,
+        board: `game:${gameId}`,
         roomId: roomId ?? null,
         trunkTailMoveNumber: officialTail.move_number,
         moveTreeId: engine.move_tree?.id ?? null,
@@ -182,29 +184,30 @@ function cloneMoveTreeJson(moveTree: MoveTreeJson): MoveTreeJson {
     return JSON.parse(JSON.stringify(moveTree)) as MoveTreeJson;
 }
 
+/** Puts the main board back on the room's position: the trunk tail of a
+ *  game, or the presenter's node of a review. */
 export function restoreMainBoardToOfficialTail(controller: GobanController): MoveTree | null {
+    if (returnToReviewPresenter(controller.goban)) {
+        return reviewPresenterNode(controller.goban);
+    }
     return restoreGobanToOfficialTail(controller.goban);
 }
 
-function positiveGameId(value: unknown): number | null {
-    const id = typeof value === "string" ? Number(value) : value;
-    if (typeof id === "number" && Number.isFinite(id) && id > 0) {
-        return id;
-    }
-    return null;
+function boardKeyFromRaw(gameId: unknown, reviewId: unknown): KibitzBoardKey | null {
+    return boardKey({ game_id: Number(gameId), review_id: Number(reviewId) });
 }
 
-/** Game ids the board itself reports. A detached details board has none. */
-function sourceBoardGameIds(controller: GobanController): number[] {
+/** Boards the controller itself reports. A detached details board has none. */
+function sourceBoardKeys(controller: GobanController): KibitzBoardKey[] {
     const goban = controller.goban;
     const engine = goban?.engine;
-    const ids = [
-        positiveGameId(goban?.game_id),
-        positiveGameId(engine?.game_id),
-        positiveGameId(engine?.config?.game_id),
-        positiveGameId(goban?.config?.game_id),
+    const keys = [
+        boardKeyFromRaw(goban?.game_id, goban?.review_id),
+        boardKeyFromRaw(engine?.game_id, engine?.review_id),
+        boardKeyFromRaw(engine?.config?.game_id, engine?.config?.review_id),
+        boardKeyFromRaw(goban?.config?.game_id, goban?.config?.review_id),
     ];
-    return ids.filter((id): id is number => id != null);
+    return keys.filter((key): key is KibitzBoardKey => key != null);
 }
 
 export function captureCurrentGameBaseSnapshotFromController(
@@ -214,7 +217,8 @@ export function captureCurrentGameBaseSnapshotFromController(
     source: KibitzCurrentGameBaseSnapshot["source"] = "main-board",
     expectedMoveNumber?: number,
 ): KibitzCurrentGameBaseSnapshot | null {
-    if (!controller || !game) {
+    const board = boardKey(game);
+    if (!controller || !game || !board) {
         return null;
     }
 
@@ -226,6 +230,10 @@ export function captureCurrentGameBaseSnapshotFromController(
         return null;
     }
 
+    if (game.review_id) {
+        return captureReviewSnapshot(controller, board, roomId, source);
+    }
+
     const officialTail = getMoveTreeTrunkTail(engine.move_tree);
     const requiredMoveNumber = expectedMoveNumber ?? game.move_number ?? 0;
 
@@ -235,12 +243,12 @@ export function captureCurrentGameBaseSnapshotFromController(
 
     // The previous controller stays mounted until its effect is replaced.
     // Do not stamp the next game's id onto that controller's move tree.
-    if (sourceBoardGameIds(controller).some((id) => id !== game.game_id)) {
+    if (sourceBoardKeys(controller).some((key) => key !== board)) {
         return null;
     }
 
     return {
-        gameId: game.game_id,
+        board,
         roomId: roomId ?? null,
         trunkTailMoveNumber: officialTail.move_number,
         moveTreeId: engine.move_tree?.id ?? null,
@@ -250,8 +258,44 @@ export function captureCurrentGameBaseSnapshotFromController(
         config: {
             ...(engine.config as Record<string, unknown>),
             game_id: game.game_id,
+            review_id: game.review_id,
             moves: undefined,
             move_tree: cloneOfficialTrunkMoveTreeJson(engine.move_tree),
+        },
+    };
+}
+
+/**
+ * A review's snapshot copies the whole tree, branches included: the
+ * presenter's position can be on any branch, and a variation can branch from
+ * any node of it. `movePath` is the presenter's node. A review is not a live
+ * game, so there is no move count to wait for.
+ */
+function captureReviewSnapshot(
+    controller: GobanController,
+    board: KibitzBoardKey,
+    roomId: string | null | undefined,
+    source: KibitzCurrentGameBaseSnapshot["source"],
+): KibitzCurrentGameBaseSnapshot | null {
+    const { engine } = controller.goban;
+    const presenter = reviewPresenterNode(controller.goban);
+    if (!presenter || sourceBoardKeys(controller).some((key) => key !== board)) {
+        return null;
+    }
+    return {
+        board,
+        roomId: roomId ?? null,
+        trunkTailMoveNumber: presenter.move_number,
+        moveTreeId: engine.move_tree?.id ?? null,
+        movePath: presenter.getMoveStringToThisPoint(),
+        source,
+        fetchedMoveCount: null,
+        config: {
+            ...(engine.config as Record<string, unknown>),
+            game_id: undefined,
+            review_id: controller.goban.review_id,
+            moves: undefined,
+            move_tree: engine.move_tree.toJson(),
         },
     };
 }
@@ -264,7 +308,9 @@ export function chooseFresherCurrentGameBaseSnapshot(
         return next;
     }
 
-    if (previous.gameId !== next.gameId) {
+    // The presenter of a review steps back and branches on purpose, so the
+    // latest snapshot of a review is the right one even when it is earlier.
+    if (previous.board !== next.board || isReviewBoard(boardIdsFromKey(next.board))) {
         return next;
     }
 

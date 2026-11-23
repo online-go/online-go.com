@@ -19,7 +19,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { npgettext, interpolate, moment } from "@/lib/translate";
 import * as preferences from "@/lib/preferences";
-import { GobanRenderer, JGOFMove, JGOFTimeControl } from "goban";
+import { GobanEngine, GobanRenderer, JGOFMove, JGOFTimeControl } from "goban";
 import { GobanController } from "@/lib/GobanController";
 import * as data from "@/lib/data";
 import { PersistentElement } from "@/components/PersistentElement";
@@ -82,6 +82,23 @@ const DEFAULT_DISPLAY_WIDTH_EM10 = 1.9;
 
 function computedDisplayWidth(): number {
     return Math.min(getWindowWidth(), getEm10Width() * DEFAULT_DISPLAY_WIDTH_EM10);
+}
+
+/**
+ * Display name for one side of a mini board: "<first team member> +<others>" for a rengo team
+ * that has a known first member, otherwise the single player's name.
+ */
+function sideDisplayName(
+    engine: GobanEngine,
+    color: "black" | "white",
+    player: PlayerCacheEntry | undefined,
+): string {
+    const team = engine.rengo ? engine.rengo_teams?.[color] : undefined;
+    const leader = team?.[0];
+    if (team && leader?.username) {
+        return leader.username + " +" + (team.length - 1);
+    }
+    return engine.players?.[color]?.username || player?.username || "";
 }
 
 export function MiniGoban(props: MiniGobanProps): React.ReactElement {
@@ -325,28 +342,12 @@ export function MiniGoban(props: MiniGobanProps): React.ReactElement {
             if (typeof black === "string") {
                 setBlackName(black);
             } else {
-                setBlackName(
-                    engine.rengo && engine.rengo_teams
-                        ? engine.rengo_teams.black[0].username +
-                              " +" +
-                              (engine.rengo_teams.black.length - 1)
-                        : engine.players?.black?.username ||
-                              (black as PlayerCacheEntry).username ||
-                              "",
-                );
+                setBlackName(sideDisplayName(engine, "black", black));
             }
             if (typeof white === "string") {
                 setWhiteName(white);
             } else {
-                setWhiteName(
-                    engine.rengo && engine.rengo_teams
-                        ? engine.rengo_teams.white[0].username +
-                              " +" +
-                              (engine.rengo_teams.white.length - 1)
-                        : engine.players?.white?.username ||
-                              (white as PlayerCacheEntry).username ||
-                              "",
-                );
+                setWhiteName(sideDisplayName(engine, "white", white));
             }
 
             // Mark games where it's the current user's move.

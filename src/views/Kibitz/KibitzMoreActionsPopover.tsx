@@ -27,6 +27,7 @@ import { useUser } from "@/lib/hooks";
 import { openReport } from "@/components/Report";
 import { openGameInfoModal } from "@/views/Game/GameInfoModal";
 import { openGameLinkModal } from "@/views/Game/GameLinkModal";
+import { GameSettingsPanel } from "@/views/Game/GameSettingsPanel";
 import "@/views/Game/GameSidebarPanels.css";
 import "./KibitzMoreActionsPopover.css";
 
@@ -59,23 +60,30 @@ export interface KibitzMoreActionsRoomActions {
 }
 
 interface KibitzMoreActionsPopoverProps {
-    /** Null while the room has no live game; the game entries are then
-     *  left out and only the room entries remain. */
+    /** Null while the room has no live game. */
     controller: GobanController | null;
+    compact: boolean;
+    onShowThemeSettings: () => void;
     roomActions?: KibitzMoreActionsRoomActions;
     onClose: () => void;
 }
 
 export function KibitzMoreActionsPopover({
     controller,
+    compact,
+    onShowThemeSettings,
     roomActions,
     onClose,
 }: KibitzMoreActionsPopoverProps): React.ReactElement {
     const user = useUser();
+    const [settings_open, setSettingsOpen] = React.useState(false);
     const goban = controller?.goban ?? null;
     const engine = goban?.engine ?? null;
-    const game_id = goban ? Number(goban.config.game_id) : 0;
-    const sgf_url = api1(`games/${game_id}/sgf`);
+    // A room on a review (a demo board or a review of a game) has a review
+    // goban, whose game id is 0.
+    const review_id = goban?.review_id ?? 0;
+    const game_id = goban && !review_id ? Number(goban.config.game_id) : 0;
+    const sgf_url = review_id ? api1(`reviews/${review_id}/sgf`) : api1(`games/${game_id}/sgf`);
     let analysis_disabled = false;
     try {
         analysis_disabled = goban?.isAnalysisDisabled(true) ?? false;
@@ -85,9 +93,10 @@ export function KibitzMoreActionsPopover({
     // Same rule as the Game page's actions panel: the server refuses the
     // SGF of a game in progress to anonymous users and to its players.
     const sgf_disabled =
-        analysis_disabled ||
         !engine ||
-        (engine.phase !== "finished" &&
+        (!review_id && analysis_disabled) ||
+        (!review_id &&
+            engine.phase !== "finished" &&
             (user.anonymous ||
                 user.id === engine.config.black_player_id ||
                 user.id === engine.config.white_player_id));
@@ -101,6 +110,19 @@ export function KibitzMoreActionsPopover({
     const manages_room =
         !!roomActions &&
         (roomActions.canEditRoom || roomActions.canChangeBoard || roomActions.canDeleteRoom);
+
+    if (settings_open) {
+        return (
+            <div className="GamePopover GameSettingsPopover KibitzBoardSettingsPopover">
+                <GameSettingsPanel
+                    kibitz
+                    compact={compact}
+                    onClose={onClose}
+                    onShowThemeSettings={onShowThemeSettings}
+                />
+            </div>
+        );
+    }
 
     // The game's fixed settings head the menu: they are reference, not
     // actions, and the room title only has room for the time control.
@@ -132,6 +154,16 @@ export function KibitzMoreActionsPopover({
                         {settings.map((setting) => setting.trim()).join(" \u00b7 ")}
                     </div>
                 )}
+                <button
+                    type="button"
+                    className="GameSidebarPanel-item"
+                    onClick={() => setSettingsOpen(true)}
+                >
+                    <i className="fa fa-gear" aria-hidden="true" />
+                    <span>
+                        {pgettext("Kibitz board preferences in the More actions menu", "Settings")}
+                    </span>
+                </button>
                 {goban && engine && controller && (
                     <>
                         <button
@@ -144,6 +176,7 @@ export function KibitzMoreActionsPopover({
                                     engine.players.white,
                                     controller.annulled,
                                     controller.creator_id || goban.review_owner_id || 0,
+                                    !!engine.sgf_time_settings,
                                 ),
                             )}
                         >
@@ -158,6 +191,23 @@ export function KibitzMoreActionsPopover({
                             <i className="fa fa-share-alt" />
                             <span>{_("Link to game")}</span>
                         </button>
+                        {review_id ? (
+                            <a
+                                className="GameSidebarPanel-item"
+                                href={`/review/${review_id}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                onClick={onClose}
+                            >
+                                <i className="fa fa-external-link" />
+                                <span>
+                                    {pgettext(
+                                        "Kibitz More actions entry that opens the demo board or review the room watches on its own page, where its presenter moves the stones",
+                                        "Open the board",
+                                    )}
+                                </span>
+                            </a>
+                        ) : null}
                         <a
                             className={"GameSidebarPanel-item" + (sgf_disabled ? " disabled" : "")}
                             href={sgf_url}
@@ -178,7 +228,13 @@ export function KibitzMoreActionsPopover({
                             type="button"
                             className="GameSidebarPanel-item"
                             disabled={report_disabled}
-                            onClick={wrap(() => openReport({ reported_game_id: game_id }))}
+                            onClick={wrap(() =>
+                                openReport(
+                                    review_id
+                                        ? { reported_review_id: review_id }
+                                        : { reported_game_id: game_id },
+                                ),
+                            )}
                         >
                             <i className="fa fa-exclamation-triangle" />
                             <span>{_("Call moderator")}</span>
@@ -242,19 +298,12 @@ export function KibitzMoreActionsPopover({
 /** Opens the popover under `button`. */
 export function openKibitzMoreActions(
     button: HTMLElement,
-    controller: GobanController | null,
-    roomActions?: KibitzMoreActionsRoomActions,
+    options: Omit<KibitzMoreActionsPopoverProps, "onClose">,
 ): PopOver {
     let instance: PopOver | null = null;
     const close = () => instance?.close();
     instance = popover({
-        elt: (
-            <KibitzMoreActionsPopover
-                controller={controller}
-                roomActions={roomActions}
-                onClose={close}
-            />
-        ),
+        elt: <KibitzMoreActionsPopover {...options} onClose={close} />,
         below: button,
         minWidth: 220,
     });

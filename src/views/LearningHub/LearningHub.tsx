@@ -19,12 +19,12 @@ import * as React from "react";
 import * as data from "@/lib/data";
 import "./LearningHub.css";
 import * as preferences from "@/lib/preferences";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useLocation, useParams } from "react-router-dom";
 import { CardLink } from "@/components/material";
 import { _, pgettext } from "@/lib/translate";
 import { sections, all_sections } from "./sections";
 import { Ribbon } from "@/components/misc-ui";
-import { getSectionCompletion, getSectionByName, resetProgress } from "./util";
+import { canonicalPagePath, getSectionCompletion, getSectionByName, resetProgress } from "./util";
 import { browserHistory } from "@/lib/ogsHistory";
 import { MiniGoban } from "@/components/MiniGoban";
 import { alert } from "@/lib/swal_config";
@@ -36,6 +36,7 @@ interface LearningHubParams {
 
 export function LearningHub(): React.ReactElement {
     const params = useParams<keyof LearningHubParams>();
+    const location = useLocation();
 
     React.useEffect(() => {
         const oldTitle = window.document.title;
@@ -60,6 +61,10 @@ export function LearningHub(): React.ReactElement {
 
     if (section) {
         const S = section;
+        const canonical = canonicalPagePath(location.pathname, params.page);
+        if (canonical !== null) {
+            return <Navigate to={canonical} replace />;
+        }
         section = (
             <S
                 page={params.page}

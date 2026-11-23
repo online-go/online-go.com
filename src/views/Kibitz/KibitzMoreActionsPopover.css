@@ -2,6 +2,10 @@
     min-width: 220px;
 }
 
+.KibitzBoardSettingsPopover {
+    width: min(320px, calc(100dvw - 32px));
+}
+
 /* The watched game's fixed settings, above the actions. Reference rather
    than a control, so it is quiet and not clickable. */
 .KibitzMoreActionsPopover .KibitzMoreActionsPopover-settings {

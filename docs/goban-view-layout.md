@@ -258,6 +258,9 @@ Compact Kibitz sets it to 6rem; other views keep the default.
 - **`aboveBoard`** / **`belowBoard`**: portrait-only slots directly above
   and below the board, inside the scroll flow, part of the stage that is
   capped to the screen height outside scroll mode.
+- **`boardNotice`**: a notice directly above the board in both
+  orientations, inside the stage, below the top player bar; the board
+  shrinks to make room for it. Kibitz uses it for "You are presenting".
 - **Move controls** (`MoveNumberControl`, or a view's `customSlider`):
   `"docked"` puts the strip above the tab bar in portrait and at the
   bottom of the sidebar in landscape.

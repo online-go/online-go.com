@@ -46,6 +46,8 @@ import { formatVariationBranchLabel, formatVariationLengthLabel } from "./kibitz
 import { KibitzVariationSwatch } from "./KibitzVariationSwatch";
 import { kibitzTelemetry } from "./kibitzTelemetry";
 import { getVisibleKibitzStreamItems } from "./kibitzVisibleStreamItems";
+import { boardKey, gobanBoardKey, isReviewBoard } from "./kibitzBoardRef";
+import { boardChatLabel } from "./kibitzReviewBoard";
 import "./KibitzChatPanel.css";
 import "@/components/Chat/ChatLog.css";
 
@@ -295,8 +297,8 @@ export function KibitzChatPanel({
         watchedController &&
         !watchedController.destroyed &&
         !watchedController.goban.destroyed &&
-        room.current_game?.game_id &&
-        watchedController.goban.game_id === room.current_game.game_id,
+        boardKey(room.current_game) != null &&
+        gobanBoardKey(watchedController.goban) === boardKey(room.current_game),
     );
     const roomScrollRef = React.useRef<HTMLDivElement | null>(null);
     const gameScrollRef = React.useRef<HTMLDivElement | null>(null);
@@ -694,7 +696,7 @@ export function KibitzChatPanel({
                 !watchedController ||
                 watchedController.destroyed ||
                 watchedController.goban.destroyed ||
-                watchedController.goban.game_id !== room.current_game?.game_id
+                gobanBoardKey(watchedController.goban) !== boardKey(room.current_game)
             ) {
                 return false;
             }
@@ -708,7 +710,7 @@ export function KibitzChatPanel({
             input.style.height = "auto";
             return false;
         },
-        [tab, chatDisabled, gameChatReady, watchedController, room.current_game?.game_id],
+        [tab, chatDisabled, gameChatReady, watchedController, room.current_game],
     );
 
     let gameLastLine: protocol.GameChatLine | undefined = {
@@ -1024,7 +1026,7 @@ export function KibitzChatPanel({
                         onClick={() => setTab("game")}
                     >
                         <i className="fa fa-comment" />{" "}
-                        {pgettext("Kibitz chat tab for the watched game's chat", "Game chat")}
+                        {boardChatLabel(isReviewBoard(room.current_game))}
                         {gameUnread && tab !== "game" ? (
                             <span className="KibitzChatPanel-unread" />
                         ) : null}
@@ -1073,7 +1075,7 @@ export function KibitzChatPanel({
                     hidden={tab !== "game"}
                 >
                     <TabCompleteInput
-                        key={`${room.id}-${room.current_game?.game_id ?? "none"}`}
+                        key={`${room.id}-${boardKey(room.current_game) ?? "none"}`}
                         id={"kibitz-game-chat-input-" + room.id}
                         className="chat-input main"
                         aria-label={pgettext(

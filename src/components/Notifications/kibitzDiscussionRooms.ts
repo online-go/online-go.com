@@ -15,6 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.SGFClock {
-    opacity: 0.85;
+export interface KibitzDiscussionRoom {
+    id: string;
+    title: string;
+}
+
+/** The well-formed rooms of a kibitzGameDiscussed notification. The server
+ *  lists only rooms that still exist when it sends the notification. */
+export function kibitzDiscussionRooms(rooms: unknown): KibitzDiscussionRoom[] {
+    if (!Array.isArray(rooms)) {
+        return [];
+    }
+    return rooms.filter(
+        (room): room is KibitzDiscussionRoom =>
+            typeof room?.id === "string" &&
+            /^[A-Za-z0-9_-]+$/.test(room.id) &&
+            typeof room.title === "string" &&
+            room.title.length > 0,
+    );
 }

@@ -78,6 +78,48 @@ export function getSectionByName(section_name: string): typeof LearningHubSectio
     return null;
 }
 
+/**
+ * Page index from a learning hub URL page segment, or undefined when the
+ * segment is missing or does not start with a non-negative decimal integer.
+ * A trailing suffix is ignored ("23It" -> 23), because shared lesson links
+ * often have question text pasted onto the end.
+ */
+export function parsePageParam(raw: string | undefined): number | undefined {
+    if (raw === undefined) {
+        return undefined;
+    }
+    const n = parseInt(raw, 10);
+    return Number.isFinite(n) && n >= 0 ? n : undefined;
+}
+
+/**
+ * The path that a learning hub URL must be redirected to when its page
+ * segment is not a plain decimal number, or null when no redirect is needed.
+ * The page segment is replaced with its leading integer, or dropped when it
+ * has none, so the section resumes at its first uncompleted page. A plain
+ * decimal segment is necessary for nextPageHref and pageHref to work.
+ * `raw` is the decoded page segment from the router, or undefined when the
+ * route has no page segment.
+ */
+export function canonicalPagePath(pathname: string, raw: string | undefined): string | null {
+    if (raw === undefined || /^[0-9]+$/.test(raw)) {
+        return null;
+    }
+    const base = pathname.replace(/\/[^/]*\/?$/, "");
+    const n = parsePageParam(raw);
+    return n === undefined ? base : `${base}/${n}`;
+}
+
+/** The URL of page `page` in the section that `pathname` shows. Used by Next. */
+export function nextPageHref(pathname: string, page: number): string {
+    return pathname.replace(/\/[0-9]+/, "") + "/" + page;
+}
+
+/** The URL of page `page` in the section that `pathname` shows. Used by the page dots. */
+export function pageHref(pathname: string, page: number): string {
+    return pathname.replace(/\/[0-9]*$/, "") + "/" + page;
+}
+
 export function getFirstUncompletedPage(section_name: string): number {
     const completion = getCompletion(section_name);
     let section: any = null;

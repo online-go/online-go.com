@@ -23,6 +23,7 @@ import type { KibitzRoomSummary, KibitzVariationSummary, KibitzWatchedGame } fro
 import { KibitzRoomList } from "./KibitzRoomList";
 import { KibitzVariationList } from "./KibitzVariationList";
 import { KibitzMiniMainBoard } from "./KibitzMiniMainBoard";
+import type { KibitzBoardKey } from "./kibitzBoardRef";
 import "./KibitzLeftAside.css";
 
 export interface KibitzLeftAsideProps {
@@ -38,8 +39,8 @@ export interface KibitzLeftAsideProps {
     variations: KibitzVariationSummary[];
     /** Loaded variations used to number duplicate titles. The list renders `variations`. */
     displayedVariations?: KibitzVariationSummary[];
-    currentGameId: number | null;
-    variationGameById: ReadonlyMap<number, KibitzWatchedGame>;
+    currentBoard: KibitzBoardKey | null;
+    variationGameById: ReadonlyMap<KibitzBoardKey, KibitzWatchedGame>;
     selectedVariationId: string | null;
     variationFocusRequestId: number;
     blockedVariationFlashId: string | null;
@@ -158,7 +159,7 @@ export function KibitzLeftAside(props: KibitzLeftAsideProps): React.ReactElement
                             <KibitzVariationList
                                 variations={props.variations}
                                 displayedVariations={props.displayedVariations}
-                                currentGameId={props.currentGameId}
+                                currentBoard={props.currentBoard}
                                 gameById={props.variationGameById}
                                 selectedVariationId={props.selectedVariationId}
                                 variationFocusRequestId={props.variationFocusRequestId}

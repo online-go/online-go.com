@@ -1170,7 +1170,7 @@ export function Tournament(): React.ReactElement {
                     {!editing &&
                         tournament_loaded &&
                         tournament.disable_vacation &&
-                        tournament.time_control_parameters.speed === "correspondence" && (
+                        tournament.time_control_parameters?.speed === "correspondence" && (
                             <div className="disable-vacation-banner">
                                 <i className="fa fa-exclamation-triangle"></i>{" "}
                                 {_(
@@ -1597,7 +1597,7 @@ export function Tournament(): React.ReactElement {
                                 </td>
                             </tr>
 
-                            {tournament.time_control_parameters.speed === "correspondence" && (
+                            {tournament.time_control_parameters?.speed === "correspondence" && (
                                 <tr>
                                     <th>
                                         <label htmlFor="disable_vacation">

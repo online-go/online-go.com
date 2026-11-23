@@ -61,6 +61,16 @@
         white-space: nowrap;
     }
 
+    /* Directly above the board, for a demo board's presenter: their stones
+       on the main board go to the review rather than into a draft. */
+    .Kibitz-presenting-notice {
+        padding: 0.15rem 0.5rem;
+        color: var(--primary);
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-align: center;
+    }
+
     .Kibitz-header-result {
         flex: 0 0 auto;
         margin-left: auto;

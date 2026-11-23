@@ -33,7 +33,12 @@ jest.mock("@/lib/GobanController", () => {
                 config,
                 engine: {
                     move_tree: null,
-                    cur_move: { id: 1, move_number: 0, getMoveStringToThisPoint: () => "" },
+                    cur_move: {
+                        id: 1,
+                        move_number: 0,
+                        trunk: true,
+                        getMoveStringToThisPoint: () => "",
+                    },
                     jumpTo: jest.fn(),
                     followPath: jest.fn(),
                     setLastOfficialMove: jest.fn(),
@@ -62,6 +67,7 @@ jest.mock("@/lib/GobanController", () => {
 });
 jest.mock("./kibitzVariationTree", () => ({
     applyKibitzVariationToController: jest.fn(() => ({ variationId: "v1", endpoint: null })),
+    findNodeByMovePath: jest.requireActual("./kibitzVariationTree").findNodeByMovePath,
 }));
 jest.mock("./kibitzCurrentGameBaseSnapshot", () => ({
     captureCurrentGameBaseSnapshotFromController: jest.fn(() => null),
@@ -137,7 +143,7 @@ function baseOptions(overrides: Partial<UseKibitzGobansOptions> = {}): UseKibitz
         variations: [],
         visibleVariationIds: [],
         variationColorIndexes: {},
-        variationGameById: new Map([[100, game]]),
+        variationGameById: new Map([["game:100" as const, game]]),
         ...overrides,
     };
 }
@@ -152,7 +158,7 @@ function otherGameVariation(): Partial<UseKibitzGobansOptions> {
 }
 
 const MAIN_TRUNK_SNAPSHOT = {
-    gameId: 100,
+    board: "game:100",
     trunkTailMoveNumber: 3,
     config: { move_tree: { x: 1 } },
 };
@@ -186,7 +192,7 @@ test("deriveKibitzCenterMode maps the pane to what the centre shows", () => {
     expect(deriveKibitzCenterMode({ collapsed: true })).toBe("main");
     expect(deriveKibitzCenterMode({ collapsed: false })).toBe("main");
     expect(deriveKibitzCenterMode({ collapsed: false, variation_id: "v1" })).toBe("variation");
-    expect(deriveKibitzCenterMode({ collapsed: false, variation_source_game_id: 100 })).toBe(
+    expect(deriveKibitzCenterMode({ collapsed: false, variation_source_board: "game:100" })).toBe(
         "draft",
     );
 });
@@ -308,7 +314,7 @@ describe("useKibitzGobans", () => {
                 options={baseOptions({
                     secondaryPane: {
                         collapsed: false,
-                        variation_source_game_id: 100,
+                        variation_source_board: "game:100",
                         variation_source_move_path: "aa",
                     },
                 })}
@@ -413,7 +419,7 @@ describe("useKibitzGobans", () => {
                 options={baseOptions({
                     secondaryPane: {
                         collapsed: false,
-                        variation_source_game_id: 100,
+                        variation_source_board: "game:100",
                         variation_source_move_path: "aa",
                     },
                 })}
@@ -434,7 +440,7 @@ describe("useKibitzGobans", () => {
         emit(instances[0], "load");
         const draft = (nonce: number): KibitzSecondaryPaneState => ({
             collapsed: false,
-            variation_source_game_id: 100,
+            variation_source_board: "game:100",
             variation_source_move_path: "aa",
             variation_draft_nonce: nonce,
         });
@@ -453,6 +459,8 @@ describe("useKibitzGobans", () => {
         );
         expect(instances).toHaveLength(3);
         expect((instances[1] as { destroy: jest.Mock }).destroy).toHaveBeenCalled();
+        expect((instances[0] as { destroy: jest.Mock }).destroy).not.toHaveBeenCalled();
+        expect(restoreMainBoardToOfficialTail).not.toHaveBeenCalled();
     });
 
     test("a draft branched from a variation composes every variation on the board", () => {
@@ -472,7 +480,7 @@ describe("useKibitzGobans", () => {
                 options={baseOptions({
                     secondaryPane: {
                         collapsed: false,
-                        variation_source_game_id: 100,
+                        variation_source_board: "game:100",
                         variation_draft_base_id: "v1",
                         variation_draft_base_path: "aabb",
                         variation_draft_nonce: 1,
@@ -516,7 +524,7 @@ describe("useKibitzGobans", () => {
                 options={baseOptions({
                     secondaryPane: {
                         collapsed: false,
-                        variation_source_game_id: 100,
+                        variation_source_board: "game:100",
                         variation_draft_base_id: "v1",
                         variation_draft_base_path: "aabb",
                     },
@@ -541,7 +549,7 @@ describe("useKibitzGobans", () => {
                 options={baseOptions({
                     secondaryPane: {
                         collapsed: false,
-                        variation_source_game_id: 100,
+                        variation_source_board: "game:100",
                         variation_draft_base_id: "v1",
                         variation_draft_base_path: "aabb",
                         variation_draft_nonce: 1,
@@ -587,7 +595,7 @@ describe("useKibitzGobans", () => {
         let latest: KibitzGobans | null = null;
         const draft: KibitzSecondaryPaneState = {
             collapsed: false,
-            variation_source_game_id: 100,
+            variation_source_board: "game:100",
             variation_source_move_path: "aa",
             variation_draft_nonce: 1,
         };
@@ -636,7 +644,11 @@ describe("useKibitzGobans", () => {
             getMoveTreeTrunkTail: jest.Mock;
         };
         getMoveTreeTrunkTail.mockReturnValue({ move_number: 3 });
-        const snapshot = { gameId: 100, trunkTailMoveNumber: 3, config: { move_tree: { x: 1 } } };
+        const snapshot = {
+            board: "game:100",
+            trunkTailMoveNumber: 3,
+            config: { move_tree: { x: 1 } },
+        };
         captureCurrentGameBaseSnapshotFromController.mockImplementation(() => snapshot);
         const onMainSnapshot = jest.fn();
         render(<Harness options={baseOptions({ onMainSnapshot })} onResult={() => undefined} />);
@@ -782,7 +794,7 @@ test("draft annotations remain dirty after navigating to another node and can be
     render(
         <Harness
             options={baseOptions({
-                secondaryPane: { collapsed: false, variation_source_game_id: 7 },
+                secondaryPane: { collapsed: false, variation_source_board: "game:7" },
             })}
             onResult={(result) => {
                 latest = result;

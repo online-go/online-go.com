@@ -243,7 +243,7 @@ describe("KibitzGamePickerOverlay", () => {
 
     it("provides the current game's authoritative snapshot to picker thumbnails", () => {
         const snapshot = {
-            gameId: 123,
+            board: "game:123",
             roomId: "room-1",
             trunkTailMoveNumber: 4,
             moveTreeId: "official-tree",

@@ -9,7 +9,7 @@
 
 import * as React from "react";
 import type { JGOFClockWithTransmitting } from "goban";
-import { Clock, SGFClock } from "@/components/Clock";
+import { Clock, hasMoveClocks, SGFClock } from "@/components/Clock";
 import { Player } from "@/components/Player";
 import { PlayerIcon } from "@/components/PlayerIcon";
 import { subscribeAllEvents } from "@/components/GobanView";
@@ -127,8 +127,8 @@ export function KibitzThinPlayer({
                 <span className="KibitzThinPlayer-time" ref={clockRef}>
                     {phase !== "finished" && !goban.review_id ? (
                         <Clock goban={goban} color={color} compact lineSummary />
-                    ) : goban.engine.sgf_time_settings ? (
-                        <SGFClock goban={goban} color={color} />
+                    ) : hasMoveClocks(goban) ? (
+                        <SGFClock goban={goban} color={color} compact lineSummary />
                     ) : phase === "finished" ? (
                         pgettext("Kibitz game clock", "Finished")
                     ) : (

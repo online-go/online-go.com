@@ -18,6 +18,7 @@
 import * as React from "react";
 import { render, screen } from "@testing-library/react";
 import type { KibitzRoomUser, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
+import type { KibitzBoardKey } from "./kibitzBoardRef";
 import { KibitzVariationList } from "./KibitzVariationList";
 
 jest.mock("@/components/Player", () => ({
@@ -90,10 +91,10 @@ describe("KibitzVariationList", () => {
     it("renders the active variations quick-list", () => {
         const onRecallVariation = jest.fn();
         const onHideVariation = jest.fn();
-        const gameById = new Map<number, KibitzWatchedGame>([
-            [10, makeGame(10, "Current board", "Alpha", "Beta")],
-            [20, makeGame(20, "Older board", "Gamma", "Delta")],
-            [30, makeGame(30, "Newest old board", "Epsilon", "Zeta")],
+        const gameById = new Map<KibitzBoardKey, KibitzWatchedGame>([
+            ["game:10", makeGame(10, "Current board", "Alpha", "Beta")],
+            ["game:20", makeGame(20, "Older board", "Gamma", "Delta")],
+            ["game:30", makeGame(30, "Newest old board", "Epsilon", "Zeta")],
         ]);
 
         render(
@@ -104,7 +105,7 @@ describe("KibitzVariationList", () => {
                     makeVariation("a1", 10, "A1"),
                     makeVariation("c1", 20, "C1"),
                 ]}
-                currentGameId={10}
+                currentBoard="game:10"
                 gameById={gameById}
                 selectedVariationId="a2"
                 onRecallVariation={onRecallVariation}
@@ -133,14 +134,14 @@ describe("KibitzVariationList", () => {
     it("shows previous game separators without a current game separator when only older games are visible", () => {
         const onRecallVariation = jest.fn();
         const onHideVariation = jest.fn();
-        const gameById = new Map<number, KibitzWatchedGame>([
-            [20, makeGame(20, "Older board", "Gamma", "Delta")],
+        const gameById = new Map<KibitzBoardKey, KibitzWatchedGame>([
+            ["game:20", makeGame(20, "Older board", "Gamma", "Delta")],
         ]);
 
         render(
             <KibitzVariationList
                 variations={[makeVariation("c1", 20, "C1"), makeVariation("c2", 20, "C2")]}
-                currentGameId={10}
+                currentBoard="game:10"
                 gameById={gameById}
                 selectedVariationId={null}
                 onRecallVariation={onRecallVariation}
@@ -166,7 +167,7 @@ describe("KibitzVariationList", () => {
                     makeVariation("blank", 20, "   ", 40),
                     makeVariation("missing", 20, undefined, 50),
                 ]}
-                currentGameId={10}
+                currentBoard="game:10"
                 onRecallVariation={jest.fn()}
             />,
         );
@@ -191,7 +192,7 @@ describe("KibitzVariationList", () => {
                     makeVariation("second", 10, "Ladder", 2),
                     makeVariation("stored", 10, "Ladder (1)", 3),
                 ]}
-                currentGameId={10}
+                currentBoard="game:10"
                 onRecallVariation={jest.fn()}
             />,
         );
@@ -211,7 +212,7 @@ describe("KibitzVariationList", () => {
             <KibitzVariationList
                 variations={history}
                 displayedVariations={history}
-                currentGameId={10}
+                currentBoard="game:10"
                 onRecallVariation={jest.fn()}
             />,
         );
@@ -223,7 +224,7 @@ describe("KibitzVariationList", () => {
             <KibitzVariationList
                 variations={[history[1]]}
                 displayedVariations={history}
-                currentGameId={10}
+                currentBoard="game:10"
                 onRecallVariation={jest.fn()}
             />,
         );
@@ -247,7 +248,7 @@ describe("KibitzVariationList", () => {
             <KibitzVariationList
                 variations={[first, second]}
                 displayedVariations={loadedForA}
-                currentGameId={10}
+                currentBoard="game:10"
                 onRecallVariation={jest.fn()}
             />,
         );
@@ -261,7 +262,7 @@ describe("KibitzVariationList", () => {
             <KibitzVariationList
                 variations={[secondForB, thirdForB]}
                 displayedVariations={loadedForB}
-                currentGameId={10}
+                currentBoard="game:10"
                 onRecallVariation={jest.fn()}
             />,
         );
@@ -284,7 +285,7 @@ describe("KibitzVariationList", () => {
                         makeVariation("second", 10, "Ladder", 2),
                         makeVariation("stored", 10, "Ladder #1", 3),
                     ]}
-                    currentGameId={10}
+                    currentBoard="game:10"
                     onRecallVariation={jest.fn()}
                 />,
             );

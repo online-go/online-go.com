@@ -113,5 +113,6 @@ export function openGameInfo(
         historical_white || goban.engine.players.white,
         annulled,
         goban_controller.creator_id || goban.review_owner_id || 0,
+        !!goban.engine.sgf_time_settings,
     );
 }
