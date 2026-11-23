@@ -37,6 +37,13 @@ import {
     isKibitzRoomTitleTakenError,
 } from "./kibitzAnalysisPolicyText";
 import { kibitzTelemetry } from "./kibitzTelemetry";
+import {
+    boardHref,
+    boardIdsFromKey,
+    boardKey,
+    sameBoard,
+    type KibitzBoardKey,
+} from "./kibitzBoardRef";
 import type {
     KibitzPresetBlock,
     KibitzProposal,
@@ -49,6 +56,7 @@ import type {
     KibitzVariationSummary,
     KibitzWatchedGame,
     KibitzVariationLineTree,
+    KibitzMode,
 } from "@/models/kibitz";
 
 interface KibitzControllerEvents {
@@ -91,6 +99,20 @@ interface BackendCurrentGameBlock {
     rengo_white_team?: number[] | null;
 }
 
+/** The board block for a room watching a review (a demo board or a review
+ *  of a game). A demo board's players are names, with id 0. */
+interface BackendCurrentReviewBlock {
+    review_id: number;
+    board_size: `${number}x${number}`;
+    title: string;
+    black: BackendCurrentGamePlayerBlock | null;
+    white: BackendCurrentGamePlayerBlock | null;
+    owner: BackendCurrentGamePlayerBlock | null;
+    controller: BackendCurrentGamePlayerBlock | null;
+    game_id: number | null;
+    outcome: string | null;
+}
+
 interface BackendKibitzRoom {
     id: string;
     channel: string;
@@ -99,6 +121,9 @@ interface BackendKibitzRoom {
     description: string | null;
     current_game_id: number | null;
     current_game?: BackendCurrentGameBlock | null;
+    current_review_id?: number | null;
+    current_review?: BackendCurrentReviewBlock | null;
+    mode?: KibitzMode;
     creator_id: number | null;
     created_at: string;
     last_activity_at: string;
@@ -176,12 +201,36 @@ function mapBackendCurrentGameToWatched(backend: BackendCurrentGameBlock): Kibit
     };
 }
 
+/** A review is shown through the same watched-board shape as a game. It is
+ *  never live, so the live-game policies (players kept out, analysis
+ *  disabled) do not apply to it. */
+function mapBackendCurrentReviewToWatched(backend: BackendCurrentReviewBlock): KibitzWatchedGame {
+    return {
+        review_id: backend.review_id,
+        board_size: backend.board_size,
+        title: backend.title,
+        black: mapBackendCurrentGamePlayer(backend.black),
+        white: mapBackendCurrentGamePlayer(backend.white),
+        live: false,
+        analysis_disabled: false,
+        reviewed_game_id: backend.game_id,
+        ...(backend.controller
+            ? { review_controller: mapBackendCurrentGamePlayer(backend.controller) }
+            : {}),
+        outcome: backend.outcome,
+    };
+}
+
 function mapBackendRoomCurrentGame(
     backend: BackendKibitzRoom,
     existing?: KibitzRoomSummary,
 ): KibitzWatchedGame | undefined {
+    if (backend.current_review) {
+        return mapBackendCurrentReviewToWatched(backend.current_review);
+    }
     if (backend.current_game === undefined) {
-        return existing?.current_game;
+        // A payload that leaves out the board blocks keeps the known board.
+        return backend.current_review === undefined ? existing?.current_game : undefined;
     }
     return backend.current_game ? mapBackendCurrentGameToWatched(backend.current_game) : undefined;
 }
@@ -241,6 +290,9 @@ function mapBackendRoomToSummary(
         viewer_count: backend.viewer_count ?? existing?.viewer_count ?? 0,
         description: backend.description ?? undefined,
         preset: backend.preset ?? undefined,
+        current_game_id: backend.current_game_id,
+        current_review_id: backend.current_review_id ?? null,
+        mode: backend.current_review ? "demo" : (backend.mode ?? "live"),
         current_game: mapBackendRoomCurrentGame(backend, existing),
     };
 }
@@ -340,8 +392,18 @@ interface AnalysisChatBody extends TypedChatBody {
     marks?: Record<string, string>;
     pen_marks?: unknown[];
     line_tree?: KibitzVariationSummary["analysis_line_tree"];
+    /** The board the variation was made on: a game, or a review. A body
+     *  carries one of the two. Clients that predate reviews drop bodies
+     *  without `game_id`. */
     game_id?: number;
+    review_id?: number;
+    /** On a review: the move path from the root to the branch point. */
+    from_path?: string;
     kibitz_pending_id?: string;
+}
+
+function positiveId(value: unknown): number | null {
+    return typeof value === "number" && Number.isSafeInteger(value) && value > 0 ? value : null;
 }
 
 function asAnalysisBody(value: unknown): AnalysisChatBody | null {
@@ -352,15 +414,32 @@ function asAnalysisBody(value: unknown): AnalysisChatBody | null {
     return candidate.type === "analysis" ? (candidate as AnalysisChatBody) : null;
 }
 
+/** The board an analysis body was made on, or null when it names none, or
+ *  names both. A review body must carry its branch point's path. */
+function analysisBodyBoard(
+    body: AnalysisChatBody,
+): { game_id: number } | { review_id: number; analysis_from_path: string } | null {
+    const gameId = positiveId(body.game_id);
+    const reviewId = positiveId(body.review_id);
+    if (reviewId != null) {
+        return gameId == null && typeof body.from_path === "string"
+            ? { review_id: reviewId, analysis_from_path: body.from_path }
+            : null;
+    }
+    return gameId != null ? { game_id: gameId } : null;
+}
+
 function mapAnalysisToVariation(msg: ChatMessage, roomId: string): KibitzVariationSummary | null {
     const body = asAnalysisBody(msg.message.m);
-    if (!body || body.game_id == null) {
-        // Per briefing §2.9 the posting client embeds game_id in every analysis
-        // body so the variation can be grouped by source game even after the
-        // room's current_game changes. Bodies without it are pre-1C and ignored
-        // — earlier versions fell back to the room's current_game, which made
-        // variation rendering depend on the timing of GET /games/:id and
-        // produced races where the list silently disappeared on slow backends.
+    const board = body ? analysisBodyBoard(body) : null;
+    if (!body || !board) {
+        // Per briefing §2.9 the posting client embeds the board (game_id, or
+        // review_id with from_path) in every analysis body so the variation
+        // can be grouped by source board even after the room's board changes.
+        // Bodies without one are pre-1C and ignored — earlier versions fell
+        // back to the room's current_game, which made variation rendering
+        // depend on the timing of GET /games/:id and produced races where the
+        // list silently disappeared on slow backends.
         return null;
     }
     if (typeof body.from !== "number" || !Number.isFinite(body.from)) {
@@ -386,7 +465,7 @@ function mapAnalysisToVariation(msg: ChatMessage, roomId: string): KibitzVariati
         id,
         room_id: roomId,
         source: "room",
-        game_id: body.game_id,
+        ...board,
         creator: {
             id: msg.id,
             username: msg.username,
@@ -1178,7 +1257,9 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 return null;
             }
             const payload = (await post("kibitz/rooms", {
-                source_game_id: game.game_id,
+                ...(game.review_id
+                    ? { source_review_id: game.review_id }
+                    : { source_game_id: game.game_id }),
                 title: roomName.trim() || game.title,
                 description: description.trim() || undefined,
             })) as BackendKibitzRoom;
@@ -1207,9 +1288,10 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             if (isKibitzAccessBlockedForUser(getCurrentKibitzUser(), game)) {
                 return false;
             }
-            const payload = (await post(`kibitz/rooms/${roomId}/change-board`, {
-                game_id: game.game_id,
-            })) as BackendKibitzRoom;
+            const payload = (await post(
+                `kibitz/rooms/${roomId}/change-board`,
+                game.review_id ? { review_id: game.review_id } : { game_id: game.game_id },
+            )) as BackendKibitzRoom;
 
             // Apply locally; board-changed UIPush will arrive and be a no-op
             // because the resulting summary will already match.
@@ -1276,19 +1358,31 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (!user || user.anonymous) {
             return;
         }
-        const title = game.title || `#${game.game_id}`;
-        const text = interpolate(
-            pgettext(
-                "Kibitz system message announcing the new watched game",
-                "{{username}} changed the watched game to {{title}}",
-            ),
-            { username: user.username, title },
-        );
+        const board = boardKey(game);
+        if (!board) {
+            return;
+        }
+        const title = game.title || `#${game.review_id ?? game.game_id}`;
+        const text = game.review_id
+            ? interpolate(
+                  pgettext(
+                      "Kibitz system message announcing that the room now watches a demo board or review",
+                      "{{username}} changed the watched board to {{title}}",
+                  ),
+                  { username: user.username, title },
+              )
+            : interpolate(
+                  pgettext(
+                      "Kibitz system message announcing the new watched game",
+                      "{{username}} changed the watched game to {{title}}",
+                  ),
+                  { username: user.username, title },
+              );
         this.sendTypedToActiveChannel({
             type: "system",
             text,
-            game_id: game.game_id,
-            links: [{ text: title, href: `/game/${game.game_id}` }],
+            ...(game.review_id ? {} : { game_id: game.game_id }),
+            links: [{ text: title, href: boardHref(board) }],
         });
     }
 
@@ -1307,7 +1401,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     public postVariation(
         roomId: string,
         boardController: GobanController,
-        sourceGameId: number | undefined,
+        sourceBoard: KibitzBoardKey | null | undefined,
     ): AnalysisChatBody | null {
         const proxy = this._active_chat_proxy;
         if (!proxy || !this._active_room || this._active_room.id !== roomId) {
@@ -1317,15 +1411,25 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         if (prepared.is_duplicate) {
             return null;
         }
-        if (!sourceGameId) {
+        if (!sourceBoard) {
             return null;
         }
         const pendingId = `kibitz-post:${Date.now()}:${Math.random().toString(36).slice(2)}`;
         const officialTailMoveNumber =
             boardController.goban.engine.last_official_move?.move_number ?? 0;
+        const boardIds = boardIdsFromKey(sourceBoard);
         const body = {
             ...prepared.analysis,
-            game_id: sourceGameId,
+            ...boardIds,
+            // `from` counts moves along the trunk, which a review can lose
+            // to an undo; the branch point's path still finds the position.
+            ...(boardIds.review_id
+                ? {
+                      from_path: boardController.goban.engine.cur_move
+                          .getBranchPoint()
+                          .getMoveStringToThisPoint(),
+                  }
+                : {}),
             kibitz_pending_id: pendingId,
         } as AnalysisChatBody;
         if (
@@ -1335,7 +1439,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         ) {
             console.warn("kibitz-post-variation:refusing-malformed-payload", {
                 roomId,
-                sourceGameId,
+                sourceBoard,
                 officialTailMoveNumber,
                 payload: body,
             });
@@ -1346,13 +1450,13 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             return null;
         }
         if (
-            this._active_room?.current_game?.game_id === sourceGameId &&
+            boardKey(this._active_room?.current_game) === sourceBoard &&
             typeof prepared.analysis.from === "number" &&
             prepared.analysis.from > officialTailMoveNumber
         ) {
             console.warn("kibitz-post-variation:analysis-from-ahead-of-official-tail", {
                 roomId,
-                sourceGameId,
+                sourceBoard,
                 officialTailMoveNumber,
                 analysis_from: prepared.analysis.from,
                 draft_end_move_number: prepared.move_count,
@@ -1373,20 +1477,20 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
     }
 
     public startVariationFromCurrentBoard(
-        source: { roomId: string; gameId: number },
+        source: { roomId: string; board: KibitzBoardKey },
         variation_source_move_tree?: KibitzVariationLineTree,
         variation_source_move_path?: string,
         variation_source_move_tree_id?: number,
     ): boolean {
         const activeRoom = this._active_room;
-        const currentGameId = activeRoom?.current_game?.game_id;
+        const currentBoard = boardKey(activeRoom?.current_game);
         // The directory entry for the next room can be visible while this
         // controller is still hydrating the previous room.
         if (
             !activeRoom ||
-            currentGameId == null ||
+            currentBoard == null ||
             source.roomId !== activeRoom.id ||
-            source.gameId !== currentGameId
+            source.board !== currentBoard
         ) {
             return false;
         }
@@ -1398,7 +1502,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             chat_variation: undefined,
             collapsed: false,
             variation_id: undefined,
-            variation_source_game_id: currentGameId,
+            variation_source_board: currentBoard,
             variation_source_game: this._active_room?.current_game
                 ? { ...this._active_room.current_game }
                 : undefined,
@@ -1422,10 +1526,8 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
         variation_source_move_tree_id?: number,
         variation_draft_base_path?: string,
     ): void {
-        const sourceGame =
-            this._active_room?.current_game?.game_id === variation.game_id
-                ? this._active_room.current_game
-                : undefined;
+        const currentGame = this._active_room?.current_game;
+        const sourceGame = sameBoard(currentGame, variation) ? currentGame : undefined;
 
         kibitzTelemetry.record("start_variation");
 
@@ -1435,7 +1537,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
                 this._secondary_pane.chat_variation?.id === variation.id ? variation : undefined,
             collapsed: false,
             variation_id: undefined,
-            variation_source_game_id: variation.game_id,
+            variation_source_board: boardKey(variation) ?? undefined,
             variation_source_game: sourceGame ? { ...sourceGame } : undefined,
             variation_source_move_tree,
             variation_source_move_tree_id,
@@ -1461,7 +1563,7 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             chat_variation: undefined,
             collapsed: false,
             variation_id: variationId,
-            variation_source_game_id: undefined,
+            variation_source_board: undefined,
             variation_source_game: undefined,
             variation_source_move_tree: undefined,
             variation_source_move_tree_id: undefined,

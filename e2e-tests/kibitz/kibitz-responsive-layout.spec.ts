@@ -102,7 +102,7 @@ ogsTest.describe("@Kibitz responsive layout", () => {
                 await expect(portrait.locator(".CompactPlayerHeader")).toBeVisible();
                 await expect(portrait.locator(".GobanView-player-bar")).toHaveCount(0);
                 await expect(portrait.locator(".Goban")).toBeVisible();
-                await page.getByTitle("Rooms", { exact: true }).click();
+                await (await expectOGSClickableByName(portrait, /^Switch rooms$/)).click();
                 await page.getByTitle("Game chat", { exact: true }).click();
             }
         },

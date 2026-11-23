@@ -51,8 +51,12 @@ import { KibitzStackedPlayerHeader } from "./KibitzStackedPlayerHeader";
 import { useKibitzThinHeader } from "./kibitzThinHeader";
 import { KibitzMoreActionsRoomActions, openKibitzMoreActions } from "./KibitzMoreActionsPopover";
 import { KibitzScoreEstimate } from "./KibitzScoreEstimate";
+import { KibitzEvaluation } from "./KibitzEvaluation";
 import { useKibitzScoreEstimation } from "./useKibitzScoreEstimation";
 import { useKibitzHelp } from "./useKibitzHelp";
+import { boardKey, gobanBoardKey, isReviewBoard } from "./kibitzBoardRef";
+import { boardChatLabel, reviewPresenterNode } from "./kibitzReviewBoard";
+import { useKibitzReviewPresenter } from "./useKibitzReviewPresenter";
 import "./KibitzView.css";
 import "@/views/Game/Players.css";
 
@@ -86,6 +90,7 @@ export interface KibitzViewProps {
     /** True when the layout has no left aside (see `leftAsideAllowed`), so
      *  the rooms and variations lists go in the panes instead. */
     isPortrait: boolean;
+    isStacked: boolean;
     leftAside: Omit<KibitzLeftAsideProps, "miniBoardController" | "onExitVariation">;
     chat: Omit<
         KibitzChatPanelProps,
@@ -142,8 +147,8 @@ const peopleLabel = () =>
 // Functions, not values: the strings are read after the language is set. The
 // two chat contexts match the chat panel's own tab strip, so both share one
 // translation.
-const PANE_TITLES: Record<KibitzPortraitPane, () => string> = {
-    "game-chat": () => pgettext("Kibitz chat tab for the watched game's chat", "Game chat"),
+const PANE_TITLES: Record<KibitzPortraitPane, (onReview: boolean) => string> = {
+    "game-chat": boardChatLabel,
     "room-chat": () => pgettext("Kibitz chat tab for the kibitz room's chat", "Kibitz chat"),
     people: peopleLabel,
     variations: () => pgettext("Heading for the Kibitz variation list", "Variations"),
@@ -151,10 +156,20 @@ const PANE_TITLES: Record<KibitzPortraitPane, () => string> = {
     analysis: () => pgettext("Action that starts a new Kibitz variation", "New variation"),
 };
 
+/** True while the main board is away from the room's position: behind the
+ *  live game's last move, or off the presenter's node of a review. */
 const useBehindLive = generateGobanHook(
-    (goban: GobanController["goban"] | null) =>
-        !!goban && goban.engine.cur_move.move_number < goban.engine.last_official_move.move_number,
-    ["cur_move", "last_official_move"],
+    (goban: GobanController["goban"] | null) => {
+        if (!goban) {
+            return false;
+        }
+        const presenter = reviewPresenterNode(goban);
+        if (presenter) {
+            return goban.engine.cur_move !== presenter;
+        }
+        return goban.engine.cur_move.move_number < goban.engine.last_official_move.move_number;
+    },
+    ["cur_move", "last_official_move", "review.updated"],
 );
 
 /**
@@ -163,8 +178,8 @@ const useBehindLive = generateGobanHook(
  * and chat on the right.
  */
 export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
-    const { room, gobans, isPortrait } = props;
-    const help = useKibitzHelp(gobans.centerMode === "variation");
+    const { room, gobans, isPortrait, isStacked } = props;
+    const help = useKibitzHelp(isStacked, gobans.centerMode === "variation");
     const thinHeader = useKibitzThinHeader();
     React.useEffect(() => {
         document.documentElement.classList.toggle("kibitz-thin-header", thinHeader);
@@ -186,19 +201,33 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     );
     const scoreSource = gobans.playerBars ?? gobans.center;
     const scoreEstimation = useKibitzScoreEstimation(gobans.center, scoreSource, room.channel);
+    // A review or demo board is not a game in play, so there is no result for
+    // the score bar to track.
+    const scoreBarAvailable = !isReviewBoard(room.current_game);
+    const [showScoreBar, setShowScoreBar] = React.useState(false);
+    const [scoreBarLabel, setScoreBarLabel] = React.useState<string | null>(null);
+    const showScore = scoreEstimation.estimating || scoreBarLabel !== null;
+    const scoreLabel = gobans.center ? (
+        <KibitzScoreEstimate
+            controller={gobans.center}
+            scoreText={scoreBarLabel}
+            estimating={scoreEstimation.estimating}
+        />
+    ) : null;
     const stopEstimate = React.useCallback(() => {
         if (gobans.center?.estimating_score) {
             gobans.center.stopEstimatingScore();
         }
     }, [gobans.center]);
     const coordinateGoban =
-        scoreSource?.goban.game_id === room.current_game?.game_id
+        gobanBoardKey(scoreSource?.goban) === boardKey(room.current_game)
             ? (gobans.center?.goban ?? null)
             : null;
     const gobanViewRef = React.useRef<GobanViewRef>(null);
     const [themeSettingsOpen, setThemeSettingsOpen] = React.useState(false);
     const settingsPopoverRef = React.useRef<PopOver | null>(null);
     const moreActionsPopoverRef = React.useRef<PopOver | null>(null);
+    const isPresenter = useKibitzReviewPresenter(gobans.main?.goban ?? null);
     const behindLive = useBehindLive(
         gobans.centerMode === "main" ? (gobans.main?.goban ?? null) : null,
     );
@@ -515,7 +544,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         }
     }, [gobans.center, onExitVariation, stopEstimate]);
 
-    if (!gobans.center && room.current_game?.game_id) {
+    if (!gobans.center && boardKey(room.current_game)) {
         // The live controller is created after the first commit. Render
         // nothing for that one commit, so the chat and panels mount once.
         return null;
@@ -554,10 +583,10 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     const selectedVariation = panelVariationId
         ? (props.leftAside.variations.find((v) => v.id === panelVariationId) ?? null)
         : null;
-    const chipGameId = selectedVariation?.game_id ?? null;
+    const chipBoard = boardKey(selectedVariation);
     const chipOtherGame =
-        chipGameId != null && chipGameId !== room.current_game?.game_id
-            ? (props.leftAside.variationGameById.get(chipGameId) ?? null)
+        chipBoard != null && chipBoard !== boardKey(room.current_game)
+            ? (props.leftAside.variationGameById.get(chipBoard) ?? null)
             : null;
     const variationPanel =
         viewingOther && gobans.secondary ? (
@@ -638,6 +667,27 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 // the variation alone, since the room is what the reader
                 // closes back to rather than what they are looking at.
                 <div className="Kibitz-header" ref={help.roomRef}>
+                    {scoreBarAvailable && gobans.center && gobans.main && (
+                        <KibitzEvaluation
+                            controller={gobans.center}
+                            source={
+                                gobans.center.goban.engine.game_id &&
+                                gobans.center.goban.engine.game_id !==
+                                    gobans.main.goban.engine.game_id
+                                    ? gobans.center
+                                    : gobans.main
+                            }
+                            key={`${gobans.center.goban.engine.game_id || room.current_game?.game_id || 0}:${gobans.center.goban.engine.move_tree?.id}`}
+                            gameId={
+                                gobans.center.goban.engine.game_id ||
+                                room.current_game?.game_id ||
+                                0
+                            }
+                            enabled={showScoreBar}
+                            onLabelChange={setScoreBarLabel}
+                        />
+                    )}
+
                     {variationChip ? (
                         <div ref={help.variationRef}>{variationChip}</div>
                     ) : (
@@ -660,6 +710,24 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             leftAsideMinWidth={240}
             leftAsideCollapsedWidth={leftAsideCollapsed ? 28 : undefined}
             centerPlaceholder={waitingMessage}
+            boardNotice={
+                // Only the main board is the demo board: a draft or a
+                // variation in the centre is the presenter's own.
+                isPresenter && gobans.centerMode === "main" ? (
+                    <div
+                        className="Kibitz-presenting-notice"
+                        title={pgettext(
+                            "Tooltip on the notice a demo board's presenter sees above the board in a Kibitz room",
+                            "Stones you place on this board go to the demo board, for everyone in the room.",
+                        )}
+                    >
+                        {pgettext(
+                            "Notice a demo board's presenter sees directly above the board in a Kibitz room",
+                            "You are presenting",
+                        )}
+                    </div>
+                ) : undefined
+            }
             aboveBoard={
                 <KibitzStackedPlayerHeader
                     controller={playerInfoController}
@@ -668,11 +736,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                     }
                 />
             }
-            belowBoard={
-                isPortrait && scoreEstimation.estimating && gobans.center ? (
-                    <KibitzScoreEstimate controller={gobans.center} />
-                ) : null
-            }
+            belowBoard={isPortrait && showScore ? scoreLabel : null}
             /* Kibitz presents both players together in the sidebar on every
              * horizontal layout, and in the compact header when stacked. */
             playerBars={false}
@@ -691,9 +755,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         scoreEstimation.estimating && playerInfoController === gobans.center
                     }
                 />
-                {!isPortrait && scoreEstimation.estimating && gobans.center && (
-                    <KibitzScoreEstimate controller={gobans.center} />
-                )}
+                {!isPortrait && showScore && scoreLabel}
                 <KibitzProposalPanel {...props.proposals} />
                 {!isPortrait && variationPanel}
                 {isPortrait ? (
@@ -758,6 +820,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         id={`kibitz-pane-${id}`}
                         type="action"
                         align="left"
+                        buttonRef={isStacked && id === "rooms" ? help.roomSwitcherRef : undefined}
                         icon={
                             id === "rooms" && showRoomActivityDot ? (
                                 <span className="Kibitz-pane-icon">
@@ -775,10 +838,17 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         title={
                             id === "rooms" && showRoomActivityDot
                                 ? pgettext("Kibitz Rooms tab with an alert", "Rooms (new activity)")
-                                : PANE_TITLES[id]()
+                                : isStacked && id === "rooms"
+                                  ? pgettext("Kibitz mobile toolbar button", "Switch rooms")
+                                  : PANE_TITLES[id](isReviewBoard(room.current_game))
                         }
                         active={displayedPane === id}
-                        onClick={() => togglePane(id)}
+                        onClick={() => {
+                            if (id === "rooms") {
+                                help.acknowledgeRoomSwitcher();
+                            }
+                            togglePane(id);
+                        }}
                     />
                 ))}
 
@@ -799,7 +869,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                                 ) : null}
                             </span>
                         }
-                        title={PANE_TITLES[id]()}
+                        title={PANE_TITLES[id](isReviewBoard(room.current_game))}
                         active={pane === id}
                         onClick={() => selectPane(id)}
                     />
@@ -847,6 +917,19 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 disabled={scoreEstimation.disabled && !scoreEstimation.estimating}
                 onClick={scoreEstimation.toggle}
             />
+
+            {scoreBarAvailable && (
+                <GobanView.Tab
+                    id="kibitz-score-bar"
+                    type="action"
+                    align="center"
+                    icon="balance-scale"
+                    title={pgettext("Kibitz action that shows the score bar", "Score bar")}
+                    active={showScoreBar}
+                    disabled={scoreEstimation.disabled && !showScoreBar}
+                    onClick={() => setShowScoreBar((shown) => !shown)}
+                />
+            )}
 
             {!isPortrait && (
                 <GobanView.Tab

@@ -23,6 +23,7 @@ import {
 } from "./KibitzInner";
 import type { KibitzCurrentGameBaseSnapshot } from "./kibitzCurrentGameBaseSnapshotTypes";
 import type { KibitzWatchedGame } from "@/models/kibitz";
+import type { KibitzBoardKey } from "./kibitzBoardRef";
 
 describe("isCurrentGameBaseSnapshotUsable", () => {
     const liveGame = {
@@ -38,7 +39,7 @@ describe("isCurrentGameBaseSnapshotUsable", () => {
 
     it("rejects a live root snapshot from the visible board", () => {
         const snapshot = {
-            gameId: 1,
+            board: "game:1",
             roomId: "r",
             trunkTailMoveNumber: 0,
             moveTreeId: 1,
@@ -52,7 +53,7 @@ describe("isCurrentGameBaseSnapshotUsable", () => {
 
     it("accepts a non-live root snapshot", () => {
         const snapshot = {
-            gameId: 1,
+            board: "game:1",
             roomId: "r",
             trunkTailMoveNumber: 0,
             moveTreeId: 1,
@@ -66,7 +67,7 @@ describe("isCurrentGameBaseSnapshotUsable", () => {
 
     it("accepts a live root snapshot only when fetched game-details prove zero moves", () => {
         const snapshot = {
-            gameId: 1,
+            board: "game:1",
             roomId: "r",
             trunkTailMoveNumber: 0,
             moveTreeId: 1,
@@ -129,7 +130,7 @@ describe("isMainBoardSafeForReconnect", () => {
 
 function roomSnapshot(gameId: number, roomId: string): KibitzCurrentGameBaseSnapshot {
     return {
-        gameId,
+        board: `game:${gameId}`,
         roomId,
         trunkTailMoveNumber: 50,
         moveTreeId: 1,
@@ -157,7 +158,7 @@ describe("startVariationAfterDiscardConfirm", () => {
     it("refuses a snapshot when the room changes during the discard confirm", async () => {
         const previousRoom = roomSnapshot(50, "preset-room");
         const currentRoomIdRef = { current: "preset-room" as string | null };
-        const currentRoomGameIdRef = { current: 50 as number | null };
+        const currentRoomBoardRef = { current: "game:50" as KibitzBoardKey | null };
         const startVariation = jest.fn();
         const showNotReady = jest.fn();
         const confirm = pendingConfirm();
@@ -166,13 +167,13 @@ describe("startVariationAfterDiscardConfirm", () => {
             confirmDiscardDraft: confirm.confirmDiscardDraft,
             getSnapshot: () => previousRoom,
             currentRoomIdRef,
-            currentRoomGameIdRef,
+            currentRoomBoardRef,
             showNotReady,
             startVariation,
         });
 
         currentRoomIdRef.current = "user-room";
-        currentRoomGameIdRef.current = 9;
+        currentRoomBoardRef.current = "game:9";
         confirm.resolve(true);
         await pending;
 
@@ -183,7 +184,7 @@ describe("startVariationAfterDiscardConfirm", () => {
     it("refuses a snapshot when only the game changes during the discard confirm", async () => {
         const previousGame = roomSnapshot(50, "user-room");
         const currentRoomIdRef = { current: "user-room" as string | null };
-        const currentRoomGameIdRef = { current: 50 as number | null };
+        const currentRoomBoardRef = { current: "game:50" as KibitzBoardKey | null };
         const startVariation = jest.fn();
         const showNotReady = jest.fn();
         const confirm = pendingConfirm();
@@ -192,12 +193,12 @@ describe("startVariationAfterDiscardConfirm", () => {
             confirmDiscardDraft: confirm.confirmDiscardDraft,
             getSnapshot: () => previousGame,
             currentRoomIdRef,
-            currentRoomGameIdRef,
+            currentRoomBoardRef,
             showNotReady,
             startVariation,
         });
 
-        currentRoomGameIdRef.current = 9;
+        currentRoomBoardRef.current = "game:9";
         confirm.resolve(true);
         await pending;
 
@@ -214,7 +215,7 @@ describe("startVariationAfterDiscardConfirm", () => {
             confirmDiscardDraft: () => Promise.resolve(true),
             getSnapshot: () => snapshot,
             currentRoomIdRef: { current: "user-room" },
-            currentRoomGameIdRef: { current: 9 },
+            currentRoomBoardRef: { current: "game:9" as KibitzBoardKey },
             showNotReady,
             startVariation,
         });
@@ -233,7 +234,7 @@ describe("startVariationAfterDiscardConfirm", () => {
             confirmDiscardDraft: () => Promise.resolve(true),
             getSnapshot: () => snapshot,
             currentRoomIdRef: { current: "user-room" },
-            currentRoomGameIdRef: { current: 9 },
+            currentRoomBoardRef: { current: "game:9" as KibitzBoardKey },
             showNotReady,
             startVariation,
         });

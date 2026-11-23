@@ -41,8 +41,9 @@ interface GameChatProperties {
     channel: string;
     game_id?: number;
     review_id?: number;
-    /** List the kibitz rooms showing this game under the user list. Only the
-     *  Game page sets this; the review page and the annul queue do not. */
+    /** List the kibitz rooms showing this game or review under the user list.
+     *  The Game page sets this for games, demo boards and reviews; the annul
+     *  queue does not. */
     show_kibitz_rooms?: boolean;
 }
 
@@ -90,10 +91,14 @@ export function GameChat(props: GameChatProperties): React.ReactElement {
     const players_loaded = useGamePlayersLoaded(goban);
     // Mirrors the server's room access rule: a player may not enter a kibitz
     // room on their own game until it has finished. Until the players are
-    // known nobody counts as a player, so wait for them before fetching.
-    const kibitz_hidden = !players_loaded || (userIsPlayer && phase !== "finished");
+    // known nobody counts as a player, so wait for them before fetching. The
+    // rule is about games in progress, so a review is never hidden.
+    const kibitz_hidden =
+        !props.review_id && (!players_loaded || (userIsPlayer && phase !== "finished"));
     const kibitz_rooms = useGameKibitzRooms(
-        props.show_kibitz_rooms ? props.game_id : undefined,
+        props.show_kibitz_rooms
+            ? { game_id: props.game_id, review_id: props.review_id }
+            : undefined,
         kibitz_hidden,
     );
 

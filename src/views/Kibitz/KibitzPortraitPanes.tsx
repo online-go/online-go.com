@@ -102,7 +102,7 @@ export function KibitzPortraitPanes({
                 <KibitzVariationList
                     variations={leftAside.variations}
                     displayedVariations={leftAside.displayedVariations}
-                    currentGameId={leftAside.currentGameId}
+                    currentBoard={leftAside.currentBoard}
                     gameById={leftAside.variationGameById}
                     colorIndexes={leftAside.variationColorIndexes}
                     selectedVariationId={leftAside.selectedVariationId}

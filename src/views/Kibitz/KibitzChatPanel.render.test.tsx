@@ -16,14 +16,25 @@
  */
 
 import * as React from "react";
-import { act, fireEvent, render, screen } from "@testing-library/react";
-import type { ChatMessage } from "@/lib/chat_manager";
-import type { KibitzRoomSummary, KibitzStreamItem, KibitzVariationSummary } from "@/models/kibitz";
+import { act, fireEvent, render as renderWithOptions, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import type { ChatMessage, ChatSystemLink } from "@/lib/chat_manager";
+import { system_line_markup } from "@/components/Chat/system_line_markup";
+import type {
+    KibitzRoomSummary,
+    KibitzStreamItem,
+    KibitzVariationSummary,
+    KibitzWatchedGame,
+} from "@/models/kibitz";
 import { KibitzChatPanel } from "./KibitzChatPanel";
 import { sanitizeMessage } from "@/lib/misc";
 
 jest.mock("@/lib/misc", () => ({
     sanitizeMessage: jest.fn((text: string) => text.trim()),
+}));
+
+jest.mock("@/lib/profanity_filter", () => ({
+    profanity_filter: (text: string) => text,
 }));
 
 let observedWidth = 600;
@@ -61,17 +72,27 @@ jest.mock("@/components/Chat", () => ({
         line,
         lastLine,
         goban,
+        systemLinkLabel,
     }: {
         line: ChatMessage;
         lastLine?: ChatMessage;
         goban?: { game_id: number } | null;
+        systemLinkLabel?: (link: ChatSystemLink) => string | undefined;
     }) => (
         <div
             data-testid="chat-line"
             data-last-line-t={lastLine ? String(lastLine.message.t) : ""}
             data-board={goban?.game_id ?? ""}
         >
-            {typeof line.message.m === "string" ? line.message.m : line.message.m.type}
+            {typeof line.message.m === "string"
+                ? line.message.m
+                : line.message.m.type === "system"
+                  ? system_line_markup(
+                        line.message.m.text ?? "",
+                        line.message.m.links,
+                        systemLinkLabel,
+                    )
+                  : line.message.m.type}
         </div>
     ),
 }));
@@ -131,13 +152,21 @@ jest.mock("@/lib/hooks", () => ({
     useUser: () => mockChatUser,
 }));
 
+let mockHideRanks = false;
+jest.mock("@/lib/preferences", () => ({
+    usePreference: () => [mockHideRanks, jest.fn()],
+}));
+
 jest.mock("@/lib/translate", () => ({
     __esModule: true,
-    interpolate: (template: string, values: Record<string, string | number>) =>
-        Object.entries(values).reduce(
-            (result, [key, value]) => result.replace(`{{${key}}}`, String(value)),
-            template,
-        ),
+    _: (text: string) => text,
+    interpolate: (template: string, values: Record<string, string | number> | number[]) =>
+        Array.isArray(values)
+            ? template.replace(/%s/g, () => String(values.shift()))
+            : Object.entries(values).reduce(
+                  (result, [key, value]) => result.replace(`{{${key}}}`, String(value)),
+                  template,
+              ),
     moment: (value: Date | number) => ({
         format: (pattern: string) => {
             const date = typeof value === "number" ? new Date(value) : value;
@@ -145,6 +174,9 @@ jest.mock("@/lib/translate", () => ({
                 return `${String(date.getHours()).padStart(2, "0")}:${String(
                     date.getMinutes(),
                 ).padStart(2, "0")}`;
+            }
+            if (pattern === "YYYY-MM-DD") {
+                return date.toISOString().slice(0, 10);
             }
 
             return "";
@@ -244,6 +276,171 @@ function baseProps() {
         showPeople: false,
     };
 }
+
+function render(ui: React.ReactElement) {
+    return renderWithOptions(ui, { wrapper: MemoryRouter });
+}
+
+describe("KibitzChatPanel watched games", () => {
+    const game: KibitzWatchedGame = {
+        game_id: 42,
+        board_size: "19x19",
+        title: "Summer Cup Final",
+        black: { id: 10, username: "Alice", ranking: 32, professional: false, ui_class: "" },
+        white: { id: 20, username: "Bob", ranking: 31, professional: false, ui_class: "" },
+    };
+    const item: KibitzStreamItem = {
+        id: "watched-game",
+        room_id: "room-1",
+        type: "system",
+        created_at: Date.UTC(2026, 4, 18, 12, 34, 0),
+        text: "Alice changed the watched game to Summer Cup Final. See the bracket",
+        links: [
+            { text: "Summer Cup Final", href: "/game/view/42?tab=analysis" },
+            { text: "the bracket", href: "/tournament/12" },
+        ],
+    };
+
+    test("updates the saved title in place when history metadata arrives", () => {
+        const props = { ...baseProps(), items: [item], mode: "room" as const };
+        const { container, rerender } = render(
+            <KibitzChatPanel {...props} getHistoryGame={() => undefined} />,
+        );
+        expect(screen.getByRole("link", { name: game.title })).toHaveAttribute(
+            "href",
+            "/game/view/42?tab=analysis",
+        );
+
+        const log = container.querySelector<HTMLDivElement>(".chat-lines")!;
+        Object.defineProperty(log, "scrollHeight", { value: 1000 });
+        rerender(
+            <KibitzChatPanel {...props} getHistoryGame={(id) => (id === 42 ? game : undefined)} />,
+        );
+
+        expect(
+            screen.getByRole("link", { name: "Summer Cup Final: Alice [3d] vs Bob [2d]" }),
+        ).toHaveAttribute("href", "/game/view/42?tab=analysis");
+        expect(screen.getByRole("link", { name: "the bracket" })).toHaveAttribute(
+            "href",
+            "/tournament/12",
+        );
+        expect(screen.getByTestId("chat-line")).toHaveTextContent(
+            "Alice changed the watched game to Summer Cup Final: Alice [3d] vs Bob [2d]. See the bracket",
+        );
+        expect(log.scrollTop).toBe(1000);
+        expect(item.links?.[0].text).toBe("Summer Cup Final");
+    });
+
+    test("keeps the title and names when ranks are hidden", () => {
+        mockHideRanks = true;
+        try {
+            render(
+                <KibitzChatPanel
+                    {...baseProps()}
+                    items={[item]}
+                    mode="room"
+                    getHistoryGame={() => game}
+                />,
+            );
+            expect(
+                screen.getByRole("link", { name: "Summer Cup Final: Alice vs Bob" }),
+            ).toBeInTheDocument();
+        } finally {
+            mockHideRanks = false;
+        }
+    });
+
+    test("uses the structured game id on a linkless completion notice", () => {
+        const completed = {
+            ...item,
+            text: "The watched game changed to Friendly Match",
+            game_id: 42,
+            links: undefined,
+        };
+        render(
+            <KibitzChatPanel
+                {...baseProps()}
+                items={[completed]}
+                mode="room"
+                getHistoryGame={() => game}
+            />,
+        );
+        expect(screen.getByRole("link", { name: "Alice [3d] vs Bob [2d]" })).toHaveAttribute(
+            "href",
+            "/game/42",
+        );
+    });
+
+    test.each([
+        ["Summer Cup Final", false, "Summer Cup Final: Alice [3d] vs Bob [2d]"],
+        ["Summer Cup Final", true, "Summer Cup Final: Alice vs Bob"],
+        ["Friendly Match", false, "Alice [3d] vs Bob [2d]"],
+        ["Friendly Match", true, "Alice vs Bob"],
+    ])("aligns divider and notice labels for %s (hide ranks: %s)", (title, hideRanks, label) => {
+        mockHideRanks = hideRanks;
+        try {
+            const notice = {
+                ...item,
+                text: `The watched game changed to ${title}`,
+                links: [{ text: title, href: "/game/42" }],
+            };
+            const comment = {
+                ...makeChatItem("comment", "room-stream", "Historical comment"),
+                game_id: 42,
+            };
+            render(
+                <KibitzChatPanel
+                    {...baseProps()}
+                    items={[notice, comment]}
+                    mode="room"
+                    getHistoryGame={() => ({ ...game, title })}
+                />,
+            );
+            expect(
+                screen
+                    .getAllByRole("link", { name: label })
+                    .map((link) => link.getAttribute("href")),
+            ).toEqual(["/game/42", "/game/42"]);
+        } finally {
+            mockHideRanks = false;
+        }
+    });
+
+    test.each([
+        ["review", { ...item, links: [{ text: game.title, href: "/review/42" }] }],
+        [
+            "unrelated game link",
+            {
+                ...item,
+                text: "Report this game",
+                links: [{ text: "Report this game", href: "/game/42" }],
+            },
+        ],
+        [
+            "plain chat",
+            {
+                ...item,
+                links: undefined,
+                author: game.black,
+                type: "chat" as const,
+                text: "The watched game changed to Summer Cup Final",
+                game_id: 42,
+            },
+        ],
+    ])("keeps %s labels as saved", (_description, message) => {
+        render(
+            <KibitzChatPanel
+                {...baseProps()}
+                items={[message]}
+                mode="room"
+                getHistoryGame={() => game}
+            />,
+        );
+        const line = screen.getByTestId("chat-line");
+        expect(line).toHaveTextContent(message.text);
+        expect(line).not.toHaveTextContent(/Alice \[3d\]/);
+    });
+});
 
 describe("KibitzChatPanel variation posts", () => {
     test("styles room system messages separately from proposal results and conversation", () => {
@@ -795,6 +992,111 @@ describe("Kibitz room chat move references", () => {
         expect(screen.getAllByText("Move 12")).toHaveLength(2);
     });
 
+    test("links each historical group at its first comment", () => {
+        const props = propsWithGame();
+        const oldGameId = 41;
+        const firstOldComment = makeChatItem("b", "room-stream", "First old comment");
+        const unknownPlayer = { ...firstOldComment.author!, username: "" };
+        const oldGame: KibitzWatchedGame = {
+            game_id: oldGameId,
+            board_size: "19x19",
+            title: "Recorded game",
+            black: unknownPlayer,
+            white: unknownPlayer,
+        };
+        const items = [
+            {
+                ...makeChatItem("a", "room-stream", "Early current game comment"),
+                created_at: Date.UTC(2026, 4, 17, 12, 35, 0),
+                game_id: 42,
+            },
+            { ...firstOldComment, game_id: oldGameId },
+            {
+                ...makeChatItem("c", "room-stream", "System notice about another game"),
+                type: "system" as const,
+                game_id: 40,
+            },
+            {
+                ...makeItem(),
+                id: "d",
+                created_at: firstOldComment.created_at,
+                game_id: 99,
+            },
+            { ...makeChatItem("e", "room-stream", "Second old comment"), game_id: oldGameId },
+            { ...makeChatItem("f", "room-stream", "Another old game"), game_id: 39 },
+            { ...makeChatItem("g", "room-stream", "Back to the first game"), game_id: oldGameId },
+            makeChatItem("h", "room-stream", "Untagged comment"),
+            { ...makeChatItem("i", "room-stream", "Same game after a break"), game_id: oldGameId },
+            { ...makeChatItem("j", "room-stream", "Back to the current game"), game_id: 42 },
+            { ...makeChatItem("k", "room-stream", "Another current game comment"), game_id: 42 },
+        ];
+        const { container } = render(
+            <KibitzChatPanel
+                {...props}
+                getHistoryGame={(id) => (id === oldGameId ? oldGame : undefined)}
+                items={items}
+                variations={[makeVariation()]}
+            />,
+        );
+
+        const links = screen.getAllByRole("link");
+        expect(links.map((link) => [link.textContent, link.getAttribute("href")])).toEqual([
+            ["Recorded game", "/game/41"],
+            ["Game #39", "/game/39"],
+            ["Recorded game", "/game/41"],
+            ["Recorded game", "/game/41"],
+        ]);
+        expect(links[0].closest(".kibitz-chat-game-divider")?.previousElementSibling).toHaveClass(
+            "date",
+        );
+        expect(
+            Array.from(
+                container.querySelectorAll('.kibitz-chat-game-divider, [data-testid="chat-line"]'),
+                (line) => line.textContent,
+            ),
+        ).toEqual([
+            "Early current game comment",
+            "Recorded game",
+            "First old comment",
+            "System notice about another game",
+            "Second old comment",
+            "Game #39",
+            "Another old game",
+            "Recorded game",
+            "Back to the first game",
+            "Untagged comment",
+            "Recorded game",
+            "Same game after a break",
+            "Current game",
+            "Back to the current game",
+            "Another current game comment",
+        ]);
+    });
+
+    test("leaves comments with no confirmed watched game ungrouped", () => {
+        const props = propsWithGame();
+        const items = [
+            {
+                ...makeChatItem("a", "room-stream", "Untagged history"),
+                viewing_position: { game_id: 39, move_number: 3 },
+            },
+            { ...makeChatItem("b", "room-stream", "Invalid ID"), game_id: -1 },
+            { ...makeChatItem("c", "room-stream", "Unsafe ID"), game_id: 2 ** 53 },
+            { ...makeChatItem("d", "room-stream", "Current game comment"), game_id: 42 },
+            { ...makeChatItem("e", "game-chat", "Ordinary game chat"), game_id: 30 },
+        ];
+        const { rerender } = render(<KibitzChatPanel {...props} items={items} />);
+
+        expect(screen.queryByRole("link")).not.toBeInTheDocument();
+        expect(screen.queryByText("Current game", { exact: true })).not.toBeInTheDocument();
+        expect(screen.getByText("Untagged history")).toBeVisible();
+        expect(screen.getByText("Invalid ID")).toBeVisible();
+        expect(screen.getByText("Unsafe ID")).toBeVisible();
+        rerender(<KibitzChatPanel {...props} items={items} mode="game" />);
+        expect(screen.queryByRole("link")).not.toBeInTheDocument();
+        expect(screen.getByText("Ordinary game chat")).toBeVisible();
+    });
+
     test("keeps move zero and ignores malformed metadata", () => {
         const props = propsWithGame();
         render(
@@ -898,6 +1200,32 @@ describe.each(["room", "game"] as const)("%s chat scrolling", (mode) => {
         flushFrames();
         expect(log.scrollTop).toBe(100);
     });
+
+    if (mode === "room") {
+        test("keeps following the latest comment when the room changes games", () => {
+            const props = chatProps();
+            const items = props.items.map((item) => ({ ...item, game_id: 42 }));
+            const { container, rerender } = render(
+                <KibitzChatPanel
+                    {...props}
+                    room={{ ...props.room, current_game: { game_id: 42 } } as KibitzRoomSummary}
+                    items={items}
+                />,
+            );
+            flushFrames();
+            scrollHeight = 1200;
+            rerender(
+                <KibitzChatPanel
+                    {...props}
+                    room={{ ...props.room, current_game: { game_id: 43 } } as KibitzRoomSummary}
+                    items={items}
+                />,
+            );
+            flushFrames();
+            expect(screen.getByRole("link", { name: "Game #42" })).toBeVisible();
+            expect(container.querySelector(".chat-lines")?.scrollTop).toBe(scrollHeight);
+        });
+    }
 
     test("opens the new room at the latest message after reading older messages", () => {
         const { container, rerender } = render(<KibitzChatPanel {...chatProps()} />);

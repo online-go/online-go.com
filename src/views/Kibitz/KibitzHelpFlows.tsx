@@ -10,6 +10,7 @@ import "./KibitzHelpFlows.css";
 export const KIBITZ_INTRO_FLOW = "kibitz-room-intro";
 export const KIBITZ_VARIATION_FLOW = "kibitz-variation-intro";
 export const KIBITZ_ROOM_TARGET = "kibitz-room-header";
+export const KIBITZ_ROOM_SWITCHER_TARGET = "kibitz-room-switcher";
 export const KIBITZ_VARIATION_TARGET = "kibitz-variation-header";
 
 export function KibitzHelpFlows(): React.ReactElement {
@@ -38,6 +39,17 @@ export function KibitzHelpFlows(): React.ReactElement {
                     {pgettext(
                         "Kibitz introduction",
                         "Kibitz chat stays with the room; Game chat belongs to the watched game. Shared variations let you explore moves without changing the room's game.",
+                    )}
+                </HelpItem>
+                <HelpItem
+                    id="help-for-kibitz-room-switcher"
+                    target={KIBITZ_ROOM_SWITCHER_TARGET}
+                    position="top-left"
+                    anchor="bottom-left"
+                >
+                    {pgettext(
+                        "Kibitz introduction",
+                        "Tap here to see the room list and switch rooms.",
                     )}
                 </HelpItem>
             </HelpFlow>
