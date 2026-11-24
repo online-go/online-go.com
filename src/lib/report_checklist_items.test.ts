@@ -23,6 +23,8 @@ const gamedata = (over: Partial<Gamedata> = {}): Gamedata => ({
     winner: 99,
     phase: "finished",
     moves: [1, 2, 3],
+    black_player_id: 7,
+    white_player_id: 99,
     ...over,
 });
 
@@ -60,16 +62,21 @@ describe("REPORT_CHECKLISTS resolved lists", () => {
             ],
         ],
         ["score_cheating", ["report.game_identified"]],
-        ["sandbagging", ["report.game_identified"]],
         ["ai_use", ["report.game_identified", "report.description_length"]],
         ["inappropriate_content", ["report.description_length"]],
         ["harassment", ["report.description_length"]],
         ["other", ["report.description_length"]],
         ["malicious_report", ["report.description_length"]],
+        [
+            "thrown_game",
+            ["report.game_identified", "thrown_game.accused_lost", "thrown_game.report_content"],
+        ],
+        [
+            "sandbagging_assessment",
+            ["report.game_identified", "sandbagging_assessment.report_content"],
+        ],
         // not_reportable in Report.tsx today, but listed so the table stays complete —
         // see the doc comment on REPORT_CHECKLISTS.
-        ["thrown_game", ["report.game_identified"]],
-        ["sandbagging_assessment", ["report.game_identified"]],
         ["assess_ai_play", ["report.game_identified"]],
         // moderator-only, no report-type requirements of their own.
         ["warning", []],
@@ -408,5 +415,41 @@ describe("stalling kind and explanation", () => {
         const results = buildResults(items, ctx({ stalling_kind: "other" }), {}, {});
         expect(results).toHaveLength(2);
         expect(results.map((r) => r.state)).toEqual(["satisfied", "actionable"]);
+    });
+});
+
+describe("thrown_game data checks", () => {
+    const evaluate = async (data: Gamedata, note = "") => {
+        const items = getChecklist("thrown_game");
+        const ctx = ctxFor(data, note);
+        const outcomes = await evaluateAsyncChecks(items, ctx);
+        return buildResults(items, ctx, outcomes, {});
+    };
+
+    test("passes when the accused lost the finished game", async () => {
+        const results = await evaluate(gamedata({ winner: 99 }), "a".repeat(20));
+        const states = Object.fromEntries(results.map((r) => [r.id, r.state]));
+        expect(states["thrown_game.accused_lost"]).toBe("satisfied");
+        expect(states["thrown_game.report_content"]).toBe("satisfied");
+    });
+
+    test("blocks when the accused won", async () => {
+        const results = await evaluate(gamedata({ winner: 7 }));
+        expect(results).toHaveLength(1);
+        expect(results[0].id).toBe("thrown_game.accused_lost");
+        expect(results[0].state).toBe("blocked");
+    });
+
+    test("blocks while the game is still in progress", async () => {
+        const results = await evaluate(gamedata({ phase: "play" }));
+        expect(results).toHaveLength(1);
+        expect(results[0].id).toBe("thrown_game.accused_lost");
+    });
+
+    test("the content placeholder asks for a description without blocking", async () => {
+        const results = await evaluate(gamedata(), "too short");
+        const content = results.find((r) => r.id === "thrown_game.report_content");
+        expect(content?.state).toBe("actionable");
+        expect(content?.message).toMatch(/11 more characters/);
     });
 });

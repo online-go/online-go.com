@@ -17,7 +17,6 @@
 
 import * as React from "react";
 
-import { get } from "@/lib/requests";
 import { buildResults, evaluateAsyncChecks } from "@/lib/report_checklist";
 
 import type {
@@ -37,6 +36,11 @@ interface UseReportChecklistArgs {
     note: string;
     stalling_kind?: string;
     attestations: Record<ChecklistItemId, boolean>;
+    /**
+     * From useReportedGame, so the checks and the dialog share one request. Must be
+     * stable while the game id is: a new function restarts the async evaluation.
+     */
+    fetchGamedata: () => Promise<Gamedata>;
 }
 
 export function useReportChecklist({
@@ -47,36 +51,9 @@ export function useReportChecklist({
     note,
     stalling_kind,
     attestations,
+    fetchGamedata,
 }: UseReportChecklistArgs): ChecklistItemResult[] {
     const [outcomes, set_outcomes] = React.useState<AsyncOutcomes | null>(null);
-
-    // One in-flight request per game, shared by every check that needs game data.
-    // Either both fields are set or the ref is null: a game id can never sit here
-    // without the promise that belongs to it.
-    const gamedata_cache = React.useRef<{ game_id: number; promise: Promise<Gamedata> } | null>(
-        null,
-    );
-
-    const fetchGamedata = React.useCallback((): Promise<Gamedata> => {
-        if (!game_id) {
-            return Promise.reject(new Error("no reported game"));
-        }
-        const cached = gamedata_cache.current;
-        if (cached && cached.game_id === game_id) {
-            return cached.promise;
-        }
-        const promise = get(`/termination-api/game/${game_id}`) as Promise<Gamedata>;
-        gamedata_cache.current = { game_id, promise };
-        // A cached rejection would silently disable this game's screening for the
-        // rest of the dialog session. Clear it so the next call retries; the identity
-        // check keeps this from wiping a newer entry that has since replaced it.
-        promise.catch(() => {
-            if (gamedata_cache.current?.promise === promise) {
-                gamedata_cache.current = null;
-            }
-        });
-        return promise;
-    }, [game_id]);
 
     // Guards against a slow response for one report type or game landing after the
     // reporter has moved on and overwriting what they are looking at.

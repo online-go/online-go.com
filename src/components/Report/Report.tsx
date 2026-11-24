@@ -24,6 +24,8 @@ import { _, interpolate, pgettext } from "@/lib/translate";
 import { checklistSatisfied, type ChecklistItemId } from "@/lib/report_checklist";
 import { getChecklist } from "@/lib/report_checklist_items";
 import { useReportChecklist } from "@/lib/useReportChecklist";
+import { useReportedGame } from "@/lib/useReportedGame";
+import { isSandbaggingReportType, sandbaggingReportType } from "@/lib/sandbagging_report_type";
 import { ReportChecklist } from "./ReportChecklist";
 import { ReportChecklistBlocker } from "./ReportChecklistBlocker";
 import { StallingKindSelector } from "./StallingKindSelector";
@@ -47,9 +49,9 @@ export type ReportType =
     | "harassment"
     | "ai_use"
     | "assess_ai_play"
-    | "sandbagging"
-    | "sandbagging_assessment" // escalated sandbagging reports, for moderators only
-    | "thrown_game"
+    | "sandbagging" // legacy: nothing files this any more, kept for old reports
+    | "sandbagging_assessment" // sandbagging where the accused did not lose the reported game; for moderators
+    | "thrown_game" // sandbagging where the accused lost the reported game; for CMs
     | "escaping"
     | "appeal"
     | "other"
@@ -113,7 +115,6 @@ export const report_categories: ReportDescription[] = [
             "Report user for throwing a game",
             "User intentionally lost the game.",
         ),
-        not_reportable: true, // Reports of this type result from sandbagging reports where the accused lost
     },
     {
         type: "malicious_report",
@@ -128,22 +129,13 @@ export const report_categories: ReportDescription[] = [
         cm_only: true,
     },
     {
-        type: "sandbagging",
+        // Offered as "Sandbagging": the type name is the moderators' word for it.
+        type: "sandbagging_assessment",
         title: pgettext("Report user for sandbagging", "Sandbagging"),
         description: pgettext(
             "Report user for sandbagging",
-            "User is resigning or timing out won games to purposefully lower their rank.",
+            "User is playing far below their real strength, or deliberately losing games to lower their rank.",
         ),
-    },
-    {
-        type: "sandbagging_assessment",
-        title: pgettext("Sandbagging assessment by moderators", "Sandbagging Assessment"),
-        description: pgettext(
-            "Sandbagging assessment by moderators",
-            "Escalated sandbagging reports for moderator review.",
-        ),
-        moderator_only: true,
-        not_reportable: true, // Reports of this type result from CM escalation, not from a player
     },
     {
         type: "inappropriate_content",
@@ -238,6 +230,8 @@ export function Report(props: ReportProperties): React.ReactElement {
     // items array identity changes. A fresh array each render would loop forever.
     const checklist_items = React.useMemo(() => getChecklist(report_type), [report_type]);
 
+    const { fetchGamedata, reported_game } = useReportedGame(game_id);
+
     const checklist = useReportChecklist({
         items: checklist_items,
         game_id,
@@ -246,6 +240,7 @@ export function Report(props: ReportProperties): React.ReactElement {
         note,
         stalling_kind: stalling_kind || undefined,
         attestations,
+        fetchGamedata,
     });
 
     const blocker = checklist.find((r) => r.state === "blocked");
@@ -413,12 +408,23 @@ export function Report(props: ReportProperties): React.ReactElement {
     }
 
     const has_moderator_powers = (user.moderator_powers ?? 0) > 0;
+    // A sandbagging complaint is filed as Thrown Game when the accused lost the
+    // finished game and as Sandbagging in every other case. Neither is offered until
+    // the game data has arrived, so a choice cannot be swapped under the reporter.
+    const sandbagging_type =
+        reported_game.state === "pending"
+            ? undefined
+            : sandbaggingReportType(
+                  reported_game.state === "ready" ? reported_game.gamedata : undefined,
+                  reported_user_id,
+              );
     const available_categories = report_categories
         .filter((x) => !x.not_reportable)
         .filter((x) => user.is_moderator || !x.moderator_only)
         .filter((x) => has_moderator_powers || !x.cm_only)
         // malicious_report is offered only while viewing a score-cheating report
-        .filter((x) => x.type !== "malicious_report" || source_report_type === "score_cheating");
+        .filter((x) => x.type !== "malicious_report" || source_report_type === "score_cheating")
+        .filter((x) => !isSandbaggingReportType(x.type) || x.type === sandbagging_type);
 
     return (
         <Card className="Report">
