@@ -24,10 +24,10 @@ arrived, so a choice cannot be swapped under the reporter.
   carries the same rule as a blocking check, `thrown_game.accused_lost`, and
   turns away links to other games with `thrown_game.this_game_only`, because
   the report is judged on the reported game alone. It requires no description.
-  `sandbagging_assessment` carries a placeholder content item,
-  `sandbagging_assessment.report_content`, that asks for a description of at
-  least 20 characters until the information a report must supply has been
-  decided.
+  `sandbagging_assessment` requires the opposite with
+  `sandbagging_assessment.other_games_linked`: a link to at least one game
+  other than the reported one, because the report is a claim about a pattern.
+  Neither link item blocks, so the reporter can still edit the note.
 - The server (`ogs`, `services/django/ogs/api/views/moderate.py`) enforces the
   same rule: it rejects `thrown_game` unless the accused lost the finished game,
   accepts `sandbagging_assessment` whatever the outcome, and rejects the legacy

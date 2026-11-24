@@ -17,7 +17,7 @@ Two pull requests. Branch `sandbagging-report-routing` in `ogs-ui`, then in
    `useReportChecklist` takes `fetchGamedata` as an argument. Caching tests
    move with the code.
 4. `src/lib/report_checklist_items.ts`: `thrown_game.accused_lost`,
-   `thrown_game.this_game_only`, the placeholder content item for Sandbagging,
+   `thrown_game.this_game_only`, `sandbagging_assessment.other_games_linked`,
    the new `thrown_game` and `sandbagging_assessment` lists, no `sandbagging`
    list. Table test updated.
 5. `src/components/Report/Report.tsx`: categories, the dropdown filter from

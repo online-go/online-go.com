@@ -65,21 +65,19 @@ labels and is unchanged.
   games themselves. The item is not a blocker because a blocker collapses the
   dialog to its explanation and hides the note, which would leave the reporter
   no way to remove the link.
-- `sandbagging_assessment`: the game is identified (blocking); report content
-  (placeholder, below).
+- `sandbagging_assessment`: the game is identified (blocking); the note links
+  to at least one game other than the reported one (not blocking). A
+  sandbagging report is a claim about a pattern, so it must point at the games
+  that show it; the reported game does not count because the moderators
+  already have it.
 - The `sandbagging` entry is removed.
 
 The lost-game check mirrors the server rule. It can only fail if the dialog is
 opened with the type preset, since the dropdown already applies the rule, but
 the table is meant to be the complete statement of what each type requires.
 
-**Placeholder content item.** A Sandbagging report will require the reporter
-to supply certain information. What that information is, and whether the
-reporter attests to it or the dialog checks it, is still to be decided. Until
-then the type carries one non-blocking item,
-`sandbagging_assessment.report_content`, that asks for a description of at
-least 20 characters. Replacing the evaluate function, or the item, is the
-follow-up.
+Both link checks read the same pattern, an OGS game path with or without its
+host, so a pasted link counts whether or not the reporter trimmed it.
 
 ### Server (`ogs`, second pull request)
 
