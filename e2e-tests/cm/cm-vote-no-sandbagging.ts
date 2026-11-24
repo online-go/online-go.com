@@ -26,10 +26,9 @@
  * - other user (opponent) - created fresh each run
  * - game between them that ends by resignation
  *
- * Note: When the reporter submits a "sandbagging" report and the accused player
- * LOST the game, the backend automatically converts it to a "thrown_game" report.
- * This test verifies that CMs can vote "no thrown game evident" when they believe
- * the loss was legitimate.
+ * Note: The accused LOST the game, so the report dialog offers "Thrown Game" and
+ * not "Sandbagging" (sandbagging_assessment). This test verifies that CMs can vote
+ * "no thrown game evident" when they believe the loss was legitimate.
  */
 
 import type { CreateContextOptions } from "@helpers";
@@ -94,9 +93,8 @@ export const cmVoteNoSandbaggingTest = async (
     const moves = ["D5", "E5", "D6", "E6", "D7", "E7", "D8", "E8"];
     await playMoves(accusedPage, otherPage, moves, "9x9", 0);
 
-    // Accused resigns - this means they LOST the game.
-    // When reporter submits a "sandbagging" report, the backend will convert
-    // it to "thrown_game" because the accused lost.
+    // Accused resigns - this means they LOST the game, so the report dialog
+    // will offer "Thrown Game".
     await resignActiveGame(accusedPage);
 
     // Capture the game URL for the reporter to navigate to
@@ -114,13 +112,13 @@ export const cmVoteNoSandbaggingTest = async (
         // Reporter navigates to the game
         await goToFinishedGameUrl(reporterPage, gameUrl);
 
-        // Reporter submits a "sandbagging" report - but since the accused lost,
-        // the backend will convert this to a "thrown_game" report
+        // The accused lost, so the dialog offers "Thrown Game" and not "Sandbagging"
         await reportUser(
             reporterPage,
             accusedUsername,
-            "sandbagging",
+            "thrown_game",
             "E2E test reporting sandbagging: they lost on purpose.", // min chars
+            { notOffered: ["sandbagging_assessment"] },
         );
 
         // Verify reporter's count increased by 1
@@ -139,7 +137,7 @@ export const cmVoteNoSandbaggingTest = async (
                 reportNumber,
             );
 
-            // Verify the report type is shown as "Thrown Game" (converted from sandbagging)
+            // Verify the report type is shown as "Thrown Game"
             const reportTypeSelector = cmPage.locator(".report-type-selector");
             await expect(reportTypeSelector).toContainText("Thrown Game");
 

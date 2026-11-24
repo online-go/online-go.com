@@ -26,7 +26,7 @@ import { cmVoteSuspendUserTest } from "./cm-vote-suspend-user";
 import { cmVoteNoSandbaggingTest } from "./cm-vote-no-sandbagging";
 import { cmVoteWarnAnnulSandbaggingTest } from "./cm-vote-warn-annul-sandbagging";
 import { cmVoteEscalateSandbaggingTest } from "./cm-vote-escalate-sandbagging";
-import { cmSandbaggingAssessmentConversionTest } from "./cm-sandbagging-assessment-conversion";
+import { cmSandbaggingAccusedWonTest } from "./cm-sandbagging-accused-won";
 import { cmLastWarningInfoTest } from "./cm-last-warning-info";
 import { cmEscapeRateDisplayTest } from "./cm-escape-rate-display";
 import { cmEscapeRateGameAnchorTest } from "./cm-escape-rate-game-anchor";
@@ -53,10 +53,7 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
     ogsTest("Vote no sandbagging evident", cmVoteNoSandbaggingTest);
     ogsTest("Vote warn and annul sandbagged game", cmVoteWarnAnnulSandbaggingTest);
     ogsTest("Vote escalate sandbagging to moderators", cmVoteEscalateSandbaggingTest);
-    ogsTest(
-        "Sandbagging report converts to assessment when accused won",
-        cmSandbaggingAssessmentConversionTest,
-    );
+    ogsTest("Only Sandbagging is offered when the accused won", cmSandbaggingAccusedWonTest);
     ogsTest("@Slow Last warning info shown on repeat offender reports", cmLastWarningInfoTest);
     ogsTest("@Slow Escape rate display on escaping reports", cmEscapeRateDisplayTest);
     ogsTest(
@@ -76,10 +73,7 @@ ogsTest.describe("@CM Community Moderation Tests", () => {
         "Escalated escaping report shows all voting options",
         cmEscalatedEscapingAllOptionsTest,
     );
-    ogsTest(
-        "Sandbagging report on in-progress game becomes assessment not thrown",
-        cmSandbaggingInProgressGameTest,
-    );
+    ogsTest("Only Sandbagging is offered on an in-progress game", cmSandbaggingInProgressGameTest);
     ogsTest("File a malicious report from the report view", cmFileMaliciousReportTest);
     ogsTest("Vote no malicious report", cmVoteNoMaliciousReportTest);
     ogsTest("Vote warn malicious reporter", cmVoteWarnMaliciousReporterTest);

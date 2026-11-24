@@ -26,8 +26,7 @@
  * - other user (opponent) - created fresh each run
  * - game between them that ends by resignation
  *
- * Note: When the reporter submits a "sandbagging" report and the accused player
- * LOST the game, the backend automatically converts it to a "thrown_game" report.
+ * Note: The accused LOST the game, so the report dialog offers "Thrown Game".
  * This test verifies that flow works correctly.
  */
 
@@ -92,9 +91,8 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
     const moves = ["D5", "E5", "D6", "E6", "D7", "E7", "D8", "E8"];
     await playMoves(accusedPage, otherPage, moves, "9x9", 0);
 
-    // Accused resigns - this means they LOST the game.
-    // When reporter submits a "sandbagging" report, the backend will convert
-    // it to "thrown_game" because the accused lost.
+    // Accused resigns - this means they LOST the game, so the report dialog
+    // will offer "Thrown Game".
     await resignActiveGame(accusedPage);
     await otherPage.context().close();
 
@@ -114,12 +112,11 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
         // Reporter navigates to the game
         await waitForGameViewReady(reporterPage);
 
-        // Reporter submits a "sandbagging" report - but since the accused lost,
-        // the backend will convert this to a "thrown_game" report
+        // The accused lost, so the dialog offers "Thrown Game" and not "Sandbagging"
         await reportUser(
             reporterPage,
             accusedUsername,
-            "sandbagging",
+            "thrown_game",
             "E2E test reporting sandbagging for annulment: deliberate loss.", // min chars
         );
 
@@ -139,7 +136,7 @@ export const cmVoteWarnAnnulSandbaggingTest = async (
                 reportNumber,
             );
 
-            // Verify the report type is shown as "Thrown Game" (converted from sandbagging)
+            // Verify the report type is shown as "Thrown Game"
             const reportTypeSelector = cmPage.locator(".report-type-selector");
             await expect(reportTypeSelector).toContainText("Thrown Game");
 

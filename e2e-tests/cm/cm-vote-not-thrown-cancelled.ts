@@ -27,10 +27,10 @@
  * - reporter - created fresh each run
  * - game between accused and opponent that ends by cancellation
  *
- * Cancelling records the canceller as the loser, so a "sandbagging" report
- * against them is converted by the backend into a "thrown_game" report. This
- * test verifies that CMs can close such a report with "not a thrown game,
- * they used cancel", and that the reporter is told what actually happened.
+ * Cancelling records the canceller as the loser, so the report dialog offers
+ * "Thrown Game" for a report against them. This test verifies that CMs can
+ * close such a report with "not a thrown game, they used cancel", and that the
+ * reporter is told what actually happened.
  */
 
 import { expectNoAccountWarning } from "@helpers/report-utils";
@@ -98,7 +98,7 @@ export const cmVoteNotThrownCancelledTest = async (
     await playMoves(accusedPage, otherPage, ["D5", "E5"], "9x9", 0);
 
     // The accused cancels. This must be the accused: the canceller is recorded
-    // as the loser, and the sandbagging-to-thrown-game conversion keys off that.
+    // as the loser, which is what makes "Thrown Game" the offered report type.
     await cancelActiveGame(accusedPage);
 
     // Capture the game URL for the reporter to navigate to
@@ -115,12 +115,11 @@ export const cmVoteNotThrownCancelledTest = async (
         // A two-move cancelled game gets no AI review, so don't wait for one.
         await goToFinishedGameUrl(reporterPage, gameUrl, { aiReviewExpected: false });
 
-        // Reporter submits a "sandbagging" report - the backend converts it to
-        // "thrown_game" because the accused is recorded as having lost.
+        // The accused is recorded as having lost, so the dialog offers "Thrown Game"
         await reportUser(
             reporterPage,
             accusedUsername,
-            "sandbagging",
+            "thrown_game",
             "E2E test reporting sandbagging: they threw the game by quitting.", // min chars
         );
 
@@ -140,8 +139,8 @@ export const cmVoteNotThrownCancelledTest = async (
                 reportNumber,
             );
 
-            // The cancellation path must produce a Thrown Game report - if this
-            // assertion fails the conversion in moderate.py did not fire.
+            // The report must arrive as Thrown Game: the dialog offered that type
+            // because the canceller is recorded as the loser.
             const reportTypeSelector = cmPage.locator(".report-type-selector");
             await expect(reportTypeSelector).toContainText("Thrown Game");
 

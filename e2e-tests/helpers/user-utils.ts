@@ -477,11 +477,25 @@ export const tickReportAttestations = async (page: Page) => {
     await expect(boxes, "every attestation should be ticked before submitting").toHaveCount(0);
 };
 
+export interface ReportFormOptions {
+    /**
+     * Report types that must not be in the dropdown. Checked after the chosen type
+     * has been selected, which is when the dropdown has settled: the sandbagging
+     * types appear only once the dialog has the game's outcome.
+     */
+    notOffered?: string[];
+}
+
 /**
  * Internal helper to fill and submit the report form after PlayerDetails is open.
  * Verifies the PlayerDetails popover is still visible before attempting to click Report.
  */
-const submitReportForm = async (page: Page, type: string, notes: string) => {
+const submitReportForm = async (
+    page: Page,
+    type: string,
+    notes: string,
+    options: ReportFormOptions = {},
+) => {
     // Verify popover is still open - it may have closed due to race conditions
     await expect(
         page.locator('.PlayerDetails[data-ready="true"]'),
@@ -494,6 +508,12 @@ const submitReportForm = async (page: Page, type: string, notes: string) => {
     await expect(page.getByText("Request Moderator Assistance")).toBeVisible();
 
     await page.selectOption(".type-picker select", { value: type });
+    for (const absent of options.notOffered ?? []) {
+        await expect(
+            page.locator(`.type-picker select option[value="${absent}"]`),
+            `report type ${absent} should not be offered`,
+        ).toHaveCount(0);
+    }
 
     // A stalling report requires a stall kind to be selected before it can be
     // submitted. Pick a named kind (not "other", which would additionally
@@ -530,7 +550,13 @@ const submitReportForm = async (page: Page, type: string, notes: string) => {
     await expect(OK).toBeHidden();
 };
 
-export const reportUser = async (page: Page, username: string, type: string, notes: string) => {
+export const reportUser = async (
+    page: Page,
+    username: string,
+    type: string,
+    notes: string,
+    options: ReportFormOptions = {},
+) => {
     // A page can render the same player twice; the `nodetails` variant
     // navigates to the player page on click instead of opening the
     // PlayerDetails popover, so it must never be the click target.
@@ -539,7 +565,7 @@ export const reportUser = async (page: Page, username: string, type: string, not
         .first();
 
     await openPlayerDetailsPopover(page, playerLink);
-    await submitReportForm(page, type, notes);
+    await submitReportForm(page, type, notes, options);
 };
 
 /**

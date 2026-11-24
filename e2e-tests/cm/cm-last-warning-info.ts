@@ -30,18 +30,17 @@
  * - reporter user - fresh each run
  * - games between accused and opponent
  *
- * Note: We use "sandbagging" reports because the accused resigns (loses), and
- * the backend auto-converts sandbagging reports to "thrown_game" when the
- * accused lost. This avoids the "escaping" report type's frontend validation
- * that rejects games ending by resignation.
+ * Note: We use "thrown_game" reports because the accused resigns (loses), which
+ * is when the report dialog offers that type. This avoids the "escaping" report
+ * type's frontend validation that rejects games ending by resignation.
  *
  * Flow:
  * 1. Play a game, accused resigns (loses)
- * 2. Reporter reports accused for "sandbagging" (converts to "thrown_game")
+ * 2. Reporter reports accused for "thrown_game"
  * 3. 3 CMs vote "warn_thrown_game" -> warning issued, report resolves
  * 4. Accused acknowledges the warning
  * 5. Play 2 more games
- * 6. Reporter reports accused for "sandbagging" again (converts to "thrown_game")
+ * 6. Reporter reports accused for "thrown_game" again
  * 7. CM views the new report and verifies "Last warned" info is shown
  */
 
@@ -146,11 +145,11 @@ export const cmLastWarningInfoTest = async (
             // Reporter navigates to the game to see the accused player's name
             await goToFinishedGameUrl(reporterPage, gameUrl);
 
-            // Report for "sandbagging" — since the accused lost, backend converts to "thrown_game"
+            // The accused lost, so the dialog offers "Thrown Game"
             await reportUser(
                 reporterPage,
                 accusedUsername,
-                "sandbagging",
+                "thrown_game",
                 "E2E test: reporting for last-warning-info test, deliberate loss.",
             );
 
@@ -187,7 +186,7 @@ export const cmLastWarningInfoTest = async (
                     ));
                 }
 
-                // Verify the report type was converted to "Thrown Game"
+                // Verify the report type is "Thrown Game"
                 const reportTypeSelector = cmPage.locator(".report-type-selector");
                 await expect(reportTypeSelector).toContainText("Thrown Game");
 
@@ -278,8 +277,8 @@ export const cmLastWarningInfoTest = async (
             // ========================================
 
             // For the second report, the accused needs to have lost the game again
-            // so that the sandbagging report converts to thrown_game.
-            // Play one more game where accused resigns (loses).
+            // so that "Thrown Game" is offered. Play one more game where accused
+            // resigns (loses).
             const game4Url = await playAndResignGame(accusedPage, opponentPage, opponentUsername);
 
             await goToFinishedGameUrl(reporterPage, game4Url);
@@ -287,7 +286,7 @@ export const cmLastWarningInfoTest = async (
             await reportUser(
                 reporterPage,
                 accusedUsername,
-                "sandbagging",
+                "thrown_game",
                 "E2E test: second report to verify last-warning-info display.",
             );
 
