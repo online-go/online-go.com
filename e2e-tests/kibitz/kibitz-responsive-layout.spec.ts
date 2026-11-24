@@ -72,7 +72,14 @@ ogsTest.describe("@Kibitz responsive layout", () => {
                 expect(layout.boardBottom).toBeLessThanOrEqual(layout.viewportHeight + 1);
                 expect(layout.playerBars).toBe(0);
                 await expect(root.locator(".GobanView-tab-bar")).toBeVisible();
-                for (const title of ["Game chat", "Kibitz chat", "Rooms", "Variations", "People"]) {
+                // Stacked layouts name the Rooms action for what it does.
+                for (const title of [
+                    "Game chat",
+                    "Kibitz chat",
+                    "Switch rooms",
+                    "Variations",
+                    "People",
+                ]) {
                     await expect(page.getByTitle(title, { exact: true })).toBeVisible();
                 }
             },
