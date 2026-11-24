@@ -21,10 +21,13 @@ arrived, so a choice cannot be swapped under the reporter.
 - `src/lib/useReportedGame.ts`: the one fetch of the reported game, shared by
   the dialog's dropdown and the checklist's data checks.
 - `src/lib/report_checklist_items.ts`: each type's checklist. `thrown_game`
-  carries the same rule as a blocking check, `thrown_game.accused_lost`. Both
-  types carry a placeholder content item, `<type>.report_content`, that asks for
-  a description of at least 20 characters until the information a report must
-  supply has been decided.
+  carries the same rule as a blocking check, `thrown_game.accused_lost`, and
+  turns away links to other games with `thrown_game.this_game_only`, because
+  the report is judged on the reported game alone. It requires no description.
+  `sandbagging_assessment` carries a placeholder content item,
+  `sandbagging_assessment.report_content`, that asks for a description of at
+  least 20 characters until the information a report must supply has been
+  decided.
 - The server (`ogs`, `services/django/ogs/api/views/moderate.py`) enforces the
   same rule: it rejects `thrown_game` unless the accused lost the finished game,
   accepts `sandbagging_assessment` whatever the outcome, and rejects the legacy

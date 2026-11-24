@@ -58,23 +58,28 @@ labels and is unchanged.
 ### Checklists (`report_checklist_items.ts`)
 
 - `thrown_game`: the game is identified (blocking); this player lost the
-  finished game (blocking, from the shared game data); report content
-  (placeholder, below).
+  finished game (blocking, from the shared game data); the report is about this
+  game only (not blocking). No description is required: the game speaks for
+  itself. Links to other games are turned away, because a thrown-game report is
+  judged on the reported game alone and moderators look at a player's other
+  games themselves. The item is not a blocker because a blocker collapses the
+  dialog to its explanation and hides the note, which would leave the reporter
+  no way to remove the link.
 - `sandbagging_assessment`: the game is identified (blocking); report content
-  (placeholder).
+  (placeholder, below).
 - The `sandbagging` entry is removed.
 
 The lost-game check mirrors the server rule. It can only fail if the dialog is
 opened with the type preset, since the dropdown already applies the rule, but
 the table is meant to be the complete statement of what each type requires.
 
-**Placeholder content items.** Each type will require the reporter to supply
-certain information. What that information is, and whether the reporter
-attests to it or the dialog checks it, is still to be decided. Until then each
-type carries one non-blocking item, `thrown_game.report_content` and
+**Placeholder content item.** A Sandbagging report will require the reporter
+to supply certain information. What that information is, and whether the
+reporter attests to it or the dialog checks it, is still to be decided. Until
+then the type carries one non-blocking item,
 `sandbagging_assessment.report_content`, that asks for a description of at
-least 20 characters under a label written for that type. Replacing the
-evaluate function, or the item, is the follow-up.
+least 20 characters. Replacing the evaluate function, or the item, is the
+follow-up.
 
 ### Server (`ogs`, second pull request)
 
