@@ -18,13 +18,18 @@
 import * as React from "react";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import * as DynamicHelp from "react-dynamic-help";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
 import { close_all_popovers } from "@/lib/popover";
 import type { GobanController } from "@/lib/GobanController";
 import type { KibitzRoomUser, KibitzVariationSummary, KibitzWatchedGame } from "@/models/kibitz";
+import { KIBITZ_INTRO_FLOW, KIBITZ_ROOM_SWITCHER_TARGET } from "./KibitzHelpFlows";
 import { KibitzView, KibitzViewProps } from "./KibitzView";
 
+jest.mock("./KibitzEvaluation", () => ({
+    KibitzEvaluation: () => <div data-testid="evaluation" />,
+}));
 jest.mock("@/components/Player", () => ({
     __esModule: true,
     Player: ({ user }: { user?: { username?: string } }) => (
@@ -186,6 +191,7 @@ function baseProps(overrides: Partial<KibitzViewProps> = {}): KibitzViewProps {
             isDraftDirty: () => false,
         },
         isPortrait: false,
+        isStacked: overrides.isPortrait ?? false,
         leftAside: variationLeftAside(),
         chat: {} as KibitzViewProps["chat"],
         proposals: { activeProposal: undefined, queuedProposals: [], onVote: jest.fn() },
@@ -244,7 +250,7 @@ function variationLeftAside(
         canOpenCreateRoomFlow: false,
         signInHref: "/login",
         variations: [],
-        currentGameId: 100,
+        currentBoard: "game:100",
         variationGameById: new Map(),
         selectedVariationId: null,
         variationFocusRequestId: 0,
@@ -273,9 +279,30 @@ describe("KibitzView", () => {
         expect(screen.getByText("Next game in 0:30").closest(".Kibitz-header")).not.toBeNull();
     });
 
+    test("offers the score bar on a game but not on a review or demo board", () => {
+        const props = baseProps();
+        const { rerender } = render(<KibitzView {...props} />);
+        expect(screen.getByTitle("Score bar")).toBeInTheDocument();
+        expect(screen.getByTestId("evaluation")).toBeInTheDocument();
+        rerender(
+            <KibitzView
+                {...props}
+                room={{
+                    ...props.room,
+                    current_game: { ...props.room.current_game!, game_id: undefined, review_id: 7 },
+                }}
+            />,
+        );
+        expect(screen.queryByTitle("Score bar")).toBeNull();
+        expect(screen.queryByTestId("evaluation")).toBeNull();
+    });
+
     test("horizontal mode shows sidebar cards before Kibitz content and no board bars", () => {
         const props = baseProps({ banner: <div data-testid="banner" /> });
         const { container } = render(<KibitzView {...props} />);
+        expect(container.querySelector(".Kibitz-header")).toContainElement(
+            screen.getByTestId("evaluation"),
+        );
         expect(screen.getByTestId("goban-container")).toBeInTheDocument();
         expect(screen.getByTestId("player-cards")).toHaveAttribute("data-game-id", "100");
         expect(container.querySelectorAll(".player-container")).toHaveLength(2);
@@ -371,7 +398,7 @@ describe("KibitzView", () => {
             leftAside: variationLeftAside({
                 variations: [variation],
                 selectedVariationId: "v1",
-                variationGameById: new Map([[42, otherGame]]),
+                variationGameById: new Map([["game:42" as const, otherGame]]),
             }),
         });
         const secondary = fakeController();
@@ -397,7 +424,10 @@ describe("KibitzView", () => {
                 variations: [variation],
                 selectedVariationId: "v1",
                 variationGameById: new Map([
-                    [100, makeWatchedGame({ game_id: 100, title: "Should not appear" })],
+                    [
+                        "game:100" as const,
+                        makeWatchedGame({ game_id: 100, title: "Should not appear" }),
+                    ],
                 ]),
             }),
         });
@@ -560,7 +590,13 @@ describe("KibitzView", () => {
 
         test("shows the panes instead of the chat and the left aside", () => {
             render(<KibitzView {...baseProps({ isPortrait: true })} />);
-            for (const title of ["Game chat", "Kibitz chat", "People", "Variations", "Rooms"]) {
+            for (const title of [
+                "Game chat",
+                "Kibitz chat",
+                "People",
+                "Variations",
+                "Switch rooms",
+            ]) {
                 expect(screen.getByTitle(title)).toBeInTheDocument();
             }
             expect(screen.getByTestId("portrait-panes")).toHaveAttribute(
@@ -687,14 +723,41 @@ describe("KibitzView", () => {
             expect(onRoomsOpened).not.toHaveBeenCalled();
         });
 
-        test("selecting the Rooms pane refreshes the room directory", () => {
-            const onRoomsOpened = jest.fn();
-            render(<KibitzView {...baseProps({ isPortrait: true, onRoomsOpened })} />);
-            expect(onRoomsOpened).not.toHaveBeenCalled();
-            fireEvent.click(screen.getByTitle("Rooms"));
-            expect(onRoomsOpened).toHaveBeenCalledTimes(1);
-            expect(screen.getByTestId("portrait-panes")).toHaveAttribute("data-active", "rooms");
-        });
+        test.each([
+            ["during portrait help", true, true, true, "Switch rooms", 1],
+            ["before portrait help is ready", true, false, true, "Switch rooms", 0],
+            ["after portrait help is dismissed", true, true, false, "Switch rooms", 0],
+            ["in compact landscape", false, true, true, "Rooms", 0],
+        ])(
+            "opens the room directory %s and acknowledges help when active",
+            (_, isStacked, initialized, visible, buttonName, acknowledgements) => {
+                const onRoomsOpened = jest.fn();
+                const used = jest.fn();
+                const roomSwitcher = { used };
+                const api = {
+                    registerTargetItem: (id: string) =>
+                        id === KIBITZ_ROOM_SWITCHER_TARGET ? roomSwitcher : undefined,
+                    getSystemStatus: () => ({ enabled: true, initialized }),
+                    getFlowInfo: () => [{ id: KIBITZ_INTRO_FLOW, visible }],
+                } as unknown as DynamicHelp.AppApi;
+                render(
+                    <DynamicHelp.Api.Provider value={api}>
+                        <KibitzView
+                            {...baseProps({ isPortrait: true, isStacked, onRoomsOpened })}
+                        />
+                    </DynamicHelp.Api.Provider>,
+                );
+                used.mockClear();
+                expect(onRoomsOpened).not.toHaveBeenCalled();
+                fireEvent.click(screen.getByRole("button", { name: buttonName }));
+                expect(used).toHaveBeenCalledTimes(acknowledgements);
+                expect(onRoomsOpened).toHaveBeenCalledTimes(1);
+                expect(screen.getByTestId("portrait-panes")).toHaveAttribute(
+                    "data-active",
+                    "rooms",
+                );
+            },
+        );
 
         test("a second variation brings the analysis pane forward again", () => {
             // The reader can walk away from the analysis pane with a draft
@@ -781,9 +844,9 @@ describe("KibitzView", () => {
             fireEvent.click(screen.getByTitle("Game chat"));
             expect(active()).toBe("game-chat");
 
-            fireEvent.click(screen.getByTitle("Rooms"));
+            fireEvent.click(screen.getByTitle("Switch rooms"));
             expect(active()).toBe("rooms");
-            fireEvent.click(screen.getByTitle("Rooms"));
+            fireEvent.click(screen.getByTitle("Switch rooms"));
             expect(active()).toBe("game-chat");
 
             fireEvent.click(screen.getByTitle("Variations"));
@@ -807,15 +870,15 @@ describe("KibitzView", () => {
             const active = () => screen.getByTestId("portrait-panes").getAttribute("data-active");
             expect(active()).toBe("analysis");
 
-            fireEvent.click(screen.getByTitle("Rooms"));
+            fireEvent.click(screen.getByTitle("Switch rooms"));
             expect(active()).toBe("rooms");
             // With the draft still open the reader gets it back.
-            fireEvent.click(screen.getByTitle("Rooms"));
+            fireEvent.click(screen.getByTitle("Switch rooms"));
             expect(active()).toBe("analysis");
 
-            fireEvent.click(screen.getByTitle("Rooms"));
+            fireEvent.click(screen.getByTitle("Switch rooms"));
             rerender(<KibitzView {...baseProps({ isPortrait: true })} />);
-            fireEvent.click(screen.getByTitle("Rooms"));
+            fireEvent.click(screen.getByTitle("Switch rooms"));
             expect(active()).toBe("room-chat");
         });
 

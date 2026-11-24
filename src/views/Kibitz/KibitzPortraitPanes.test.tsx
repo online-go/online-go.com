@@ -131,7 +131,7 @@ function props(active: KibitzPortraitPane): React.ComponentProps<typeof KibitzPo
         canOpenCreateRoomFlow: false,
         signInHref: "/sign-in",
         variations: [makeVariation("v1")],
-        currentGameId: 10,
+        currentBoard: "game:10",
         variationGameById: new Map(),
         selectedVariationId: null,
         variationFocusRequestId: 0,
@@ -143,7 +143,14 @@ function props(active: KibitzPortraitPane): React.ComponentProps<typeof KibitzPo
         onExitVariation: jest.fn(),
     };
 
-    return { active, chat, leftAside, roomChannel: "kibitz-room-1", analysis: null };
+    return {
+        active,
+        chat,
+        leftAside,
+        roomChannel: "kibitz-room-1",
+        roomActivity: new Map(),
+        analysis: null,
+    };
 }
 
 describe("KibitzPortraitPanes", () => {

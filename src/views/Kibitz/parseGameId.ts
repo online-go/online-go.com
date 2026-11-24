@@ -36,3 +36,23 @@ export function parseGameId(input: string): number | null {
 
     return null;
 }
+
+/**
+ * Parse the picker's manual input into a board: a game, or a review (a demo
+ * board or a review of a game).
+ *
+ * A bare integer is a game id, as before. A URL names its kind: /game/ID and
+ * /game/view/ID are games; /review/ID and /demo/ID, each with an optional
+ * /view segment and an optional trailing move number, are reviews.
+ */
+export function parseKibitzBoardInput(
+    input: string,
+): { game_id: number } | { review_id: number } | null {
+    const trimmed = input.trim();
+    const review = trimmed.match(/\/(?:review|demo)(?:\/view)?\/(\d+)(?:\/|$|\?|#)/i);
+    if (review) {
+        return { review_id: Number(review[1]) };
+    }
+    const gameId = parseGameId(trimmed);
+    return gameId ? { game_id: gameId } : null;
+}

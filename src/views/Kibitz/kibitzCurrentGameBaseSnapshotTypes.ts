@@ -16,6 +16,7 @@
  */
 
 import { type GobanConfig, type MoveTreeJson } from "goban";
+import type { KibitzBoardKey } from "./kibitzBoardRef";
 
 export type KibitzBoardLoadConfig = Record<string, unknown> & {
     move_tree?: MoveTreeJson;
@@ -23,7 +24,8 @@ export type KibitzBoardLoadConfig = Record<string, unknown> & {
 };
 
 export interface KibitzCurrentGameBaseSnapshot {
-    gameId: number;
+    /** The board the snapshot was taken from. */
+    board: KibitzBoardKey;
     roomId?: string | null;
     trunkTailMoveNumber: number;
     moveTreeId: number | string | null;

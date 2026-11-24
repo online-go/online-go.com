@@ -160,11 +160,19 @@ describe("KibitzController room ordering", () => {
         ]);
 
         const controller = new KibitzController();
+        const onActivity = jest.fn();
+        controller.on("room-activity", onActivity);
         await flushPromises();
         await flushPromises();
 
         expect(controller.rooms.map((room) => room.id)).toEqual(["room-a", "room-b", "room-c"]);
         expect(controller.default_room_id).toBe("room-a");
+        expect(onActivity).not.toHaveBeenCalled();
+
+        pushHandlers["viewer-count-changed"]?.({ channel: "channel-c", viewer_count: 10 });
+        expect(onActivity).not.toHaveBeenCalled();
+        pushHandlers["viewer-count-changed"]?.({ channel: "channel-c", viewer_count: 11 });
+        expect(onActivity).toHaveBeenCalledWith("room-c", "busy");
 
         pushHandlers["viewer-count-changed"]?.({
             channel: "channel-c",
@@ -192,6 +200,10 @@ describe("KibitzController room ordering", () => {
             "room-b",
             "room-c",
             "room-new",
+        ]);
+        expect(onActivity.mock.calls).toEqual([
+            ["room-c", "busy"],
+            ["room-new", "new"],
         ]);
 
         pushHandlers["room-removed"]?.({ id: "room-b" });
@@ -461,7 +473,7 @@ describe("KibitzController room ordering", () => {
         // A draft opened while the room details load must survive their arrival.
         controller.setSecondaryPane({
             collapsed: false,
-            variation_source_game_id: 5,
+            variation_source_board: "game:5",
         });
         resolveRoom({});
         await pending;
@@ -551,7 +563,7 @@ describe("KibitzController telemetry", () => {
             viewer_count: 1,
             current_game: { game_id: 5, title: "g" },
         } as never);
-        controller.startVariationFromCurrentBoard({ roomId: "user-1", gameId: 5 });
+        controller.startVariationFromCurrentBoard({ roomId: "user-1", board: "game:5" });
         controller.startVariationFromPostedVariation({ id: "v1", game_id: 5 } as never);
         expect(mockedRecord.mock.calls.map((c) => c[0])).toEqual([
             "start_variation",
@@ -585,11 +597,11 @@ describe("KibitzController telemetry", () => {
         expect(controller.active_room?.id).toBe("preset-room");
         expect(
             controller.startVariationFromCurrentBoard(
-                { roomId: "user-room", gameId: 9 },
+                { roomId: "user-room", board: "game:9" },
                 { x: -1, y: -1 },
             ),
         ).toBe(false);
-        expect(controller.secondary_pane.variation_source_game_id).toBeUndefined();
+        expect(controller.secondary_pane.variation_source_board).toBeUndefined();
         expect(mockedRecord).not.toHaveBeenCalledWith("start_variation");
 
         resolveRoom({
@@ -614,11 +626,11 @@ describe("KibitzController telemetry", () => {
         expect(controller.active_room?.id).toBe("user-room");
         expect(
             controller.startVariationFromCurrentBoard(
-                { roomId: "user-room", gameId: 9 },
+                { roomId: "user-room", board: "game:9" },
                 { x: -1, y: -1 },
             ),
         ).toBe(true);
-        expect(controller.secondary_pane.variation_source_game_id).toBe(9);
+        expect(controller.secondary_pane.variation_source_board).toBe("game:9");
         controller.destroy();
     });
 
@@ -756,12 +768,12 @@ describe("KibitzController telemetry", () => {
                 goban: { engine: { last_official_move: { move_number: 4 } } },
             }) as never;
         jest.spyOn(console, "warn").mockImplementation(() => undefined);
-        controller.postVariation("user-4", boardController({ from: "x", moves: "" }), 5);
+        controller.postVariation("user-4", boardController({ from: "x", moves: "" }), "game:5");
         expect(mockedRecord).toHaveBeenLastCalledWith("post_variation", {
             outcome: "error",
             error: "malformed_payload",
         });
-        controller.postVariation("user-4", boardController({ from: 4, moves: "aa" }), 5);
+        controller.postVariation("user-4", boardController({ from: 4, moves: "aa" }), "game:5");
         expect(mockedRecord).toHaveBeenLastCalledWith("post_variation");
         controller.destroy();
     });
@@ -916,6 +928,33 @@ describe("Kibitz history replay batching", () => {
             controller.destroy();
         },
     );
+    test.each([
+        ["a review body with its branch point's path", { review_id: 7, from_path: "bb" }, true],
+        ["a review body without a path", { review_id: 7 }, false],
+        [
+            "a body naming both a game and a review",
+            { game_id: 42, review_id: 7, from_path: "bb" },
+            false,
+        ],
+    ])("reads %s as a variation: %p", async (_label, board, accepted) => {
+        const { controller, proxy } = await setup();
+        const variation = message(1);
+        variation.message.m = {
+            type: "analysis",
+            name: "Variation",
+            from: 1,
+            moves: "aa",
+            ...board,
+        } as unknown as ChatMessage["message"]["m"];
+        proxy.channel.chat_log.push(variation);
+        proxy.emit("chat", variation);
+        flushFrames();
+        expect(controller.variations).toEqual(
+            accepted ? [expect.objectContaining({ review_id: 7, analysis_from_path: "bb" })] : [],
+        );
+        expect(controller.variations[0]?.game_id).toBeUndefined();
+        controller.destroy();
+    });
     test("removal cancels a queued replay and rebuilds from the remaining log", async () => {
         const { controller, proxy } = await setup();
         proxy.channel.chat_log.push(message(1), message(2));
@@ -999,7 +1038,7 @@ test("posts annotation-only analysis and refuses an empty post", async () => {
         goban: { engine: { last_official_move: { move_number: 0 } } },
     } as never;
     try {
-        expect(controller.postVariation("annotations", board, 42)).toEqual(
+        expect(controller.postVariation("annotations", board, "game:42")).toEqual(
             expect.objectContaining(analysis),
         );
         expect(sendTypedBody).toHaveBeenCalledWith(
@@ -1007,8 +1046,51 @@ test("posts annotation-only analysis and refuses an empty post", async () => {
         );
         expect(recordAnalysisSent).toHaveBeenCalledWith(analysis);
         analysis.marks = {} as typeof analysis.marks;
-        expect(controller.postVariation("annotations", board, 42)).toBeNull();
+        expect(controller.postVariation("annotations", board, "game:42")).toBeNull();
         expect(sendTypedBody).toHaveBeenCalledTimes(1);
+    } finally {
+        controller.destroy();
+        jest.mocked(analysisPolicy.getCurrentKibitzUser).mockReturnValue(null);
+    }
+});
+
+test("posts a review variation with the review and its branch point's path", async () => {
+    mockedGet.mockResolvedValueOnce([]);
+    const controller = new KibitzController();
+    await flushPromises();
+    const sendTypedBody = jest.fn();
+    jest.mocked(chatManager.chat_manager.join).mockReturnValueOnce({
+        on: jest.fn(),
+        off: jest.fn(),
+        part: jest.fn(),
+        channel: { chat_log: [], users_by_join: [], sendTypedBody },
+    } as never);
+    mockedGet.mockResolvedValueOnce({
+        room: { id: "demo", channel: "kibitz-demo", kind: "user" },
+        permissions: {},
+    });
+    await controller.selectRoom("demo");
+    jest.mocked(analysisPolicy.getCurrentKibitzUser).mockReturnValue({
+        id: 1,
+        username: "Author",
+        anonymous: false,
+    } as never);
+    const analysis = { type: "analysis", from: 2, moves: "dd" };
+    const board = {
+        buildAnalysisSnapshot: () => ({ analysis, moves: [], move_count: 3, is_duplicate: false }),
+        recordAnalysisSent: jest.fn(),
+        goban: {
+            engine: {
+                last_official_move: { move_number: 2 },
+                cur_move: { getBranchPoint: () => ({ getMoveStringToThisPoint: () => "bbcc" }) },
+            },
+        },
+    } as never;
+    try {
+        controller.postVariation("demo", board, "review:7");
+        const body = sendTypedBody.mock.calls[0][0];
+        expect(body).toEqual(expect.objectContaining({ review_id: 7, from_path: "bbcc" }));
+        expect(body).not.toHaveProperty("game_id");
     } finally {
         controller.destroy();
         jest.mocked(analysisPolicy.getCurrentKibitzUser).mockReturnValue(null);

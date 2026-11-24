@@ -38,6 +38,8 @@ interface DirectoryPlayer {
 interface DirectoryCurrentGame {
     black?: DirectoryPlayer | null;
     white?: DirectoryPlayer | null;
+    /** False once the game has ended. */
+    live?: boolean;
 }
 
 interface DirectoryRoom {
@@ -69,9 +71,11 @@ function playerNameClass(player: DirectoryPlayer): string {
 /**
  * Footer card for the chat page's user column, linking to the kibitz preset
  * room scoped to this chat channel (e.g. #English -> english-chat-live).
- * Renders nothing when the channel has no such room or the directory cannot
- * be fetched. `useKibitzDirectoryRooms` follows the room by preset key, and
- * its subscription stays active also when no matching room exists.
+ * Renders nothing when the channel has no such room, the directory cannot
+ * be fetched, or the room has no live game: a room holding a finished game
+ * or still looking for one gets no card. `useKibitzDirectoryRooms` follows
+ * the room by preset key, and its subscription stays active also when no
+ * matching room exists.
  */
 export function ChatKibitzRoom({ channel }: ChatKibitzRoomProps): React.ReactElement | null {
     const preset_key: string | undefined = CHANNEL_PRESET_KEYS[channel];
@@ -87,12 +91,12 @@ export function ChatKibitzRoom({ channel }: ChatKibitzRoomProps): React.ReactEle
     );
     const room: DirectoryRoom | undefined = useKibitzDirectoryRooms(source)[0];
 
-    if (!room) {
+    if (!room?.current_game?.live) {
         return null;
     }
 
-    const black = room.current_game?.black;
-    const white = room.current_game?.white;
+    const black = room.current_game.black;
+    const white = room.current_game.white;
     const vs_word = pgettext(
         "Separator between the two players' names on the chat page's kibitz room card",
         "vs",

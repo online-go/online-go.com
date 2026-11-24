@@ -17,7 +17,7 @@
 
 import type { KibitzRoomSummary, KibitzStreamItem } from "@/models/kibitz";
 
-function isPendingGameChangeNotice(item: KibitzStreamItem): boolean {
+export function isPendingGameChangeNotice(item: KibitzStreamItem): boolean {
     // Current server messages have no subtype; keep this legacy wire-text
     // check restricted to system messages with a valid target game.
     return (

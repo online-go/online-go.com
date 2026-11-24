@@ -222,6 +222,7 @@ export default [
     },
     {
         files: ["**/submodules/**/*.ts", "**/submodules/**/*.tsx"],
+        ignores: ["**/submodules/moderator-ui/**"],
         languageOptions: {
             parserOptions: {
                 project: null,

@@ -231,21 +231,33 @@ describe("kibitzAnalysisPolicy", () => {
     it("isActiveGame: false for null", () => {
         expect(isActiveGame(null)).toBe(false);
     });
-    it("blocks players of a correspondence game, matching the server", () => {
-        const game = makeGame({
-            live: false,
-            players: { black: { id: 7 }, white: { id: 8 } },
-        });
+    // A room's watched game has `live` (true until the game ends, whatever its
+    // speed) and no `ended`, as the server's room payload sends it.
+    function roomGame(live: boolean): KibitzAnalysisGameLike {
+        return { live, black: { id: 7 }, white: { id: 8 } };
+    }
 
-        expect(getKibitzAccessPolicyForUser(makeUser(7), game)).toEqual({
+    it("blocks the players of a room's unfinished game, live or correspondence", () => {
+        expect(getKibitzAccessPolicyForUser(makeUser(7), roomGame(true))).toEqual({
             allowed: false,
             reason: "own-active-game",
         });
-        expect(getKibitzAccessPolicyForUser(makeUser(8), game)).toEqual({
+        expect(getKibitzAccessPolicyForUser(makeUser(8), roomGame(true))).toEqual({
             allowed: false,
             reason: "own-active-game",
         });
-        expect(getKibitzAccessPolicyForUser(makeUser(9), game)).toEqual({ allowed: true });
+        expect(getKibitzAccessPolicyForUser(makeUser(9), roomGame(true))).toEqual({
+            allowed: true,
+        });
+    });
+
+    it("allows the players of a room's game once it has ended", () => {
+        expect(getKibitzAccessPolicyForUser(makeUser(7), roomGame(false))).toEqual({
+            allowed: true,
+        });
+        expect(getKibitzAccessPolicyForUser(makeUser(8), roomGame(false))).toEqual({
+            allowed: true,
+        });
     });
 
     it("allows players of a finished correspondence game", () => {
@@ -260,7 +272,6 @@ describe("kibitzAnalysisPolicy", () => {
 
     it("blocks rengo team members given as id arrays", () => {
         const game = makeGame({
-            live: false,
             players: { black: { id: 7 }, white: { id: 8 } },
             rengo_black_team: [7, 11],
             rengo_white_team: [8, 12],

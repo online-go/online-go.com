@@ -68,13 +68,17 @@ import {
     chooseFresherCurrentGameBaseSnapshot,
     restoreMainBoardToOfficialTail,
 } from "./kibitzCurrentGameBaseSnapshot";
+import { recentWatchedGameChatIds } from "./kibitzWatchedGameChat";
 import { openKibitzChatMove } from "./kibitzChatMove";
+import { returnToReviewPresenter } from "./kibitzReviewBoard";
+import { useKibitzReviewPresenter } from "./useKibitzReviewPresenter";
+import { boardIdsFromKey, boardKey, gobanBoardKey, type KibitzBoardKey } from "./kibitzBoardRef";
 import "./KibitzInner.css";
 
 type KibitzGamePickerMode = "create-room" | "change-board" | null;
 interface PendingPostedVariation {
     pendingId: string;
-    gameId: number;
+    board: KibitzBoardKey;
     creatorId: number;
     from?: number;
     moves?: string;
@@ -133,7 +137,7 @@ interface StartVariationAfterDiscardConfirmArgs {
     confirmDiscardDraft: () => Promise<boolean>;
     getSnapshot: () => KibitzCurrentGameBaseSnapshot | null;
     currentRoomIdRef: { current: string | null };
-    currentRoomGameIdRef: { current: number | null };
+    currentRoomBoardRef: { current: KibitzBoardKey | null };
     showNotReady: () => void;
     startVariation: (snapshot: KibitzCurrentGameBaseSnapshot) => boolean;
 }
@@ -142,9 +146,9 @@ interface StartVariationAfterDiscardConfirmArgs {
  * Starts a variation after the discard confirm.
  *
  * The confirm yields. `getSnapshot` is the helper captured on click, so a
- * room switch in that gap can still return the previous game. The room and
- * game refs are read after the confirm. A snapshot for another room or game
- * is refused, and the caller shows the base-not-ready notice.
+ * room switch in that gap can still return the previous board. The room and
+ * board refs are read after the confirm. A snapshot for another room or
+ * board is refused, and the caller shows the base-not-ready notice.
  */
 export function startVariationAfterDiscardConfirm(
     args: StartVariationAfterDiscardConfirmArgs,
@@ -156,13 +160,13 @@ export function startVariationAfterDiscardConfirm(
 
         const snapshot = args.getSnapshot();
         const roomId = args.currentRoomIdRef.current;
-        const gameId = args.currentRoomGameIdRef.current;
+        const board = args.currentRoomBoardRef.current;
         if (
             !snapshot ||
             roomId == null ||
-            gameId == null ||
+            board == null ||
             snapshot.roomId !== roomId ||
-            snapshot.gameId !== gameId
+            snapshot.board !== board
         ) {
             args.showNotReady();
             return;
@@ -210,7 +214,7 @@ export function isCurrentGameBaseSnapshotUsable(
         return false;
     }
 
-    if (snapshot.gameId !== game.game_id) {
+    if (snapshot.board !== boardKey(game)) {
         return false;
     }
 
@@ -367,7 +371,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const canOpenCreateRoomFlow = isLoggedInUser;
     const createRoomSignInHref = `/sign-in#${location.pathname}${location.search}`;
     const currentRoomIdRef = React.useRef<string | null>(null);
-    const currentRoomGameIdRef = React.useRef<number | null>(null);
+    const currentRoomBoardRef = React.useRef<KibitzBoardKey | null>(null);
     const [currentGameBaseSnapshot, setCurrentGameBaseSnapshot] =
         React.useState<KibitzCurrentGameBaseSnapshot | null>(null);
     const [currentGameBaseSnapshotLoadingGameId, setCurrentGameBaseSnapshotLoadingGameId] =
@@ -462,6 +466,37 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     );
     const resolvedRoom = isBlockedRoom ? null : selectedRoom;
 
+    const historyRoomId = resolvedRoom?.id === activeRoom?.id ? activeRoom?.id : undefined;
+    const roomBoard = resolvedRoom?.current_game;
+    const watchedGame =
+        roomBoard?.game_id &&
+        !roomBoard.review_id &&
+        roomBoard.black.username &&
+        roomBoard.white.username
+            ? roomBoard
+            : undefined;
+    const historyGameLookups = React.useMemo(() => new Set<number>(), [controller, historyRoomId]);
+    React.useEffect(() => {
+        if (!historyRoomId) {
+            return;
+        }
+        const missing = [...recentWatchedGameChatIds(stream, historyRoomId)].filter(
+            (id) =>
+                id !== watchedGame?.game_id &&
+                !historyGameLookups.has(id) &&
+                !controller.getCachedGame(id),
+        );
+        if (missing.length) {
+            missing.forEach((id) => historyGameLookups.add(id));
+            void controller.ensureGamesCached(missing);
+        }
+    }, [controller, historyGameLookups, historyRoomId, stream, watchedGame?.game_id]);
+    const getHistoryGame = React.useMemo(
+        () => (id: number) =>
+            watchedGame?.game_id === id ? watchedGame : controller.getCachedGame(id),
+        [cachedGamesVersion, controller, watchedGame],
+    );
+
     const resolvedRoomTitle = resolvedRoom?.title;
     React.useEffect(() => {
         window.document.title = resolvedRoomTitle
@@ -522,7 +557,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         return next;
     }, [gameVariations, variations]);
 
-    const currentGameId = resolvedRoom?.current_game?.game_id ?? null;
+    const currentBoard = boardKey(resolvedRoom?.current_game);
+    // The game details fallback below fetches games/<id>, so only a game has one.
+    const currentGameId = resolvedRoom?.current_game?.review_id
+        ? null
+        : (resolvedRoom?.current_game?.game_id ?? null);
     const currentGameMoveNumber = resolvedRoom?.current_game?.move_number ?? 0;
     const currentGameSnapshotTarget = React.useMemo(() => {
         const game = resolvedRoom?.current_game;
@@ -548,25 +587,34 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     // any child effect fires. `acceptCurrentGameBaseSnapshot` reads them to
     // reject snapshots that arrive after a room or board change.
     currentRoomIdRef.current = resolvedRoom?.id ?? null;
-    currentRoomGameIdRef.current = currentGameId;
+    currentRoomBoardRef.current = currentBoard;
 
     const activePostedVariations = React.useMemo(
         () => getVisiblePostedVariations(displayedVariations, visibleVariationIds),
         [displayedVariations, visibleVariationIds],
     );
     const activeVariationGameIds = React.useMemo(
-        () => [...new Set(activePostedVariations.map((variation) => variation.game_id))],
+        () => [
+            ...new Set(
+                activePostedVariations.flatMap((variation) =>
+                    variation.review_id == null && variation.game_id != null
+                        ? [variation.game_id]
+                        : [],
+                ),
+            ),
+        ],
         [activePostedVariations],
     );
     React.useEffect(() => {
         void controller.ensureGamesCached(activeVariationGameIds);
     }, [activeVariationGameIds, controller]);
     const variationGameById = React.useMemo(() => {
-        const next = new Map<number, KibitzWatchedGame>();
+        const next = new Map<KibitzBoardKey, KibitzWatchedGame>();
 
         const addGame = (game: KibitzWatchedGame | undefined | null) => {
-            if (game) {
-                next.set(game.game_id, game);
+            const key = boardKey(game);
+            if (game && key) {
+                next.set(key, game);
             }
         };
 
@@ -581,7 +629,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         }
 
         for (const variation of activePostedVariations) {
-            addGame(controller.getCachedGame(variation.game_id));
+            if (variation.review_id == null && variation.game_id != null) {
+                addGame(controller.getCachedGame(variation.game_id));
+            }
         }
 
         return next;
@@ -600,12 +650,12 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const acceptCurrentGameBaseSnapshot = React.useCallback(
         (snapshot: KibitzCurrentGameBaseSnapshot) => {
             const currentRoomId = currentRoomIdRef.current;
-            const currentRoomGameId = currentRoomGameIdRef.current;
+            const currentRoomBoard = currentRoomBoardRef.current;
             if (
                 currentRoomId == null ||
-                currentRoomGameId == null ||
+                currentRoomBoard == null ||
                 snapshot.roomId !== currentRoomId ||
-                snapshot.gameId !== currentRoomGameId
+                snapshot.board !== currentRoomBoard
             ) {
                 return;
             }
@@ -701,11 +751,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     });
     React.useEffect(() => {
         setCurrentGameBaseSnapshot((previous) =>
-            previous?.gameId === currentGameId && previous?.roomId === resolvedRoom?.id
+            previous?.board === currentBoard && previous?.roomId === resolvedRoom?.id
                 ? previous
                 : null,
         );
-    }, [currentGameId, resolvedRoom?.id]);
+    }, [currentBoard, resolvedRoom?.id]);
 
     React.useEffect(() => {
         currentGameBaseSnapshotRef.current = currentGameBaseSnapshot;
@@ -924,20 +974,20 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     const onCreateVariation = React.useCallback(() => {
         const main = gobans.main?.goban;
         const viewedPath =
-            centerMode === "main" && main && main.game_id === currentGameId
+            centerMode === "main" && main && gobanBoardKey(main) === currentBoard
                 ? main.engine.cur_move.getMoveStringToThisPoint()
                 : undefined;
         void startVariationAfterDiscardConfirm({
             confirmDiscardDraft,
             getSnapshot: getCurrentGameBaseSnapshotForVariation,
             currentRoomIdRef,
-            currentRoomGameIdRef,
+            currentRoomBoardRef,
             showNotReady: showCurrentGameBaseNotReadyToast,
             startVariation: (snapshot) =>
                 controller.startVariationFromCurrentBoard(
                     {
                         roomId: snapshot.roomId ?? "",
-                        gameId: snapshot.gameId,
+                        board: snapshot.board,
                     },
                     snapshot.config.move_tree,
                     viewedPath ?? snapshot.movePath,
@@ -948,7 +998,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         centerMode,
         confirmDiscardDraft,
         controller,
-        currentGameId,
+        currentBoard,
         getCurrentGameBaseSnapshotForVariation,
         gobans.main,
         showCurrentGameBaseNotReadyToast,
@@ -969,6 +1019,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
     // The snapshot getter changes with every live move. Read it through a ref
     // so the main board is not re-enabled per move, which would reset its
     // mode and end a running score estimate.
+    const isPresenter = useKibitzReviewPresenter(gobans.main?.goban ?? null);
     const mainBoardPlacementDepsRef = React.useRef({
         getCurrentGameBaseSnapshotForVariation,
         showCurrentGameBaseNotReadyToast,
@@ -987,6 +1038,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             board.disableStonePlacement();
             return;
         }
+        // The presenter's stones are the review's moves, sent by the board
+        // itself. Theirs is the one main board where a stone is not a draft.
+        if (isPresenter) {
+            return observeKibitzMainBoardPlacement(board, () => false);
+        }
         return observeKibitzMainBoardPlacement(board, (path) => {
             const { getCurrentGameBaseSnapshotForVariation, showCurrentGameBaseNotReadyToast } =
                 mainBoardPlacementDepsRef.current;
@@ -997,22 +1053,20 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 return false;
             }
             return controller.startVariationFromCurrentBoard(
-                { roomId: snapshot.roomId ?? "", gameId: snapshot.gameId },
+                { roomId: snapshot.roomId ?? "", board: snapshot.board },
                 snapshot.config.move_tree,
                 path,
                 moveTreeIdAsNumber(snapshot.moveTreeId),
             );
         });
-    }, [centerMode, gobans.main, controller]);
+    }, [centerMode, gobans.main, controller, isPresenter]);
 
     const onCreateVariationFromPostedVariation = React.useCallback(
         (variation: KibitzVariationSummary, fromPath?: string) => {
-            const snapshot =
-                variation.game_id === currentGameId
-                    ? getCurrentGameBaseSnapshotForVariation()
-                    : null;
+            const onCurrentBoard = boardKey(variation) === currentBoard;
+            const snapshot = onCurrentBoard ? getCurrentGameBaseSnapshotForVariation() : null;
 
-            if (variation.game_id === currentGameId && !snapshot) {
+            if (onCurrentBoard && !snapshot) {
                 showCurrentGameBaseNotReadyToast();
                 return false;
             }
@@ -1028,7 +1082,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         },
         [
             controller,
-            currentGameId,
+            currentBoard,
             getCurrentGameBaseSnapshotForVariation,
             showCurrentGameBaseNotReadyToast,
         ],
@@ -1174,12 +1228,12 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         );
     }, [displayedVariations]);
     const onPostVariation = React.useCallback(
-        (boardController: GobanController, sourceGameId: number | undefined) => {
+        (boardController: GobanController, sourceBoard: KibitzBoardKey | undefined) => {
             if (resolvedRoom) {
                 const posted = controller.postVariation(
                     resolvedRoom.id,
                     boardController,
-                    sourceGameId,
+                    sourceBoard,
                 );
 
                 const creatorId =
@@ -1189,10 +1243,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                           ? Number(currentUser.id)
                           : NaN;
 
-                if (posted && Number.isFinite(creatorId) && posted.game_id != null) {
+                const postedBoard = boardKey(posted);
+                if (posted && Number.isFinite(creatorId) && postedBoard != null) {
                     setPendingPostedVariation({
                         pendingId: posted.kibitz_pending_id ?? "",
-                        gameId: posted.game_id,
+                        board: postedBoard,
                         creatorId,
                         from: posted.from,
                         moves: posted.moves,
@@ -1215,7 +1270,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
 
         const fallbackVariation = displayedVariations.find(
             (variation) =>
-                variation.game_id === pendingPostedVariation.gameId &&
+                boardKey(variation) === pendingPostedVariation.board &&
                 variation.creator.id === pendingPostedVariation.creatorId &&
                 variation.analysis_from === pendingPostedVariation.from &&
                 variation.analysis_moves === pendingPostedVariation.moves &&
@@ -1304,7 +1359,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 moveNumber,
                 isCurrentGame: () =>
                     currentRoomIdRef.current === sourceRoomId &&
-                    currentRoomGameIdRef.current === gameId,
+                    currentRoomBoardRef.current === boardKey({ game_id: gameId }),
                 confirmDiscardDraft,
                 closeVariation: () => controller.closeSecondaryPane(),
             });
@@ -1316,7 +1371,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         (variation: KibitzVariationSummary) => {
             void confirmDiscardDraft().then((confirmed) => {
                 if (confirmed && currentRoomIdRef.current === variation.room_id) {
-                    void controller.ensureGamesCached([variation.game_id]);
+                    if (variation.review_id == null && variation.game_id != null) {
+                        void controller.ensureGamesCached([variation.game_id]);
+                    }
                     controller.openChatVariation(variation);
                     setVariationFocusRequestId((previous) => previous + 1);
                 }
@@ -1331,9 +1388,11 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 id === (secondaryPane.variation_id ?? secondaryPane.variation_draft_base_id),
         );
     const viewingSecondary = gobans.secondary && gobans.center === gobans.secondary;
-    const viewedGameId = viewingSecondary
-        ? (secondaryPane.variation_source_game_id ?? viewedVariation?.game_id)
-        : resolvedRoom?.current_game?.game_id;
+    // Chat lines carry a game position, so only a game board gives them one.
+    const viewedBoard = viewingSecondary
+        ? (secondaryPane.variation_source_board ?? boardKey(viewedVariation))
+        : boardKey(resolvedRoom?.current_game);
+    const viewedGameId = viewedBoard ? boardIdsFromKey(viewedBoard).game_id : undefined;
 
     const onRoomsOpened = React.useCallback(() => {
         void controller.refreshRoomDirectory();
@@ -1345,6 +1404,9 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
             return;
         }
 
+        if (returnToReviewPresenter(main.goban)) {
+            return;
+        }
         main.gotoLastMove();
         if (main.goban.mode === "analyze") {
             main.goban.setMode("play");
@@ -1415,6 +1477,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 room={resolvedRoom}
                 gobans={gobans}
                 isPortrait={isPortrait}
+                isStacked={layout.mode === "stacked"}
                 banner={
                     resolvedRoom.preset?.selection_status === "change_pending" &&
                     resolvedRoom.preset.change_effective_at ? (
@@ -1433,7 +1496,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     signInHref: createRoomSignInHref,
                     variations: activePostedVariations,
                     displayedVariations,
-                    currentGameId: resolvedRoom.current_game?.game_id ?? null,
+                    currentBoard: boardKey(resolvedRoom.current_game),
                     variationGameById,
                     selectedVariationId: secondaryPane.variation_id ?? null,
                     variationFocusRequestId,
@@ -1448,6 +1511,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 chat={{
                     room: resolvedRoom,
                     items: stream,
+                    getHistoryGame,
                     variations: displayedVariations,
                     onOpenVariation: (variationId, focusVariation = false) =>
                         onOpenVariationFromUser(variationId, focusVariation, "chat"),
@@ -1473,12 +1537,13 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 }}
                 onCreateVariation={onCreateVariation}
                 onPostVariation={(boardController) =>
-                    onPostVariation(boardController, secondaryPane.variation_source_game_id)
+                    onPostVariation(boardController, secondaryPane.variation_source_board)
                 }
                 onBranchFromVariation={onBranchFromVariation}
                 onExitVariation={onExitVariation}
                 onReturnToLive={onReturnToLive}
                 onRoomsOpened={onRoomsOpened}
+                roomActivitySource={controller}
                 roomSettings={{
                     ready: activeRoom?.id === resolvedRoom.id,
                     canEditRoom: canManageRoom,

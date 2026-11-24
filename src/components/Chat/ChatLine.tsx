@@ -24,7 +24,7 @@ import { system_line_markup } from "./system_line_markup";
 import type { Goban } from "goban";
 import { ChatBodyText } from "./ChatBodyText";
 import { ChatDateLine } from "./ChatDateLine";
-import type { ChatMessage, TypedChatBody } from "@/lib/chat_manager";
+import type { ChatMessage, ChatSystemLink, TypedChatBody } from "@/lib/chat_manager";
 import { getChatMessageText } from "@/lib/chatMessageText";
 import { profanity_filter } from "@/lib/profanity_filter";
 
@@ -52,6 +52,7 @@ interface ChatLineInterface {
      *  separates a run of lines rather than belongs to one. */
     showDate?: boolean;
     showRank?: boolean;
+    systemLinkLabel?: (link: ChatSystemLink) => string | undefined;
     goban?: Goban | null;
 }
 
@@ -72,7 +73,9 @@ export function ChatLine(props: ChatLineInterface): React.ReactElement {
         const sys_links = typeof sys_body === "string" ? undefined : sys_body.links;
         return (
             <div className="chat-line system">
-                {sys_links ? system_line_markup(sys_text, sys_links) : chat_markup(sys_text)}
+                {sys_links
+                    ? system_line_markup(sys_text, sys_links, props.systemLinkLabel)
+                    : chat_markup(sys_text)}
             </div>
         );
     }

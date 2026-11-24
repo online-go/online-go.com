@@ -80,8 +80,11 @@ export function KibitzMoreActionsPopover({
     const [settings_open, setSettingsOpen] = React.useState(false);
     const goban = controller?.goban ?? null;
     const engine = goban?.engine ?? null;
-    const game_id = goban ? Number(goban.config.game_id) : 0;
-    const sgf_url = api1(`games/${game_id}/sgf`);
+    // A room on a review (a demo board or a review of a game) has a review
+    // goban, whose game id is 0.
+    const review_id = goban?.review_id ?? 0;
+    const game_id = goban && !review_id ? Number(goban.config.game_id) : 0;
+    const sgf_url = review_id ? api1(`reviews/${review_id}/sgf`) : api1(`games/${game_id}/sgf`);
     let analysis_disabled = false;
     try {
         analysis_disabled = goban?.isAnalysisDisabled(true) ?? false;
@@ -91,9 +94,10 @@ export function KibitzMoreActionsPopover({
     // Same rule as the Game page's actions panel: the server refuses the
     // SGF of a game in progress to anonymous users and to its players.
     const sgf_disabled =
-        analysis_disabled ||
         !engine ||
-        (engine.phase !== "finished" &&
+        (!review_id && analysis_disabled) ||
+        (!review_id &&
+            engine.phase !== "finished" &&
             (user.anonymous ||
                 user.id === engine.config.black_player_id ||
                 user.id === engine.config.white_player_id));
@@ -190,6 +194,23 @@ export function KibitzMoreActionsPopover({
                             <i className="fa fa-share-alt" />
                             <span>{_("Link to game")}</span>
                         </button>
+                        {review_id ? (
+                            <a
+                                className="GameSidebarPanel-item"
+                                href={`/review/${review_id}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                onClick={onClose}
+                            >
+                                <i className="fa fa-external-link" />
+                                <span>
+                                    {pgettext(
+                                        "Kibitz More actions entry that opens the demo board or review the room watches on its own page, where its presenter moves the stones",
+                                        "Open the board",
+                                    )}
+                                </span>
+                            </a>
+                        ) : null}
                         <a
                             className={"GameSidebarPanel-item" + (sgf_disabled ? " disabled" : "")}
                             href={sgf_url}
@@ -210,7 +231,13 @@ export function KibitzMoreActionsPopover({
                             type="button"
                             className="GameSidebarPanel-item"
                             disabled={report_disabled}
-                            onClick={wrap(() => openReport({ reported_game_id: game_id }))}
+                            onClick={wrap(() =>
+                                openReport(
+                                    review_id
+                                        ? { reported_review_id: review_id }
+                                        : { reported_game_id: game_id },
+                                ),
+                            )}
                         >
                             <i className="fa fa-exclamation-triangle" />
                             <span>{_("Call moderator")}</span>

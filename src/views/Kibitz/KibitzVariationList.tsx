@@ -22,6 +22,13 @@ import { Player } from "@/components/Player";
 import { formatKibitzVariationDisplayNames } from "./kibitzVariationDisplayName";
 import { formatVariationBranchLabel, formatVariationLengthLabel } from "./kibitzVariationQuickList";
 import { KibitzVariationSwatch } from "./KibitzVariationSwatch";
+import {
+    boardHref,
+    boardIdsFromKey,
+    boardKey,
+    compareBoardKeys,
+    type KibitzBoardKey,
+} from "./kibitzBoardRef";
 import "./KibitzVariationList.css";
 
 interface KibitzVariationListProps {
@@ -34,8 +41,9 @@ interface KibitzVariationListProps {
      * `variations` alone.
      */
     displayedVariations?: KibitzVariationSummary[];
-    currentGameId?: number | null;
-    gameById?: ReadonlyMap<number, KibitzWatchedGame>;
+    /** The room's board. Its variations come first, without a divider. */
+    currentBoard?: KibitzBoardKey | null;
+    gameById?: ReadonlyMap<KibitzBoardKey, KibitzWatchedGame>;
     selectedVariationId?: string | null;
     variationFocusRequestId?: number;
     blockedVariationFlashId?: string | null;
@@ -55,7 +63,7 @@ interface KibitzVariationListProps {
 export function KibitzVariationList({
     variations,
     displayedVariations,
-    currentGameId,
+    currentBoard,
     gameById,
     selectedVariationId = null,
     variationFocusRequestId = 0,
@@ -91,44 +99,66 @@ export function KibitzVariationList({
         },
     );
     const groupedVariations = React.useMemo(() => {
-        const groups = new Map<number, KibitzVariationSummary[]>();
+        const groups = new Map<KibitzBoardKey, KibitzVariationSummary[]>();
 
         for (const variation of variations) {
-            const group = groups.get(variation.game_id);
+            const key = boardKey(variation);
+            if (key == null) {
+                continue;
+            }
+            const group = groups.get(key);
 
             if (group) {
                 group.push(variation);
             } else {
-                groups.set(variation.game_id, [variation]);
+                groups.set(key, [variation]);
             }
         }
 
-        const orderedGroupIds = [...groups.keys()].sort((left, right) => {
+        const orderedGroupKeys = [...groups.keys()].sort((left, right) => {
             if (left === right) {
                 return 0;
             }
 
-            if (currentGameId != null) {
-                if (left === currentGameId) {
+            if (currentBoard != null) {
+                if (left === currentBoard) {
                     return -1;
                 }
 
-                if (right === currentGameId) {
+                if (right === currentBoard) {
                     return 1;
                 }
             }
 
-            return left - right;
+            return compareBoardKeys(left, right);
         });
 
-        return orderedGroupIds.map((gameId, index) => ({
-            gameId,
-            variations: groups.get(gameId) ?? [],
+        return orderedGroupKeys.map((board, index) => ({
+            board,
+            variations: groups.get(board) ?? [],
             showDivider: index > 0,
         }));
-    }, [currentGameId, variations]);
-    const hasCurrentGameGroup = groupedVariations.some((group) => group.gameId === currentGameId);
-    const hasPreviousGameGroups = groupedVariations.some((group) => group.gameId !== currentGameId);
+    }, [currentBoard, variations]);
+    const hasCurrentGameGroup = groupedVariations.some((group) => group.board === currentBoard);
+    const hasPreviousGameGroups = groupedVariations.some((group) => group.board !== currentBoard);
+    const boardFallbackLabel = (board: KibitzBoardKey) => {
+        const ids = boardIdsFromKey(board);
+        return ids.review_id != null
+            ? interpolate(
+                  pgettext(
+                      "Fallback demo board or review label for a Kibitz variation divider",
+                      "Review #{{review_id}}",
+                  ),
+                  { review_id: ids.review_id },
+              )
+            : interpolate(
+                  pgettext(
+                      "Fallback game label for a Kibitz variation divider",
+                      "Game #{{game_id}}",
+                  ),
+                  { game_id: ids.game_id ?? 0 },
+              );
+    };
 
     React.useEffect(() => {
         if (previousFocusRequestIdRef.current === variationFocusRequestId) {
@@ -152,7 +182,7 @@ export function KibitzVariationList({
             <div className="variation-scroll">
                 {groupedVariations.length > 0 ? (
                     <div className="variation-items">
-                        {currentGameId != null && hasCurrentGameGroup && hasPreviousGameGroups ? (
+                        {currentBoard != null && hasCurrentGameGroup && hasPreviousGameGroups ? (
                             <div className="variation-divider variation-divider-current">
                                 {pgettext(
                                     "Divider label for the current game in Kibitz variations",
@@ -161,11 +191,11 @@ export function KibitzVariationList({
                             </div>
                         ) : null}
                         {groupedVariations.map((group) => {
-                            const dividerGame = gameById?.get(group.gameId) ?? null;
-                            const isCurrentGameGroup = group.gameId === currentGameId;
+                            const dividerGame = gameById?.get(group.board) ?? null;
+                            const isCurrentGameGroup = group.board === currentBoard;
 
                             return (
-                                <React.Fragment key={group.gameId}>
+                                <React.Fragment key={group.board}>
                                     {!isCurrentGameGroup ? (
                                         <div className="variation-divider">
                                             {dividerGame ? (
@@ -173,7 +203,7 @@ export function KibitzVariationList({
                                                     <div className="variation-divider-titleRowMain">
                                                         <a
                                                             className="variation-divider-game-link"
-                                                            href={`/game/${group.gameId}`}
+                                                            href={boardHref(group.board)}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             aria-label={pgettext(
@@ -189,15 +219,8 @@ export function KibitzVariationList({
                                                                 {
                                                                     game:
                                                                         dividerGame.title ||
-                                                                        interpolate(
-                                                                            pgettext(
-                                                                                "Fallback game label for a Kibitz variation divider",
-                                                                                "Game #{{game_id}}",
-                                                                            ),
-                                                                            {
-                                                                                game_id:
-                                                                                    group.gameId,
-                                                                            },
+                                                                        boardFallbackLabel(
+                                                                            group.board,
                                                                         ),
                                                                 },
                                                             )}
@@ -246,15 +269,7 @@ export function KibitzVariationList({
                                                         "Previous game: {{game}}",
                                                     ),
                                                     {
-                                                        game: interpolate(
-                                                            pgettext(
-                                                                "Fallback game label for a Kibitz variation divider",
-                                                                "Game #{{game_id}}",
-                                                            ),
-                                                            {
-                                                                game_id: group.gameId,
-                                                            },
-                                                        ),
+                                                        game: boardFallbackLabel(group.board),
                                                     },
                                                 )
                                             )}
