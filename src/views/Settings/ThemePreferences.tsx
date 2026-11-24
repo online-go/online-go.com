@@ -35,6 +35,7 @@ import { useData } from "@/lib/hooks";
 import { MiniGoban } from "@/components/MiniGoban";
 import { GobanEngineConfig, setGobanRenderer } from "goban";
 import { Toggle } from "@/components/Toggle";
+import { board3dLightingOptions, board3dStyleOptions, board3dTiltOptions } from "@/lib/board3d";
 import { GobanThemeImportExport } from "./GobanThemeImportExport";
 import { BoardAlignmentPicker } from "@/components/LayoutSettings/pickers/BoardAlignmentPicker";
 import { ActionButtonsPicker } from "@/components/LayoutSettings/pickers/ActionButtonsPicker";
@@ -189,6 +190,9 @@ export function ThemePreferences(): React.ReactElement | null {
     const [board_renderer_3d, setBoardRenderer3d] = usePreference("board-renderer-3d");
     const [board_style, setBoardStyle] = usePreference("board-renderer-3d-style");
     const [board_lighting, setBoardLighting] = usePreference("board-renderer-3d-lighting");
+    const [board_room, setBoardRoom] = usePreference("board-renderer-3d-room");
+    const [board_tilt, setBoardTilt] = usePreference("board-renderer-3d-tilt");
+    const [mouse_orbit, setMouseOrbit] = usePreference("board-renderer-3d-mouse-orbit");
     const enable_svg = canvas_enabled !== "enabled";
 
     const sample_goban_key =
@@ -372,19 +376,9 @@ export function ThemePreferences(): React.ReactElement | null {
                     value={stone_shadows}
                     options={[
                         { value: "default", label: _("Default") },
-                        {
-                            value: "low",
-                            label: board_renderer_3d
-                                ? pgettext("Stone shadow strength", "Very low")
-                                : _("Low"),
-                        },
-                        { value: "mid", label: board_renderer_3d ? _("Low") : _("Mid") },
-                        {
-                            value: "high",
-                            label: board_renderer_3d
-                                ? pgettext("Stone shadow strength", "Extra strong")
-                                : _("High"),
-                        },
+                        { value: "low", label: _("Low") },
+                        { value: "mid", label: _("Mid") },
+                        { value: "high", label: _("High") },
                         { value: "anime", label: _("Anime") },
                         { value: "custom", label: _("Custom") },
                         { value: "none", label: _("None") },
@@ -798,38 +792,54 @@ export function ThemePreferences(): React.ReactElement | null {
             </PreferenceLine>
 
             {board_renderer_3d && (
-                <PreferenceLine title={pgettext("Board display setting", "3D board style")}>
-                    <PreferenceDropdown
-                        value={board_style}
-                        options={[
-                            { value: "tabletop", label: pgettext("3D board style", "Tabletop") },
-                            {
-                                value: "floor",
-                                label: pgettext("3D board style", "Traditional floor goban"),
-                            },
-                        ]}
-                        onChange={setBoardStyle}
-                    />
-                </PreferenceLine>
-            )}
+                <>
+                    <PreferenceLine title={pgettext("Board display setting", "3D board style")}>
+                        <PreferenceDropdown
+                            value={board_style}
+                            options={board3dStyleOptions()}
+                            onChange={setBoardStyle}
+                        />
+                    </PreferenceLine>
 
-            {board_renderer_3d && (
-                <PreferenceLine title={pgettext("Board display setting", "3D board lighting")}>
-                    <PreferenceDropdown
-                        value={board_lighting}
-                        options={[
-                            {
-                                value: "studio",
-                                label: pgettext("3D lighting preset", "Studio (default)"),
-                            },
-                            {
-                                value: "daylight",
-                                label: pgettext("3D lighting preset", "Warm daylight"),
-                            },
-                        ]}
-                        onChange={setBoardLighting}
-                    />
-                </PreferenceLine>
+                    <PreferenceLine title={pgettext("Board display setting", "3D table and bowls")}>
+                        <Toggle checked={board_room} onChange={setBoardRoom} />
+                    </PreferenceLine>
+
+                    <PreferenceLine title={pgettext("Board display setting", "3D board lighting")}>
+                        <PreferenceDropdown
+                            value={board_lighting}
+                            options={board3dLightingOptions()}
+                            onChange={setBoardLighting}
+                        />
+                    </PreferenceLine>
+
+                    <PreferenceLine
+                        title={pgettext("Board display setting", "3D viewing angle")}
+                        description={pgettext(
+                            "Board display setting",
+                            "Auto uses the angle that suits the board style.",
+                        )}
+                    >
+                        <PreferenceDropdown
+                            value={board_tilt}
+                            options={board3dTiltOptions()}
+                            onChange={setBoardTilt}
+                        />
+                    </PreferenceLine>
+
+                    <PreferenceLine
+                        title={pgettext(
+                            "Board display setting",
+                            "Hold V and drag to turn the board",
+                        )}
+                        description={pgettext(
+                            "Board display setting",
+                            "With a mouse, hold the V key and drag to turn the 3D board. You can also use the camera button on the board.",
+                        )}
+                    >
+                        <Toggle checked={mouse_orbit} onChange={setMouseOrbit} />
+                    </PreferenceLine>
+                </>
             )}
 
             <PreferenceLine title={_("Use old canvas goban renderer")}>

@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _ } from "@/lib/translate";
+import { _, pgettext } from "@/lib/translate";
 import "./JosekiActionsPanel.css";
 
 interface JosekiActionsPanelProps {
@@ -27,6 +27,11 @@ interface JosekiActionsPanelProps {
     onOpenChanges: () => void;
     onOpenEdit: () => void;
     onOpenAdmin: () => void;
+    /** Set while the 3D board is on: turns the camera a quarter turn. */
+    onRotate3d?: () => void;
+    /** Set while the 3D board is on: mirrors the board, or undoes the mirror. */
+    onMirror3d?: () => void;
+    mirrored3d?: boolean;
     /** Each item dismisses the popover after firing its action; the
      *  popover container's click-to-close handler doesn't reach our content. */
     onClose: () => void;
@@ -62,6 +67,28 @@ export function JosekiActionsPanel(props: JosekiActionsPanelProps): React.ReactE
                 <i className="fa fa-gavel" />
                 <span>{props.user_can_administer ? _("Admin") : _("Updates")}</span>
             </button>
+
+            {props.onRotate3d && (
+                <button className="JosekiActionsPanel-item" onClick={wrap(props.onRotate3d)}>
+                    <i className="fa fa-repeat" />
+                    <span>{pgettext("Joseki 3D board", "Rotate board")}</span>
+                </button>
+            )}
+
+            {props.onMirror3d && (
+                <button
+                    className="JosekiActionsPanel-item"
+                    aria-pressed={!!props.mirrored3d}
+                    onClick={wrap(props.onMirror3d)}
+                >
+                    <i className="fa fa-exchange" />
+                    <span>
+                        {props.mirrored3d
+                            ? pgettext("Joseki 3D board", "Undo mirror")
+                            : pgettext("Joseki 3D board", "Mirror board")}
+                    </span>
+                </button>
+            )}
         </div>
     );
 }

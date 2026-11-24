@@ -32,7 +32,7 @@ pending game. Once the switch completes or is cancelled, that warning is
 hidden, including when replaying chat history. Completed-switch messages
 and other system messages remain visible; stored chat history is unchanged.
 
-In **More actions → Settings**, use **Use a 3D board** to switch the boards. The live board and the draft or variation board share the 3D board style, view angle, rotation, lighting and theme preferences. Use **Rotate 90°** to turn the board view one quarter turn. **Auto** uses the angle for the selected board style. On desktop, enable **V + drag to orbit**, then hold V and drag the board with the primary mouse button. Drag sideways to rotate or vertically to change the angle. On a touchscreen, tap the camera icon on the 3D viewport, drag with one finger, and tap **Done** to return to board input. Open **More options** for lighting and other theme settings.
+In **More actions → Settings**, **Use a 3D board** switches both Kibitz boards to 3D. See [3d-board.md](3d-board.md).
 
 Portrait: GobanView's `portraitSplit` layout — a board stage, a drag handle,
 and one panel area below it. `KibitzLeftAside` is landscape only. Six panes

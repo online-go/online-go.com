@@ -23,6 +23,7 @@ import { useData, useIsTouchOnlyDevice } from "@/lib/hooks";
 import { SVGRenderer, type LabelPosition } from "goban";
 import { Toggle } from "@/components/Toggle";
 import { GobanThemePicker } from "@/components/GobanThemePicker/GobanThemePicker";
+import { GameBoard3dSettings } from "./GameBoard3dSettings";
 import { openACLModal } from "@/components/ACLModal";
 import { BoardAlignmentPicker } from "@/components/LayoutSettings/pickers/BoardAlignmentPicker";
 import { ActionButtonsPicker } from "@/components/LayoutSettings/pickers/ActionButtonsPicker";
@@ -131,13 +132,6 @@ export function GameSettingsPanel({
     const move_controls_note_id = React.useId();
 
     const [label_position, setLabelPositionPref] = usePreference("label-positioning");
-    const [board_renderer_3d, setBoardRenderer3d] = usePreference("board-renderer-3d");
-    const [board_style, setBoardStyle] = usePreference("board-renderer-3d-style");
-    const [board_lighting, setBoardLighting] = usePreference("board-renderer-3d-lighting");
-    const [board_room, setBoardRoom] = usePreference("board-renderer-3d-room");
-    const [mouse_orbit, setMouseOrbit] = usePreference("board-renderer-3d-mouse-orbit");
-    const [board_rotation, setBoardRotation] = usePreference("board-renderer-3d-rotation");
-    const [board_tilt, setBoardTilt] = usePreference("board-renderer-3d-tilt");
     const setCoordinates = (position: LabelPosition) => {
         setLabelPositionPref(position);
         goban?.setLabelPosition(position);
@@ -215,135 +209,7 @@ export function GameSettingsPanel({
                     </div>
                 )}
 
-                {supports_3d && (
-                    <div className="GameSidebarPanel-labeled-row">
-                        <label htmlFor="game-settings-board-3d">
-                            <i className="fa fa-cube" aria-hidden="true" />
-                            <span>{pgettext("Board display setting", "Use a 3D board")}</span>
-                        </label>
-                        <Toggle
-                            id="game-settings-board-3d"
-                            checked={board_renderer_3d}
-                            onChange={(enabled) => setBoardRenderer3d(enabled)}
-                        />
-                    </div>
-                )}
-
-                {supports_3d && board_renderer_3d && (
-                    <div className="GameSidebarPanel-labeled-row">
-                        <label htmlFor="game-settings-board-3d-style">
-                            <span>{pgettext("Board display setting", "3D board style")}</span>
-                        </label>
-                        <select
-                            id="game-settings-board-3d-style"
-                            value={board_style}
-                            onChange={(event) =>
-                                setBoardStyle(event.target.value === "floor" ? "floor" : "tabletop")
-                            }
-                        >
-                            <option value="floor">
-                                {pgettext("3D board style", "Traditional floor goban")}
-                            </option>
-                            <option value="tabletop">
-                                {pgettext("3D board style", "Tabletop")}
-                            </option>
-                        </select>
-                    </div>
-                )}
-
-                {supports_3d && board_renderer_3d && (
-                    <div className="GameSidebarPanel-labeled-row">
-                        <label htmlFor="game-settings-board-3d-lighting">
-                            <span>{pgettext("Board display setting", "3D board lighting")}</span>
-                        </label>
-                        <select
-                            id="game-settings-board-3d-lighting"
-                            value={board_lighting}
-                            onChange={(event) =>
-                                setBoardLighting(
-                                    event.target.value === "daylight" ? "daylight" : "studio",
-                                )
-                            }
-                        >
-                            <option value="studio">
-                                {pgettext("3D lighting preset", "Studio (default)")}
-                            </option>
-                            <option value="daylight">
-                                {pgettext("3D lighting preset", "Warm daylight")}
-                            </option>
-                        </select>
-                    </div>
-                )}
-
-                {supports_3d && board_renderer_3d && (
-                    <div className="GameSidebarPanel-labeled-row">
-                        <label htmlFor="game-settings-board-3d-room">
-                            <span>
-                                {pgettext("Board display setting", "Show 3D table and bowls")}
-                            </span>
-                        </label>
-                        <Toggle
-                            id="game-settings-board-3d-room"
-                            checked={board_room}
-                            onChange={setBoardRoom}
-                        />
-                    </div>
-                )}
-
-                {supports_3d && board_renderer_3d && (
-                    <div className="GameSidebarPanel-labeled-row">
-                        <label htmlFor="game-settings-board-3d-tilt">
-                            <span>{pgettext("3D board camera setting", "Angle")}</span>
-                        </label>
-                        <div className="GameSettingsPanel-board-view-controls">
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    const rotations = [0, 90, 180, 270] as const;
-                                    setBoardRotation(
-                                        rotations[(rotations.indexOf(board_rotation) + 1) % 4],
-                                    );
-                                }}
-                            >
-                                {pgettext(
-                                    "Rotate the 3D board view clockwise by 90 degrees",
-                                    "Rotate 90°",
-                                )}
-                            </button>
-                            <select
-                                id="game-settings-board-3d-tilt"
-                                value={board_tilt}
-                                onChange={(event) => {
-                                    const angle = Number(event.target.value);
-                                    setBoardTilt(
-                                        angle === 0 || angle === 15 || angle === 25 || angle === 35
-                                            ? angle
-                                            : "auto",
-                                    );
-                                }}
-                            >
-                                <option value="auto">{pgettext("3D board angle", "Auto")}</option>
-                                <option value={0}>{pgettext("3D board angle", "Overhead")}</option>
-                                <option value={15}>15°</option>
-                                <option value={25}>25°</option>
-                                <option value={35}>35°</option>
-                            </select>
-                        </div>
-                    </div>
-                )}
-
-                {supports_3d && board_renderer_3d && !touch_only_device && (
-                    <div className="GameSidebarPanel-labeled-row">
-                        <label htmlFor="game-settings-board-3d-mouse-orbit">
-                            {pgettext("3D board camera shortcut setting", "V + drag to orbit")}
-                        </label>
-                        <Toggle
-                            id="game-settings-board-3d-mouse-orbit"
-                            checked={mouse_orbit}
-                            onChange={setMouseOrbit}
-                        />
-                    </div>
-                )}
+                {supports_3d && <GameBoard3dSettings />}
 
                 <div className="GameSidebarPanel-labeled-row">
                     <label htmlFor="game-settings-coords">
