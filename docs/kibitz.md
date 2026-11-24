@@ -10,6 +10,10 @@ board together, chat, and share variations. The board is a live game, or a
 public review: a demo board or a review of a game (see "Demo boards"). It
 renders through the shared `GobanView` layout (`src/components/GobanView`).
 
+On mobile, the Rooms tab shows a dot when a room is created or another room
+rises above 10 viewers. Open Rooms to see a `New` badge or an up arrow next to
+the affected room's viewer count. The markers clear when you leave the Rooms pane.
+
 ## Layout
 
 Landscape: a left aside with the room list, the variation list and, while
@@ -31,7 +35,12 @@ off and it drops on its own when the chat panel is narrower than 22rem.
 The room chat shows only the latest game-switch warning for the active
 pending game. Once the switch completes or is cancelled, that warning is
 hidden, including when replaying chat history. Completed-switch messages
-and other system messages remain visible; stored chat history is unchanged.
+and other system messages remain visible. When game details are available,
+links to watched games show both players and their ranks. The Hide ranks
+preference hides the ranks. A distinct game title appears before the players.
+Chat displays the saved text if game details are unavailable. The room requests
+details for recent game notices in the background and uses cached details for
+older notices.
 
 Portrait: GobanView's `portraitSplit` layout — a board stage, a drag handle,
 and one panel area below it. `KibitzLeftAside` is landscape only. Six panes
@@ -76,6 +85,18 @@ stays level with the name beside it. `ChatDateLine` and `GameChatMoveNumber`
 the same two components for the logs that keep their separators inline. A log
 does not open with today's date — only with an older one. A posted variation
 is laid out the same way, so its link lines up with the chat around it.
+
+Kibitz chat puts a link to the game above the first comment in each group
+about a previous game. The group uses the watched game ID saved with each
+comment, even if its move number is missing. System notices, proposals and
+variation posts do not start or split groups. Older comments without a saved
+game ID keep their place in the log and break the group. A later comment with
+the same historical game ID starts a new group. When comments return directly
+to the current game after a historical group, a plain “Current game” divider
+marks the start of the current game comments.
+Historical game links use the same title and player labels as game-switch
+notices, including the Hide ranks preference. The link shows the title alone
+if the player names are missing, or the game number if no title is available.
 
 The left aside has two collapsible sections, Rooms and Variations, laid out
 like the chat page's channel list, each with a quiet "+ Room" / "+ Variation"
@@ -280,7 +301,12 @@ queue, which also mounts `GameChat`, does not.
 `ChatKibitzRoom` on the Chat page is the sibling card, keyed by chat
 channel instead of game. It uses the same hook and the same
 `KibitzRoomCard` and `KibitzRoomCards` components
-(`src/components/KibitzRoomCard/`), and adds a player matchup line.
+(`src/components/KibitzRoomCard/`), and adds a player matchup line. It
+shows only while the room's game is live (`current_game.live` in the
+directory payload): the English chat room picks only its members' games,
+so a room holding a finished game, or still looking for one, has no card.
+The server pushes `room-updated` to the directory when a watched game
+ends, which hides the card at once.
 
 ## Game picker
 
@@ -373,3 +399,26 @@ Playing a move on the main game board or a posted variation starts a separate an
 Kibitz observes Goban’s existing `cur_move` and `update` events. A matching `move_selected` identifies placement; the following completed update starts the draft. No separate Goban event is required.
 
 Main-board clicks use local analysis mode and keep the live connection active. Live game moves and navigation do not start drafts. Main-board placement is disabled while another board is open and during stone removal.
+
+## Post-game discussion notifications
+
+After a game ends, its players receive one `kibitzGameDiscussed` notification
+if a spectator chatted in a Kibitz room while the room watched the game. The
+server decides who is notified and when; see
+`docs/kibitz-discussion-notifications.md` in the ogs repository.
+
+The notification carries `game_id`, `name`, `black`, `white` and `rooms`, a
+list of `{ id, title }` for the rooms that discussed the game and still existed
+when it was sent. The entry names the game and opens `/game/<id>`. Each room is
+a link to `/kibitz/<id>`; the room may show another board by then, but its chat
+history keeps the discussion. Malformed rooms are not linked.
+
+Opening a room clears the notification, since reading the discussion is what
+it is for. Opening the game keeps it, unlike other game notifications, which
+clear when the player visits their game. The player can still dismiss it.
+
+Players turn it on and off with the "My finished game was discussed in a Kibitz
+room" notification setting, which the settings page lists from the server. With
+desktop notifications on, a connected tab also shows it as a desktop
+notification that names the first room. Clicking it opens that room and clears
+the notification, or opens the game when no room is listed.

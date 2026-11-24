@@ -100,19 +100,17 @@ export function isLoggedInKibitzUser(
     return Boolean(user && !user.anonymous);
 }
 
+/**
+ * Whether the game has not ended, live or correspondence, as the server's
+ * `is_user_player_in_active_game` decides. A watched game says so through
+ * `live`, which the server sets to `game.ended is None` and which is not the
+ * game's speed; REST game details carry `ended` instead.
+ */
 export function isActiveGame(game: KibitzAnalysisGameLike | null | undefined): boolean {
     if (!game) {
         return false;
     }
     return game.ended == null && game.live !== false;
-}
-
-/**
- * Mirrors the server's `is_user_player_in_active_game`: any game that has not
- * ended counts, live or correspondence.
- */
-function isUnfinishedGame(game: KibitzAnalysisGameLike): boolean {
-    return game.ended == null;
 }
 
 export function isActiveAnalysisDisabledGame(
@@ -166,7 +164,7 @@ export function getKibitzAccessPolicyForUser(
         return { allowed: true };
     }
 
-    if (isUnfinishedGame(game) && isCurrentUserGamePlayer(user, game)) {
+    if (isActiveGame(game) && isCurrentUserGamePlayer(user, game)) {
         return {
             allowed: false,
             reason: "own-active-game",

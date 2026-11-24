@@ -1,5 +1,5 @@
+import { realpathSync } from "node:fs";
 import { availableParallelism, totalmem } from "node:os";
-import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 export function getE2EWorkers({
@@ -36,6 +36,21 @@ export function getE2EWorkers({
     return Math.min(workers, cpuCap);
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+/** True when this file is the script Node was started with. Node resolves
+ *  the main module through symlinks (macOS's /tmp and /var are symlinks), so
+ *  the argument is compared by its real path; an argument that is not a file
+ *  (the tests pass options as JSON) is not this script. */
+function isMainModule() {
+    if (!process.argv[1]) {
+        return false;
+    }
+    try {
+        return import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
+    } catch {
+        return false;
+    }
+}
+
+if (isMainModule()) {
     console.log(getE2EWorkers());
 }

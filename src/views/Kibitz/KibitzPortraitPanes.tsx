@@ -19,6 +19,7 @@ import * as React from "react";
 import { pgettext } from "@/lib/translate";
 import { ChatUserList } from "@/components/ChatUserList";
 import { KibitzChatPanel, KibitzChatPanelProps } from "./KibitzChatPanel";
+import type { KibitzRoomActivity } from "./kibitzRoomActivity";
 import { KibitzRoomList } from "./KibitzRoomList";
 import { KibitzVariationList } from "./KibitzVariationList";
 import type { KibitzLeftAsideProps } from "./KibitzLeftAside";
@@ -30,6 +31,7 @@ interface KibitzPortraitPanesProps {
     chat: KibitzChatPanelProps;
     leftAside: KibitzLeftAsideProps;
     roomChannel: string;
+    roomActivity: ReadonlyMap<string, KibitzRoomActivity>;
     /** The variation panel's contents, while the centre shows a draft or a
      *  posted variation. Null when it shows the live game, and the analysis
      *  pane then says so rather than sitting empty. */
@@ -54,6 +56,7 @@ export function KibitzPortraitPanes({
     chat,
     leftAside,
     roomChannel,
+    roomActivity,
     analysis,
     analysisPending = false,
     stream,
@@ -130,6 +133,7 @@ export function KibitzPortraitPanes({
                     canOpenCreateRoomFlow={leftAside.canOpenCreateRoomFlow}
                     signInHref={leftAside.signInHref}
                     blockedRoomIds={leftAside.blockedRoomIds}
+                    roomActivity={roomActivity}
                 />
             </div>
             <div className="KibitzPortraitPanes-pane" hidden={active !== "analysis"}>

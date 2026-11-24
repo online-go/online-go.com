@@ -33,6 +33,7 @@ import { MODERATOR_POWERS, MOD_POWER_NAMES } from "@/lib/moderation";
 import { notification_manager, Notification } from "./NotificationManager";
 import { ModerationOffer } from "@/components/ModerationOffer";
 import { player_is_ignored } from "@/components/BlockPlayer";
+import { kibitzDiscussionRooms } from "./kibitzDiscussionRooms";
 import "./Notifications.css";
 
 export function NotificationList(): React.ReactElement {
@@ -132,6 +133,11 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
         const notification = this.props.notification;
 
         switch (notification.type) {
+            case "kibitzGameDiscussed":
+                return Number.isSafeInteger(notification.game_id) && notification.game_id > 0
+                    ? `/game/${notification.game_id}`
+                    : null;
+
             case "gameStarted":
             case "gameEnded":
             case "timecop":
@@ -297,6 +303,39 @@ class NotificationEntry extends React.Component<NotificationEntryProps, any> {
                             {notification.name}
                         </div>
                         <div>{outcome}</div>
+                    </div>
+                );
+            }
+
+            case "kibitzGameDiscussed": {
+                const rooms = kibitzDiscussionRooms(notification.rooms);
+                return (
+                    <div>
+                        <div>
+                            {pgettext("Kibitz notification", "Your game was discussed in Kibitz")}:{" "}
+                            {notification.black} v {notification.white} - {notification.name}
+                        </div>
+                        {rooms.length > 0 && (
+                            <div className="kibitz-rooms">
+                                {rooms.map((room, idx) => (
+                                    <React.Fragment key={room.id}>
+                                        {idx > 0 && ", "}
+                                        <a
+                                            href={`/kibitz/${room.id}`}
+                                            onClick={(ev) => {
+                                                ev.preventDefault();
+                                                ev.stopPropagation();
+                                                // Opening a room is what the notification is for.
+                                                this.del();
+                                                browserHistory.push(`/kibitz/${room.id}`);
+                                            }}
+                                        >
+                                            {room.title}
+                                        </a>
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 );
             }

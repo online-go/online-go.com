@@ -68,6 +68,7 @@ import {
     chooseFresherCurrentGameBaseSnapshot,
     restoreMainBoardToOfficialTail,
 } from "./kibitzCurrentGameBaseSnapshot";
+import { recentWatchedGameChatIds } from "./kibitzWatchedGameChat";
 import { openKibitzChatMove } from "./kibitzChatMove";
 import { returnToReviewPresenter } from "./kibitzReviewBoard";
 import { useKibitzReviewPresenter } from "./useKibitzReviewPresenter";
@@ -464,6 +465,37 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
         (accessBlocked && accessBlocked.room_id === roomId) || isSelectedRoomBlocked,
     );
     const resolvedRoom = isBlockedRoom ? null : selectedRoom;
+
+    const historyRoomId = resolvedRoom?.id === activeRoom?.id ? activeRoom?.id : undefined;
+    const roomBoard = resolvedRoom?.current_game;
+    const watchedGame =
+        roomBoard?.game_id &&
+        !roomBoard.review_id &&
+        roomBoard.black.username &&
+        roomBoard.white.username
+            ? roomBoard
+            : undefined;
+    const historyGameLookups = React.useMemo(() => new Set<number>(), [controller, historyRoomId]);
+    React.useEffect(() => {
+        if (!historyRoomId) {
+            return;
+        }
+        const missing = [...recentWatchedGameChatIds(stream, historyRoomId)].filter(
+            (id) =>
+                id !== watchedGame?.game_id &&
+                !historyGameLookups.has(id) &&
+                !controller.getCachedGame(id),
+        );
+        if (missing.length) {
+            missing.forEach((id) => historyGameLookups.add(id));
+            void controller.ensureGamesCached(missing);
+        }
+    }, [controller, historyGameLookups, historyRoomId, stream, watchedGame?.game_id]);
+    const getHistoryGame = React.useMemo(
+        () => (id: number) =>
+            watchedGame?.game_id === id ? watchedGame : controller.getCachedGame(id),
+        [cachedGamesVersion, controller, watchedGame],
+    );
 
     const resolvedRoomTitle = resolvedRoom?.title;
     React.useEffect(() => {
@@ -1445,6 +1477,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 room={resolvedRoom}
                 gobans={gobans}
                 isPortrait={isPortrait}
+                isStacked={layout.mode === "stacked"}
                 banner={
                     resolvedRoom.preset?.selection_status === "change_pending" &&
                     resolvedRoom.preset.change_effective_at ? (
@@ -1478,6 +1511,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 chat={{
                     room: resolvedRoom,
                     items: stream,
+                    getHistoryGame,
                     variations: displayedVariations,
                     onOpenVariation: (variationId, focusVariation = false) =>
                         onOpenVariationFromUser(variationId, focusVariation, "chat"),
@@ -1509,6 +1543,7 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                 onExitVariation={onExitVariation}
                 onReturnToLive={onReturnToLive}
                 onRoomsOpened={onRoomsOpened}
+                roomActivitySource={controller}
                 roomSettings={{
                     ready: activeRoom?.id === resolvedRoom.id,
                     canEditRoom: canManageRoom,

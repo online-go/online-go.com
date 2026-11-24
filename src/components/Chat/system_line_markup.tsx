@@ -53,6 +53,7 @@ function isUsableLink(link: unknown): link is ChatSystemLink {
 export function system_line_markup(
     text: string,
     links: readonly unknown[] | undefined,
+    linkLabel?: (link: ChatSystemLink) => string | undefined,
 ): React.ReactElement[] {
     const pending = (links ?? []).filter(isUsableLink).slice(0, MAX_SYSTEM_LINKS);
     const out: React.ReactElement[] = [];
@@ -78,7 +79,7 @@ export function system_line_markup(
         }
         out.push(
             <Link key={key++} to={link.href}>
-                {profanity_filter(link.text)}
+                {profanity_filter(linkLabel?.(link) ?? link.text)}
             </Link>,
         );
         rest = rest.slice(at + link.text.length);

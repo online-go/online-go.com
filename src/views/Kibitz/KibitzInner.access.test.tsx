@@ -17,10 +17,10 @@
 
 import * as React from "react";
 import { EventEmitter } from "eventemitter3";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { act, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import type { KibitzController } from "./KibitzController";
-import type { KibitzRoomSummary } from "@/models/kibitz";
+import type { KibitzRoom, KibitzRoomSummary, KibitzStreamItem } from "@/models/kibitz";
 import { KibitzInner } from "./KibitzInner";
 
 jest.mock("./useCurrentKibitzUser", () => ({
@@ -153,4 +153,42 @@ test("opening Kibitz with only blocked rooms shows the directory without joining
     expect(controller.selectRoom).not.toHaveBeenCalled();
     expect(controller.setAccessBlocked).not.toHaveBeenCalled();
     expect(screen.queryByText(/You can't stay in/)).toBeNull();
+});
+
+test("looks up history only after joining and skips repeat requests on new chat", () => {
+    const rooms = makeAccessRooms();
+    const room: KibitzRoom = {
+        ...rooms[1],
+        users: [],
+        active_chatters: [],
+        friends_in_room: [],
+        active_variation_ids: [],
+    };
+    const notice: KibitzStreamItem = {
+        id: "notice",
+        room_id: room.id,
+        type: "system",
+        text: "The watched game changed to Friendly Match",
+        game_id: 77,
+        created_at: 1,
+    };
+    const controller = makeController(rooms);
+    const ensureGamesCached = jest.mocked(controller.ensureGamesCached);
+    Object.assign(controller, { stream: [notice] });
+    renderPage(controller, `/kibitz/${room.id}`);
+    expect(ensureGamesCached).not.toHaveBeenCalledWith([77]);
+
+    act(() => {
+        controller.emit("room-changed", room);
+    });
+    expect(ensureGamesCached).toHaveBeenCalledWith([77]);
+    ensureGamesCached.mockClear();
+
+    act(() => {
+        controller.emit("stream-changed", [
+            notice,
+            { ...notice, id: "chat", type: "chat", text: "Hello room", created_at: 2 },
+        ]);
+    });
+    expect(ensureGamesCached).not.toHaveBeenCalledWith([77]);
 });

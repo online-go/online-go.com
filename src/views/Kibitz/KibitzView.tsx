@@ -26,6 +26,8 @@ import type { GobanViewRef } from "@/components/GobanView";
 import { GameMoreSettingsPanel } from "@/views/Game/GameMoreSettingsPanel";
 import { KBShortcut } from "@/components/KBShortcut";
 import type { KibitzRoomBroadcast, KibitzRoomSummary } from "@/models/kibitz";
+import type { KibitzController } from "./KibitzController";
+import type { KibitzRoomActivity } from "./kibitzRoomActivity";
 import type { KibitzGobans } from "./useKibitzGobans";
 import { KibitzLeftAside, KibitzLeftAsideProps } from "./KibitzLeftAside";
 import { KibitzChatPanel, KibitzChatPanelProps } from "./KibitzChatPanel";
@@ -58,6 +60,7 @@ import { KibitzStackedPlayerHeader } from "./KibitzStackedPlayerHeader";
 import { useKibitzThinHeader } from "./kibitzThinHeader";
 import { KibitzMoreActionsRoomActions, openKibitzMoreActions } from "./KibitzMoreActionsPopover";
 import { KibitzScoreEstimate } from "./KibitzScoreEstimate";
+import { KibitzEvaluation } from "./KibitzEvaluation";
 import { useKibitzScoreEstimation } from "./useKibitzScoreEstimation";
 import { useKibitzHelp } from "./useKibitzHelp";
 import { boardKey, gobanBoardKey, isReviewBoard } from "./kibitzBoardRef";
@@ -96,6 +99,7 @@ export interface KibitzViewProps {
     /** True when the layout has no left aside (see `leftAsideAllowed`), so
      *  the rooms and variations lists go in the panes instead. */
     isPortrait: boolean;
+    isStacked: boolean;
     leftAside: Omit<KibitzLeftAsideProps, "miniBoardController" | "onExitVariation">;
     chat: Omit<
         KibitzChatPanelProps,
@@ -112,6 +116,7 @@ export interface KibitzViewProps {
     onReturnToLive: () => void;
     /** Portrait only: the Rooms pane was selected. */
     onRoomsOpened?: () => void;
+    roomActivitySource?: Pick<KibitzController, "on" | "off">;
     roomSettings: {
         /** False while the room's details and permissions are still
          *  loading; the room actions wait for them. */
@@ -186,8 +191,8 @@ const useBehindLive = generateGobanHook(
  * and chat on the right.
  */
 export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
-    const { room, gobans, isPortrait } = props;
-    const help = useKibitzHelp(gobans.centerMode === "variation");
+    const { room, gobans, isPortrait, isStacked } = props;
+    const help = useKibitzHelp(isStacked, gobans.centerMode === "variation");
     const thinHeader = useKibitzThinHeader();
     React.useEffect(() => {
         document.documentElement.classList.toggle("kibitz-thin-header", thinHeader);
@@ -209,6 +214,19 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
     );
     const scoreSource = gobans.playerBars ?? gobans.center;
     const scoreEstimation = useKibitzScoreEstimation(gobans.center, scoreSource, room.channel);
+    // A review or demo board is not a game in play, so there is no result for
+    // the score bar to track.
+    const scoreBarAvailable = !isReviewBoard(room.current_game);
+    const [showScoreBar, setShowScoreBar] = React.useState(false);
+    const [scoreBarLabel, setScoreBarLabel] = React.useState<string | null>(null);
+    const showScore = scoreEstimation.estimating || scoreBarLabel !== null;
+    const scoreLabel = gobans.center ? (
+        <KibitzScoreEstimate
+            controller={gobans.center}
+            scoreText={scoreBarLabel}
+            estimating={scoreEstimation.estimating}
+        />
+    ) : null;
     const stopEstimate = React.useCallback(() => {
         if (gobans.center?.estimating_score) {
             gobans.center.stopEstimatingScore();
@@ -242,7 +260,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
         gobans.centerMode === "main" ? (gobans.main?.goban ?? null) : null,
     );
 
-    const { onExitVariation, onRoomsOpened, roomSettings } = props;
+    const { onExitVariation, onRoomsOpened, roomSettings, roomActivitySource } = props;
     const onCreateVariation = React.useCallback(() => {
         stopEstimate();
         if (gobans.centerMode === "variation" && props.onBranchFromVariation) {
@@ -317,6 +335,53 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
             : pane === "stream" && !hasStream
               ? KIBITZ_DEFAULT_PORTRAIT_PANE
               : pane;
+    const roomsOpen = isPortrait && displayedPane === "rooms";
+    const [activity, setActivity] = React.useState(() => ({
+        markers: new Map<string, KibitzRoomActivity>(),
+        revision: 0,
+    }));
+    const { activeRoomId, blockedRoomIds, rooms } = props.leftAside;
+    React.useEffect(() => {
+        if (!isPortrait || !roomActivitySource) {
+            return;
+        }
+        const onActivity = (roomId: string, reason: KibitzRoomActivity) => {
+            if (roomId === activeRoomId || blockedRoomIds?.has(roomId)) {
+                return;
+            }
+            setActivity((current) => {
+                const previous = current.markers.get(roomId);
+                if (previous === reason || previous === "new") {
+                    return current;
+                }
+                const markers = new Map(current.markers);
+                markers.set(roomId, reason);
+                return { markers, revision: current.revision + 1 };
+            });
+        };
+        roomActivitySource.on("room-activity", onActivity);
+        return () => {
+            roomActivitySource.off("room-activity", onActivity);
+        };
+    }, [activeRoomId, blockedRoomIds, isPortrait, roomActivitySource]);
+    React.useEffect(() => {
+        if (!roomsOpen) {
+            return;
+        }
+        return () => {
+            setActivity((current) => ({ ...current, markers: new Map() }));
+        };
+    }, [roomsOpen]);
+    const roomActivity = new Map(
+        rooms.flatMap(({ id }) => {
+            const reason = activity.markers.get(id);
+            return reason && id !== activeRoomId && !blockedRoomIds?.has(id)
+                ? [[id, reason] as const]
+                : [];
+        }),
+    );
+    const showRoomActivityDot = !roomsOpen && roomActivity.size > 0;
+
     React.useEffect(() => {
         if (!isPortrait) {
             return;
@@ -653,6 +718,27 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 // the variation alone, since the room is what the reader
                 // closes back to rather than what they are looking at.
                 <div className="Kibitz-header" ref={help.roomRef}>
+                    {scoreBarAvailable && gobans.center && gobans.main && (
+                        <KibitzEvaluation
+                            controller={gobans.center}
+                            source={
+                                gobans.center.goban.engine.game_id &&
+                                gobans.center.goban.engine.game_id !==
+                                    gobans.main.goban.engine.game_id
+                                    ? gobans.center
+                                    : gobans.main
+                            }
+                            key={`${gobans.center.goban.engine.game_id || room.current_game?.game_id || 0}:${gobans.center.goban.engine.move_tree?.id}`}
+                            gameId={
+                                gobans.center.goban.engine.game_id ||
+                                room.current_game?.game_id ||
+                                0
+                            }
+                            enabled={showScoreBar}
+                            onLabelChange={setScoreBarLabel}
+                        />
+                    )}
+
                     {variationChip ? (
                         <div ref={help.variationRef}>{variationChip}</div>
                     ) : (
@@ -701,11 +787,7 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                     }
                 />
             }
-            belowBoard={
-                isPortrait && scoreEstimation.estimating && gobans.center ? (
-                    <KibitzScoreEstimate controller={gobans.center} />
-                ) : null
-            }
+            belowBoard={isPortrait && showScore ? scoreLabel : null}
             /* Kibitz presents both players together in the sidebar on every
              * horizontal layout, and in the compact header when stacked. */
             playerBars={false}
@@ -734,14 +816,13 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         scoreEstimation.estimating && playerInfoController === gobans.center
                     }
                 />
-                {!isPortrait && scoreEstimation.estimating && gobans.center && (
-                    <KibitzScoreEstimate controller={gobans.center} />
-                )}
+                {!isPortrait && showScore && scoreLabel}
                 <KibitzProposalPanel {...props.proposals} />
                 {!isPortrait && variationPanel}
                 {isPortrait ? (
                     <KibitzPortraitPanes
                         active={displayedPane}
+                        roomActivity={roomActivity}
                         chat={{
                             ...props.chat,
                             onOpenVariation: onOpenVariationByReader,
@@ -828,10 +909,35 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                         id={`kibitz-pane-${id}`}
                         type="action"
                         align="left"
-                        icon={PANE_ICONS[id]}
-                        title={PANE_TITLES[id](isReviewBoard(room.current_game))}
-                        active={pane === id}
-                        onClick={() => togglePane(id)}
+                        buttonRef={isStacked && id === "rooms" ? help.roomSwitcherRef : undefined}
+                        icon={
+                            id === "rooms" && showRoomActivityDot ? (
+                                <span className="Kibitz-pane-icon">
+                                    <i className={`fa fa-${PANE_ICONS.rooms}`} aria-hidden="true" />
+                                    <span
+                                        key={activity.revision}
+                                        className="Kibitz-pane-unread Kibitz-rooms-activity"
+                                        aria-hidden="true"
+                                    />
+                                </span>
+                            ) : (
+                                PANE_ICONS[id]
+                            )
+                        }
+                        title={
+                            id === "rooms" && showRoomActivityDot
+                                ? pgettext("Kibitz Rooms tab with an alert", "Rooms (new activity)")
+                                : isStacked && id === "rooms"
+                                  ? pgettext("Kibitz mobile toolbar button", "Switch rooms")
+                                  : PANE_TITLES[id](isReviewBoard(room.current_game))
+                        }
+                        active={displayedPane === id}
+                        onClick={() => {
+                            if (id === "rooms") {
+                                help.acknowledgeRoomSwitcher();
+                            }
+                            togglePane(id);
+                        }}
                     />
                 ))}
 
@@ -903,6 +1009,19 @@ export function KibitzView(props: KibitzViewProps): React.ReactElement | null {
                 disabled={scoreEstimation.disabled && !scoreEstimation.estimating}
                 onClick={scoreEstimation.toggle}
             />
+
+            {scoreBarAvailable && (
+                <GobanView.Tab
+                    id="kibitz-score-bar"
+                    type="action"
+                    align="center"
+                    icon="balance-scale"
+                    title={pgettext("Kibitz action that shows the score bar", "Score bar")}
+                    active={showScoreBar}
+                    disabled={scoreEstimation.disabled && !showScoreBar}
+                    onClick={() => setShowScoreBar((shown) => !shown)}
+                />
+            )}
 
             {!isPortrait && (
                 <GobanView.Tab

@@ -160,11 +160,19 @@ describe("KibitzController room ordering", () => {
         ]);
 
         const controller = new KibitzController();
+        const onActivity = jest.fn();
+        controller.on("room-activity", onActivity);
         await flushPromises();
         await flushPromises();
 
         expect(controller.rooms.map((room) => room.id)).toEqual(["room-a", "room-b", "room-c"]);
         expect(controller.default_room_id).toBe("room-a");
+        expect(onActivity).not.toHaveBeenCalled();
+
+        pushHandlers["viewer-count-changed"]?.({ channel: "channel-c", viewer_count: 10 });
+        expect(onActivity).not.toHaveBeenCalled();
+        pushHandlers["viewer-count-changed"]?.({ channel: "channel-c", viewer_count: 11 });
+        expect(onActivity).toHaveBeenCalledWith("room-c", "busy");
 
         pushHandlers["viewer-count-changed"]?.({
             channel: "channel-c",
@@ -192,6 +200,10 @@ describe("KibitzController room ordering", () => {
             "room-b",
             "room-c",
             "room-new",
+        ]);
+        expect(onActivity.mock.calls).toEqual([
+            ["room-c", "busy"],
+            ["room-new", "new"],
         ]);
 
         pushHandlers["room-removed"]?.({ id: "room-b" });
