@@ -330,33 +330,65 @@ If this player seems much stronger than their rank, report them for sandbagging 
 };
 
 /**
- * Stand-in for the information a sandbagging-type report must carry. What that
- * information is, and whether the reporter attests to it or the dialog checks it,
- * has not been decided. Until it is, the item asks for a short description under a
- * label written for the type.
+ * Matches an OGS game path, with or without its host, so a pasted game link is
+ * caught whether or not the reporter trimmed it. The id is captured so a link to
+ * the reported game itself is not held against them.
  */
-function reportContentItem(id: string, label: string): SyncDataCheckItem {
-    const minimum = 20;
-    return {
-        kind: "data_check",
-        sync: true,
-        id,
-        label,
-        blocking: false,
-        evaluate: (ctx) => {
-            const explanation = ctx.note.trim();
-            return explanation.length >= minimum
-                ? { met: true }
-                : {
-                      met: false,
-                      message: interpolate(
-                          pgettext("Context of message", "{{required}} more characters needed"),
-                          { required: minimum - explanation.length },
-                      ),
-                  };
-        },
-    };
-}
+const GAME_PATH_PATTERN = /\bgame\/(?:view\/)?(\d+)/gi;
+
+/**
+ * A thrown-game report is judged on the reported game alone, so links to other
+ * games are turned away here. Not blocking: a blocker collapses the dialog to its
+ * explanation and hides the note, which would leave the reporter no way to remove
+ * the link.
+ */
+const thrownGameThisGameOnly: SyncDataCheckItem = {
+    kind: "data_check",
+    sync: true,
+    id: "thrown_game.this_game_only",
+    label: pgettext("A report checklist item", "The report is about this game only"),
+    blocking: false,
+    evaluate: (ctx) => {
+        const other_games = Array.from(ctx.note.matchAll(GAME_PATH_PATTERN)).filter(
+            (match) => Number(match[1]) !== ctx.game_id,
+        );
+        return other_games.length === 0
+            ? { met: true }
+            : {
+                  met: false,
+                  message: pgettext(
+                      "Asks the reporter to remove links to other games from a thrown-game report",
+                      "Please leave out links to other games: a thrown-game report is judged on this game alone. Moderators look at a player's other games themselves when they need to.",
+                  ),
+              };
+    },
+};
+
+/**
+ * Stand-in for the information a sandbagging report must carry. What that
+ * information is, and whether the reporter attests to it or the dialog checks it,
+ * has not been decided. Until it is, the item asks for a short description.
+ */
+const sandbaggingContentItem: SyncDataCheckItem = {
+    kind: "data_check",
+    sync: true,
+    id: "sandbagging_assessment.report_content",
+    label: pgettext("A report checklist item", "Say why you think this player is sandbagging"),
+    blocking: false,
+    evaluate: (ctx) => {
+        const minimum = 20;
+        const explanation = ctx.note.trim();
+        return explanation.length >= minimum
+            ? { met: true }
+            : {
+                  met: false,
+                  message: interpolate(
+                      pgettext("Context of message", "{{required}} more characters needed"),
+                      { required: minimum - explanation.length },
+                  ),
+              };
+    },
+};
 
 /**
  * Per-report-type checklists. Mirrors REPORT_TYPE_VOTABLE_ACTIONS in the backend's
@@ -408,21 +440,8 @@ export const REPORT_CHECKLISTS: Record<string, ChecklistItem[]> = {
     harassment: [descriptionLengthItem(20)],
     other: [descriptionLengthItem(20)],
     malicious_report: [descriptionLengthItem(1)],
-    thrown_game: [
-        gameIdentifiedItem,
-        thrownGameAccusedLost,
-        reportContentItem(
-            "thrown_game.report_content",
-            pgettext("A report checklist item", "Say why you think this game was thrown"),
-        ),
-    ],
-    sandbagging_assessment: [
-        gameIdentifiedItem,
-        reportContentItem(
-            "sandbagging_assessment.report_content",
-            pgettext("A report checklist item", "Say why you think this player is sandbagging"),
-        ),
-    ],
+    thrown_game: [gameIdentifiedItem, thrownGameAccusedLost, thrownGameThisGameOnly],
+    sandbagging_assessment: [gameIdentifiedItem, sandbaggingContentItem],
     assess_ai_play: [gameIdentifiedItem],
 };
 

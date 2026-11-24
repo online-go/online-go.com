@@ -69,7 +69,7 @@ describe("REPORT_CHECKLISTS resolved lists", () => {
         ["malicious_report", ["report.description_length"]],
         [
             "thrown_game",
-            ["report.game_identified", "thrown_game.accused_lost", "thrown_game.report_content"],
+            ["report.game_identified", "thrown_game.accused_lost", "thrown_game.this_game_only"],
         ],
         [
             "sandbagging_assessment",
@@ -426,11 +426,11 @@ describe("thrown_game data checks", () => {
         return buildResults(items, ctx, outcomes, {});
     };
 
-    test("passes when the accused lost the finished game", async () => {
-        const results = await evaluate(gamedata({ winner: 99 }), "a".repeat(20));
+    test("passes when the accused lost the finished game, with no note at all", async () => {
+        const results = await evaluate(gamedata({ winner: 99 }));
         const states = Object.fromEntries(results.map((r) => [r.id, r.state]));
         expect(states["thrown_game.accused_lost"]).toBe("satisfied");
-        expect(states["thrown_game.report_content"]).toBe("satisfied");
+        expect(states["thrown_game.this_game_only"]).toBe("satisfied");
     });
 
     test("blocks when the accused won", async () => {
@@ -446,9 +446,26 @@ describe("thrown_game data checks", () => {
         expect(results[0].id).toBe("thrown_game.accused_lost");
     });
 
-    test("the content placeholder asks for a description without blocking", async () => {
-        const results = await evaluate(gamedata(), "too short");
-        const content = results.find((r) => r.id === "thrown_game.report_content");
+    test("asks for links to other games to be removed, without blocking", async () => {
+        const note = "They did the same in https://online-go.com/game/123456 and game/view/777";
+        const results = await evaluate(gamedata(), note);
+        const row = results.find((r) => r.id === "thrown_game.this_game_only");
+        expect(row?.state).toBe("actionable");
+        expect(row?.message).toMatch(/other games/);
+    });
+
+    test("a link to the reported game itself is not another game", async () => {
+        const results = await evaluate(gamedata(), "see https://online-go.com/game/4471 move 40");
+        const row = results.find((r) => r.id === "thrown_game.this_game_only");
+        expect(row?.state).toBe("satisfied");
+    });
+});
+
+describe("sandbagging_assessment data checks", () => {
+    test("the content placeholder asks for a description without blocking", () => {
+        const items = getChecklist("sandbagging_assessment");
+        const results = buildResults(items, ctxFor(gamedata(), "too short"), {}, {});
+        const content = results.find((r) => r.id === "sandbagging_assessment.report_content");
         expect(content?.state).toBe("actionable");
         expect(content?.message).toMatch(/11 more characters/);
     });
