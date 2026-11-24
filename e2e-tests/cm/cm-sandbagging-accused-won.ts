@@ -121,7 +121,8 @@ export const cmSandbaggingAccusedWonTest = async (
             reporterPage,
             accusedUsername,
             "sandbagging_assessment",
-            "E2E test reporting sandbagging: suspicious win pattern.", // min chars
+            // A sandbagging report must link to another game that shows the pattern
+            "E2E test reporting sandbagging: suspicious win pattern. See https://online-go.com/game/1",
             { notOffered: ["thrown_game"] },
         );
 

@@ -73,7 +73,7 @@ describe("REPORT_CHECKLISTS resolved lists", () => {
         ],
         [
             "sandbagging_assessment",
-            ["report.game_identified", "sandbagging_assessment.report_content"],
+            ["report.game_identified", "sandbagging_assessment.other_games_linked"],
         ],
         // not_reportable in Report.tsx today, but listed so the table stays complete —
         // see the doc comment on REPORT_CHECKLISTS.
@@ -462,11 +462,26 @@ describe("thrown_game data checks", () => {
 });
 
 describe("sandbagging_assessment data checks", () => {
-    test("the content placeholder asks for a description without blocking", () => {
+    const evaluate = (note: string) => {
         const items = getChecklist("sandbagging_assessment");
-        const results = buildResults(items, ctxFor(gamedata(), "too short"), {}, {});
-        const content = results.find((r) => r.id === "sandbagging_assessment.report_content");
-        expect(content?.state).toBe("actionable");
-        expect(content?.message).toMatch(/11 more characters/);
+        const results = buildResults(items, ctxFor(gamedata(), note), {}, {});
+        return results.find((r) => r.id === "sandbagging_assessment.other_games_linked");
+    };
+
+    test("asks for a link to another game, without blocking", () => {
+        const row = evaluate("They always resign when ahead, look at their history.");
+        expect(row?.state).toBe("actionable");
+        expect(row?.message).toMatch(/other game/);
+    });
+
+    test("a link to the reported game alone does not count", () => {
+        expect(evaluate("see https://online-go.com/game/4471")?.state).toBe("actionable");
+    });
+
+    test("satisfied by a link to another game, with or without a host", () => {
+        expect(evaluate("resigned while winning: https://online-go.com/game/123456")?.state).toBe(
+            "satisfied",
+        );
+        expect(evaluate("and again in game/view/777")?.state).toBe("satisfied");
     });
 });

@@ -336,6 +336,13 @@ If this player seems much stronger than their rank, report them for sandbagging 
  */
 const GAME_PATH_PATTERN = /\bgame\/(?:view\/)?(\d+)/gi;
 
+/** The ids of the games the note links to, leaving out the reported game itself. */
+function otherGamesLinked(note: string, game_id: number | undefined): number[] {
+    return Array.from(note.matchAll(GAME_PATH_PATTERN))
+        .map((match) => Number(match[1]))
+        .filter((id) => id !== game_id);
+}
+
 /**
  * A thrown-game report is judged on the reported game alone, so links to other
  * games are turned away here. Not blocking: a blocker collapses the dialog to its
@@ -348,11 +355,8 @@ const thrownGameThisGameOnly: SyncDataCheckItem = {
     id: "thrown_game.this_game_only",
     label: pgettext("A report checklist item", "The report is about this game only"),
     blocking: false,
-    evaluate: (ctx) => {
-        const other_games = Array.from(ctx.note.matchAll(GAME_PATH_PATTERN)).filter(
-            (match) => Number(match[1]) !== ctx.game_id,
-        );
-        return other_games.length === 0
+    evaluate: (ctx) =>
+        otherGamesLinked(ctx.note, ctx.game_id).length === 0
             ? { met: true }
             : {
                   met: false,
@@ -360,34 +364,30 @@ const thrownGameThisGameOnly: SyncDataCheckItem = {
                       "Asks the reporter to remove links to other games from a thrown-game report",
                       "Please leave out links to other games: a thrown-game report is judged on this game alone. Moderators look at a player's other games themselves when they need to.",
                   ),
-              };
-    },
+              },
 };
 
 /**
- * Stand-in for the information a sandbagging report must carry. What that
- * information is, and whether the reporter attests to it or the dialog checks it,
- * has not been decided. Until it is, the item asks for a short description.
+ * A sandbagging report is a claim about a pattern, so it must point at the games
+ * that show it. The reported game does not count: the moderators already have it.
+ * Not blocking, for the same reason as thrownGameThisGameOnly.
  */
-const sandbaggingContentItem: SyncDataCheckItem = {
+const sandbaggingOtherGamesLinked: SyncDataCheckItem = {
     kind: "data_check",
     sync: true,
-    id: "sandbagging_assessment.report_content",
-    label: pgettext("A report checklist item", "Say why you think this player is sandbagging"),
+    id: "sandbagging_assessment.other_games_linked",
+    label: pgettext("A report checklist item", "Link to other games that show the sandbagging"),
     blocking: false,
-    evaluate: (ctx) => {
-        const minimum = 20;
-        const explanation = ctx.note.trim();
-        return explanation.length >= minimum
+    evaluate: (ctx) =>
+        otherGamesLinked(ctx.note, ctx.game_id).length > 0
             ? { met: true }
             : {
                   met: false,
-                  message: interpolate(
-                      pgettext("Context of message", "{{required}} more characters needed"),
-                      { required: minimum - explanation.length },
+                  message: pgettext(
+                      "Asks the reporter to add links to other games to a sandbagging report",
+                      "Please paste a link to at least one other game that shows this player sandbagging, such as a game they resigned while winning. The moderators judge the pattern, not this game alone.",
                   ),
-              };
-    },
+              },
 };
 
 /**
@@ -441,7 +441,7 @@ export const REPORT_CHECKLISTS: Record<string, ChecklistItem[]> = {
     other: [descriptionLengthItem(20)],
     malicious_report: [descriptionLengthItem(1)],
     thrown_game: [gameIdentifiedItem, thrownGameAccusedLost, thrownGameThisGameOnly],
-    sandbagging_assessment: [gameIdentifiedItem, sandbaggingContentItem],
+    sandbagging_assessment: [gameIdentifiedItem, sandbaggingOtherGamesLinked],
     assess_ai_play: [gameIdentifiedItem],
 };
 

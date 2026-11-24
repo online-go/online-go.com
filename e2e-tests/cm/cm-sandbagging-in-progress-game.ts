@@ -127,7 +127,8 @@ export const cmSandbaggingInProgressGameTest = async (
             reporterPage,
             accusedUsername,
             "sandbagging_assessment",
-            "E2E test: sandbagging report on in-progress game",
+            // A sandbagging report must link to another game that shows the pattern
+            "E2E test: sandbagging report on in-progress game. See https://online-go.com/game/1",
             { notOffered: ["thrown_game"] },
         );
 
