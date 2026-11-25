@@ -106,7 +106,7 @@
     /* The main panel fills the sidebar and the chat takes whatever height
        the proposal and variation panels leave, so the sidebar itself does
        not need to scroll. */
-    .GobanView-sidebar-content .GobanView-tab-panel.always {
+    .GobanView-sidebar-content .GobanView-tab-panel.always:not(.hidden) {
         flex: 1 1 auto;
         min-height: 0;
         display: flex;
@@ -125,7 +125,7 @@
             min-height: 0;
         }
 
-        .GobanView-sidebar-content .GobanView-tab-panel.always {
+        .GobanView-sidebar-content .GobanView-tab-panel.always:not(.hidden) {
             flex: 0 0 auto;
             min-height: 100%;
         }
