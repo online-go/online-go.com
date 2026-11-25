@@ -24,6 +24,7 @@ import {
     MoveTree,
     createGoban,
     enableThreeGoban,
+    preloadThreeGoban,
     SVGRenderer,
     type ThreeRenderer,
     type ThreeRendererOptions,
@@ -55,6 +56,17 @@ import { chat_manager, ChatChannelProxy, inGameModChannel } from "@/lib/chat_man
 import { Resizable } from "@/components/Resizable";
 import { PlayerCacheEntry } from "./player_cache";
 import { isLiveGame } from "@/components/TimeControl";
+
+/** Start loading the 3D board code when the user has the 3D board on. */
+export function preloadThreeBoardIfEnabled(): void {
+    if (preferences.get("board-renderer-3d")) {
+        void preloadThreeGoban().catch((error: unknown) =>
+            console.warn("Unable to preload the 3D board", error),
+        );
+    }
+}
+
+preferences.watch("board-renderer-3d", preloadThreeBoardIfEnabled);
 
 interface GobanControllerEvents {
     autoplaying: (autoplaying: boolean) => void;
@@ -441,14 +453,18 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
                 return;
             }
             pending = true;
-            void enableThreeGoban(goban, readOptions())
+            const options = readOptions();
+            const initialOptions = JSON.stringify(options);
+            void enableThreeGoban(goban, options)
                 .then((handle) => {
                     if (goban.destroyed || !preferences.get("board-renderer-3d")) {
                         handle.disable();
                     } else if (handle.active) {
                         renderer = handle;
                         this.three_renderer = handle;
-                        updateOptions();
+                        if (JSON.stringify(readOptions()) !== initialOptions) {
+                            updateOptions();
+                        }
                     }
                 })
                 .catch((error: unknown) => {

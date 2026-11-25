@@ -15,18 +15,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { enableThreeGoban, SVGRenderer, type MoveTree } from "goban";
+import {
+    enableThreeGoban,
+    preloadThreeGoban,
+    SVGRenderer,
+    type MoveTree,
+    type ThreeRenderer,
+} from "goban";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
 import { alert } from "@/lib/swal_config";
 import { TEST_USER } from "@/views/Game/test_user";
 import { shared_ip_with_player_map } from "@/views/Game/util";
-import { GobanController, getMoveTreeTrunkTail } from "./GobanController";
+import {
+    GobanController,
+    getMoveTreeTrunkTail,
+    preloadThreeBoardIfEnabled,
+} from "./GobanController";
 
 jest.mock("goban", () => ({
     ...jest.requireActual("goban"),
     enableThreeGoban: jest.fn(),
+    preloadThreeGoban: jest.fn().mockResolvedValue(undefined),
 }));
+
+function mockPlainStoneTheme() {
+    const setTheme = SVGRenderer.prototype.setTheme;
+    return jest.spyOn(SVGRenderer.prototype, "setTheme").mockImplementation(function (
+        this: SVGRenderer,
+        themes,
+        dontRedraw,
+    ) {
+        setTheme.call(this, { ...themes, white: "Plain", black: "Plain" }, dontRedraw);
+    });
+}
 
 function makeMoveNode(move_number: number, trunk_next?: MoveTree): MoveTree {
     return {
@@ -41,14 +63,7 @@ describe("GobanController", () => {
         const error = new Error("3D chunk unavailable");
         const log = jest.spyOn(console, "error").mockImplementation(() => undefined);
         const previous = preferences.get("board-renderer-3d");
-        const setTheme = SVGRenderer.prototype.setTheme;
-        const theme = jest.spyOn(SVGRenderer.prototype, "setTheme").mockImplementation(function (
-            this: SVGRenderer,
-            themes,
-            dontRedraw,
-        ) {
-            setTheme.call(this, { ...themes, white: "Plain", black: "Plain" }, dontRedraw);
-        });
+        const theme = mockPlainStoneTheme();
         let controller: GobanController | undefined;
         try {
             preferences.set("board-renderer-3d", true);
@@ -83,6 +98,80 @@ describe("GobanController", () => {
             theme.mockRestore();
             enable.mockReset();
             log.mockRestore();
+        }
+    });
+
+    it.each([false, true])(
+        "configures only changed options after 3D starts (preference changed: %s)",
+        async (changePreference) => {
+            const enable = jest.mocked(enableThreeGoban);
+            const previousEnabled = preferences.get("board-renderer-3d");
+            const previousRoom = preferences.get("board-renderer-3d-room");
+            const theme = mockPlainStoneTheme();
+            const configure = jest.fn();
+            let resolve!: (handle: ThreeRenderer) => void;
+            const promise = new Promise<ThreeRenderer>((resolveHandle) => {
+                resolve = resolveHandle;
+            });
+            let controller: GobanController | undefined;
+            try {
+                preferences.set("board-renderer-3d", true);
+                enable.mockReturnValueOnce(promise);
+                controller = new GobanController({
+                    width: 9,
+                    height: 9,
+                    board_div: document.createElement("div"),
+                    allow_3d: true,
+                    enable_sounds: false,
+                });
+                expect(enable).toHaveBeenCalledWith(
+                    controller.goban,
+                    expect.objectContaining({ room: previousRoom }),
+                );
+                if (changePreference) {
+                    preferences.set("board-renderer-3d-room", !previousRoom);
+                }
+                resolve({
+                    goban: enable.mock.calls[0][0],
+                    active: true,
+                    enable: jest.fn(),
+                    disable: jest.fn(),
+                    configure,
+                });
+                await promise;
+                expect(configure).toHaveBeenCalledTimes(changePreference ? 1 : 0);
+                if (changePreference) {
+                    expect(configure).toHaveBeenCalledWith(
+                        expect.objectContaining({ room: !previousRoom }),
+                    );
+                }
+            } finally {
+                controller?.goban.destroy();
+                preferences.set("board-renderer-3d", previousEnabled);
+                preferences.set("board-renderer-3d-room", previousRoom);
+                theme.mockRestore();
+                enable.mockReset();
+            }
+        },
+    );
+
+    it("preloads the 3D board only when the preference is on", () => {
+        const preload = jest.mocked(preloadThreeGoban);
+        const previous = preferences.get("board-renderer-3d");
+        try {
+            preferences.set("board-renderer-3d", false);
+            preload.mockClear();
+            preloadThreeBoardIfEnabled();
+            expect(preload).not.toHaveBeenCalled();
+
+            preferences.set("board-renderer-3d", true);
+            expect(preload).toHaveBeenCalledTimes(1);
+            preload.mockClear();
+            preloadThreeBoardIfEnabled();
+            expect(preload).toHaveBeenCalledTimes(1);
+        } finally {
+            preferences.set("board-renderer-3d", previous);
+            preload.mockClear();
         }
     });
 
