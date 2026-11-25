@@ -15,6 +15,14 @@ of the page work as they do with the SVG board. If WebGL is unavailable or the
 - The old canvas renderer and 3D cannot both be on. Turning one on turns the
   other off.
 
+## Loading
+
+The 3D code starts loading when the app starts if the 3D board is on.
+When a page opens with the 3D board on, the board area stays empty until the
+first 3D frame. Then the board fades in.
+If 3D fails or takes more than 3 seconds to draw the first frame, the SVG board
+appears.
+
 ## Settings
 
 The board settings popover (the gear in the board bar) has **Use a 3D board**.

@@ -18,6 +18,7 @@
 import {
     enableThreeGoban,
     preloadThreeGoban,
+    setGobanRenderer,
     SVGRenderer,
     type MoveTree,
     type ThreeRenderer,
@@ -154,6 +155,107 @@ describe("GobanController", () => {
             }
         },
     );
+
+    describe("initial 3D board visibility", () => {
+        const enable = jest.mocked(enableThreeGoban);
+        let previousEnabled: boolean;
+        let theme: ReturnType<typeof mockPlainStoneTheme>;
+        let controller: GobanController | undefined;
+        let board_div: HTMLDivElement;
+
+        beforeEach(() => {
+            jest.useFakeTimers();
+            setGobanRenderer("svg");
+            previousEnabled = preferences.get("board-renderer-3d");
+            theme = mockPlainStoneTheme();
+            board_div = document.createElement("div");
+            board_div.style.visibility = "visible";
+            board_div.style.opacity = "0.8";
+            board_div.style.transition = "color 100ms";
+            enable.mockReturnValue(new Promise<ThreeRenderer>(() => undefined));
+        });
+
+        afterEach(() => {
+            controller?.goban.destroy();
+            controller = undefined;
+            preferences.set("board-renderer-3d", previousEnabled);
+            theme.mockRestore();
+            enable.mockReset();
+            setGobanRenderer("canvas");
+            jest.useRealTimers();
+        });
+
+        function createBoard(enabled: boolean) {
+            preferences.set("board-renderer-3d", enabled);
+            controller = new GobanController({
+                width: 9,
+                height: 9,
+                board_div,
+                allow_3d: true,
+                enable_sounds: false,
+            });
+            return controller;
+        }
+
+        it("hides the board until the first 3D frame, then fades it in", () => {
+            createBoard(true);
+            expect(board_div.style.visibility).toBe("hidden");
+
+            enable.mock.calls[0][1]?.onFirstFrame?.();
+            expect(board_div.style.visibility).toBe("visible");
+            expect(board_div.style.opacity).toBe("0");
+
+            jest.advanceTimersByTime(16);
+            expect(board_div.style.opacity).toBe("0.8");
+            expect(board_div.style.transition).toBe("opacity 150ms ease-out");
+            jest.advanceTimersByTime(200);
+            expect(board_div.style.transition).toBe("color 100ms");
+        });
+
+        it("reveals the board when the renderer is inactive", async () => {
+            enable.mockImplementationOnce(async (goban) => ({
+                goban,
+                active: false,
+                enable: jest.fn(),
+                disable: jest.fn(),
+                configure: jest.fn(),
+            }));
+            createBoard(true);
+            expect(board_div.style.visibility).toBe("hidden");
+
+            await enable.mock.results[0].value;
+            expect(board_div.style.visibility).toBe("visible");
+        });
+
+        it("reveals the board after 3 seconds without a 3D frame", () => {
+            createBoard(true);
+            jest.advanceTimersByTime(2999);
+            expect(board_div.style.visibility).toBe("hidden");
+            jest.advanceTimersByTime(1);
+            expect(board_div.style.visibility).toBe("visible");
+            expect(board_div.style.opacity).toBe("0.8");
+        });
+
+        it("keeps the board visible when 3D is enabled after construction", () => {
+            createBoard(false);
+            expect(board_div.style.visibility).toBe("visible");
+            expect(enable).not.toHaveBeenCalled();
+            preferences.set("board-renderer-3d", true);
+            expect(board_div.style.visibility).toBe("visible");
+            enable.mock.calls[0][1]?.onFirstFrame?.();
+            expect(board_div.style.visibility).toBe("visible");
+            expect(board_div.style.opacity).toBe("0.8");
+        });
+
+        it("clears the first-frame timer when the board is destroyed", () => {
+            const board = createBoard(true);
+            expect(board_div.style.visibility).toBe("hidden");
+            board.goban.destroy();
+            controller = undefined;
+            expect(board_div.style.visibility).toBe("visible");
+            expect(jest.getTimerCount()).toBe(0);
+        });
+    });
 
     it("preloads the 3D board only when the preference is on", () => {
         const preload = jest.mocked(preloadThreeGoban);

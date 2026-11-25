@@ -128,6 +128,9 @@ export interface PreparedAnalysisSnapshot {
  */
 const CHAT_MESSAGE_SIZE_LIMIT = 16384;
 
+/** How long to wait for the first 3D frame before showing the SVG board. */
+const THREE_FIRST_FRAME_TIMEOUT_MS = 3000;
+
 /** The mark types that a user places on a board and that a shared analysis carries. */
 const SHARED_MARK_TYPES = [
     "letter",
@@ -359,7 +362,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
                 ? new SVGRenderer(opts)
                 : createGoban(opts);
         if (opts.allow_3d && opts.board_div && this.goban instanceof SVGRenderer) {
-            this.watchThreeRenderer(this.goban);
+            this.watchThreeRenderer(this.goban, !!wants_3d);
         }
         this.unregisterMoveTreeBoard = registerMoveTreeBoard(this.goban);
         this.enable_sounds = opts.enable_sounds !== false; // Default to true if not specified
@@ -423,7 +426,42 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         });
     }
 
-    private watchThreeRenderer(goban: SVGRenderer): void {
+    private watchThreeRenderer(goban: SVGRenderer, hide_until_ready: boolean): void {
+        const host = hide_until_ready ? goban.config.board_div : undefined;
+        const visibility = host?.style.visibility ?? "";
+        const opacity = host?.style.opacity ?? "";
+        const transition = host?.style.transition ?? "";
+        let revealed = false;
+        if (host) {
+            host.style.visibility = "hidden";
+        }
+        const timer = host
+            ? setTimeout(() => reveal(false), THREE_FIRST_FRAME_TIMEOUT_MS)
+            : undefined;
+
+        function reveal(fade: boolean) {
+            if (!host || revealed) {
+                return;
+            }
+            revealed = true;
+            clearTimeout(timer);
+            if (fade) {
+                host.style.opacity = "0";
+                host.style.visibility = visibility;
+                requestAnimationFrame(() => {
+                    host.style.transition = "opacity 150ms ease-out";
+                    host.style.opacity = opacity;
+                    setTimeout(() => {
+                        host.style.transition = transition;
+                    }, 200);
+                });
+            } else {
+                host.style.visibility = visibility;
+                host.style.opacity = opacity;
+                host.style.transition = transition;
+            }
+        }
+
         let renderer: ThreeRenderer | undefined;
         let pending = false;
         const readOptions = (): ThreeRendererOptions => {
@@ -435,13 +473,18 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
                 rotation: preferences.get("board-renderer-3d-rotation"),
                 tilt: tilt === "auto" ? undefined : tilt,
                 lighting: { preset: preferences.get("board-renderer-3d-lighting") },
-                onFallback: (error) => console.error("Unable to use the 3D board", error),
                 ...this.three_overrides,
+                onFallback: (error) => {
+                    reveal(false);
+                    console.error("Unable to use the 3D board", error);
+                },
+                onFirstFrame: () => reveal(true),
             };
         };
         const updateOptions = () => renderer?.configure(readOptions());
         const update = (enabled: boolean) => {
             if (!enabled) {
+                reveal(false);
                 renderer?.disable();
                 return;
             }
@@ -459,15 +502,19 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
                 .then((handle) => {
                     if (goban.destroyed || !preferences.get("board-renderer-3d")) {
                         handle.disable();
+                        reveal(false);
                     } else if (handle.active) {
                         renderer = handle;
                         this.three_renderer = handle;
                         if (JSON.stringify(readOptions()) !== initialOptions) {
                             updateOptions();
                         }
+                    } else {
+                        reveal(false);
                     }
                 })
                 .catch((error: unknown) => {
+                    reveal(false);
                     console.error("Unable to enable the 3D board", error);
                 })
                 .finally(() => {
@@ -476,6 +523,7 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
         };
 
         goban.once("destroy", () => {
+            reveal(false);
             preferences.unwatch("board-renderer-3d", update);
             preferences.unwatch("board-renderer-3d-style", updateOptions);
             preferences.unwatch("board-renderer-3d-room", updateOptions);
