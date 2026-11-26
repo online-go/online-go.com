@@ -362,7 +362,7 @@ const thrownGameThisGameOnly: SyncDataCheckItem = {
                   met: false,
                   message: pgettext(
                       "Asks the reporter to remove links to other games from a thrown-game report",
-                      "Please leave out links to other games: a thrown-game report is judged on this game alone. Moderators look at a player's other games themselves when they need to.",
+                      "Please leave out links to other games: a thrown-game report is judged on this game alone. Community Moderators have the player's history available, they can see thrown game patterns.",
                   ),
               },
 };
