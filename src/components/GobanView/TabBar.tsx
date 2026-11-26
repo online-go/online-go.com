@@ -153,7 +153,7 @@ export function TabBar({ tabs }: TabBarProps): React.ReactElement {
 
     const renderIcon = (tab: TabDefinition) => {
         if (typeof tab.icon === "string") {
-            return <i className={`fa fa-${tab.icon}`} />;
+            return <i className={`fa fa-${tab.icon}`} aria-hidden="true" />;
         }
         return tab.icon;
     };
@@ -165,6 +165,9 @@ export function TabBar({ tabs }: TabBarProps): React.ReactElement {
             className={`GobanView-tab-button ${isActive(tab) ? "active" : ""}`}
             data-tab-id={tab.id}
             title={tab.title}
+            // The buttons show only an icon, whose glyph comes from CSS and
+            // would otherwise become the button's accessible name.
+            aria-label={tab.title}
             disabled={tab.disabled}
             onClick={(e) => handleClick(tab, e)}
         >
