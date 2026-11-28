@@ -118,6 +118,11 @@ function applyBotRanked(game: GameInput): GameInput {
     return { ...game, ranked: computeBotRanked(game) };
 }
 
+/** A direct challenge is against a bot when that player is on the active bot list. */
+function challengedPlayerIsBot(playerId: number | undefined): boolean {
+    return playerId !== undefined && bots_list().some((bot) => bot.id === playerId);
+}
+
 // The backend's handicap calculator ignores requested_komi when the handicap
 // is automatic (<0), so in the UI we keep komi in lockstep: auto handicap =>
 // auto komi.
@@ -543,6 +548,16 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
 
         challenge.game.rengo = next.challenge.game.rengo;
         challenge.game.rengo_casual_mode = next.challenge.game.rengo_casual_mode;
+
+        // The checkbox is hidden. Ranked is set before the komi rule below, the
+        // same rule a ticked Ranked box already uses. A fork stays unranked.
+        if (
+            this.props.mode === "player" &&
+            !this.props.initialState &&
+            challengedPlayerIsBot(this.props.playerId)
+        ) {
+            challenge.game.ranked = true;
+        }
 
         if (challenge.game.ranked) {
             challenge.game.komi_auto = "automatic";
@@ -1293,6 +1308,7 @@ export class ChallengeModalBody extends React.Component<ChallengeModalInput, Cha
             >
                 {!this.state.forking_game &&
                     this.props.mode !== "computer" &&
+                    !challengedPlayerIsBot(this.props.playerId) &&
                     this.rankedSettings()}
                 {!this.state.forking_game && this.boardSizeSettings()}
             </div>
