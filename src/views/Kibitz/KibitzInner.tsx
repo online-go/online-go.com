@@ -1552,6 +1552,10 @@ export function KibitzInner({ controller }: KibitzInnerProps): React.ReactElemen
                     onSaveRoomDetails: async (title, description) =>
                         controller.updateRoomDetails(resolvedRoom.id, title, description),
                     onDeleteRoom: handleDeleteRoom,
+                    onSetBroadcast:
+                        canManageRoom && resolvedRoom.kind !== "preset"
+                            ? (broadcast) => controller.setRoomBroadcast(resolvedRoom.id, broadcast)
+                            : undefined,
                 }}
             />
             {overlays}

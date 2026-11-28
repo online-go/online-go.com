@@ -173,7 +173,9 @@ describe("KibitzPortraitPanes", () => {
     });
 
     test("hides the panes that are not active", () => {
-        const { container } = render(<KibitzPortraitPanes {...props("variations")} />);
+        const { container } = render(
+            <KibitzPortraitPanes {...props("variations")} stream={<div data-testid="stream" />} />,
+        );
         const panes = [...container.querySelectorAll(".KibitzPortraitPanes-pane")];
         expect(panes).toHaveLength(KIBITZ_PORTRAIT_PANES.length);
         const shown = panes.filter((pane) => !pane.hasAttribute("hidden"));

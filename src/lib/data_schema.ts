@@ -241,12 +241,22 @@ export interface KibitzSchema {
     /** Which chat the Kibitz sidebar shows. */
     chat_tab: "room" | "game";
     /** Which panel the portrait Kibitz layout shows below the board. */
-    portrait_pane: "game-chat" | "room-chat" | "people" | "variations" | "rooms" | "analysis";
+    portrait_pane:
+        | "game-chat"
+        | "room-chat"
+        | "people"
+        | "variations"
+        | "rooms"
+        | "analysis"
+        | "stream";
     /** Collapsed sections of the Kibitz left aside. */
     "left_aside.collapsed": { rooms: boolean; variations: boolean };
     "left_aside.hidden": boolean;
     /** Show the people column beside the landscape Kibitz chat. */
     people_column: boolean;
+    /** Each viewer's own stream choice per Kibitz room, by room id: the
+     *  stream is hidden, or another channel replaces the room's. */
+    stream_choice: Record<string, { hidden?: boolean; channel?: string }>;
 }
 
 export interface DataSchema

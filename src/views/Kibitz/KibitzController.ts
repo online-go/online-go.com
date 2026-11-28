@@ -46,6 +46,7 @@ import {
 } from "./kibitzBoardRef";
 import type {
     KibitzPresetBlock,
+    KibitzRoomBroadcast,
     KibitzProposal,
     KibitzRoom,
     KibitzRoomSummary,
@@ -130,6 +131,9 @@ interface BackendKibitzRoom {
     settings?: Record<string, unknown>;
     viewer_count?: number;
     preset?: KibitzPresetBlock | null;
+    /** The room's recommended stream. Absent from payloads that do not
+     *  carry it; null when the room has none. */
+    broadcast?: KibitzRoomBroadcast | null;
 }
 
 interface BackendGameDetailsPlayer {
@@ -294,6 +298,8 @@ function mapBackendRoomToSummary(
         current_review_id: backend.current_review_id ?? null,
         mode: backend.current_review ? "demo" : (backend.mode ?? "live"),
         current_game: mapBackendRoomCurrentGame(backend, existing),
+        // Pushes that leave the field out must not drop a known stream.
+        broadcast: backend.broadcast !== undefined ? backend.broadcast : existing?.broadcast,
     };
 }
 
@@ -1335,6 +1341,33 @@ export class KibitzController extends EventEmitter<KibitzControllerEvents> {
             if (isKibitzRoomOffensiveError(error) || isKibitzRoomTitleTakenError(error)) {
                 throw error;
             }
+            return false;
+        }
+    }
+
+    /** Sets or clears the stream a room recommends. Room owners only. */
+    public async setRoomBroadcast(
+        roomId: string,
+        broadcast: KibitzRoomBroadcast | null,
+    ): Promise<boolean> {
+        try {
+            const payload = (await put(`kibitz/rooms/${roomId}`, {
+                broadcast,
+            })) as BackendKibitzRoom;
+
+            // An older server ignores the field and answers without it;
+            // treat that as a failure rather than pretend it was saved.
+            if (payload?.broadcast === undefined) {
+                return false;
+            }
+            this.applyBackendRoomUpdate(payload);
+            if (this._active_room?.id === roomId) {
+                const summary = mapBackendRoomToSummary(payload, this._active_room);
+                this.setActiveRoom({ ...this._active_room, ...summary });
+            }
+            return true;
+        } catch (error) {
+            console.warn("kibitz: setRoomBroadcast failed", roomId, error);
             return false;
         }
     }

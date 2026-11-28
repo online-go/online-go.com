@@ -23,7 +23,8 @@ export type KibitzPortraitPane =
     | "people"
     | "variations"
     | "rooms"
-    | "analysis";
+    | "analysis"
+    | "stream";
 
 export const KIBITZ_PORTRAIT_PANES: readonly KibitzPortraitPane[] = [
     "game-chat",
@@ -32,6 +33,7 @@ export const KIBITZ_PORTRAIT_PANES: readonly KibitzPortraitPane[] = [
     "variations",
     "rooms",
     "analysis",
+    "stream",
 ];
 
 /** Where a reader starts, and where a pane that closes falls back to when

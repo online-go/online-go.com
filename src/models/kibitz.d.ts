@@ -83,6 +83,17 @@ export interface KibitzPresetBlock {
     change_effective_at: string | null;
 }
 
+/** A live stream a room recommends to everyone in it. The room only
+ *  recommends: each viewer may hide it or watch another stream instead. */
+export interface KibitzRoomBroadcast {
+    /** The stream's platform, as GoTV's `Stream.source` names it. */
+    source: "twitch";
+    /** The platform's channel name, as GoTV's `Stream.channel` gives it. */
+    channel: string;
+    title?: string;
+    set_by_id?: number;
+}
+
 export interface KibitzRoomSummary {
     id: string;
     channel: string;
@@ -99,6 +110,8 @@ export interface KibitzRoomSummary {
     pinned?: boolean;
     proposals_enabled?: boolean;
     preset?: KibitzPresetBlock;
+    /** The stream the room recommends; null or absent when it has none. */
+    broadcast?: KibitzRoomBroadcast | null;
 }
 
 export interface KibitzRoom extends KibitzRoomSummary {
