@@ -113,7 +113,7 @@ export const report_categories: ReportDescription[] = [
         title: pgettext("Report user for throwing a game", "Thrown Game"),
         description: pgettext(
             "Report user for throwing a game",
-            "User intentionally lost the game.",
+            "User intentionally lost the game.  Users who do this repeatedly are suspended.",
         ),
     },
     {
