@@ -129,6 +129,7 @@ export function User(props: { user_id?: number }): React.ReactElement {
                     is_tournament_moderator: false,
                     is_watched: false,
                     on_vacation: false,
+                    vacation_accruing: false,
                     vacation_left: 0,
                     deviation: responses[0].ratings.overall.deviation,
                     ranking: responses[1].ranking,
