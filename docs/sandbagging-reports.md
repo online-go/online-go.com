@@ -12,7 +12,9 @@ two report types, and the report dialog decides which one is offered.
 | `sandbagging_assessment` | Every other case: the accused won, the game is still in progress, the accused is not one of the players, there is no game, or the game data could not be fetched.                             | Sandbagging   | Full moderators                                  |
 
 The dialog never offers both. It offers neither until the game data has
-arrived, so a choice cannot be swapped under the reporter.
+arrived, so a choice cannot be swapped under the reporter. A type the dialog
+does not offer counts as no selection, including one a caller preset when
+opening the dialog: nothing can be filed under it.
 
 ## Where the rule lives
 

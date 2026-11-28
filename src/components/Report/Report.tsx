@@ -222,15 +222,44 @@ export function Report(props: ReportProperties): React.ReactElement {
 
     const user = useUser();
 
-    const category = report_categories.find((x) => x.type === report_type);
+    const { fetchGamedata, reported_game } = useReportedGame(game_id);
+
+    const has_moderator_powers = (user.moderator_powers ?? 0) > 0;
+    // A sandbagging complaint is filed as Thrown Game when the accused lost the
+    // finished game and as Sandbagging in every other case. Neither is offered until
+    // the game data has arrived, so a choice cannot be swapped under the reporter.
+    const sandbagging_type =
+        reported_game.state === "pending"
+            ? undefined
+            : sandbaggingReportType(
+                  reported_game.state === "ready" ? reported_game.gamedata : undefined,
+                  reported_user_id,
+              );
+    const available_categories = report_categories
+        .filter((x) => !x.not_reportable)
+        .filter((x) => user.is_moderator || !x.moderator_only)
+        .filter((x) => has_moderator_powers || !x.cm_only)
+        // malicious_report is offered only while viewing a score-cheating report
+        .filter((x) => x.type !== "malicious_report" || source_report_type === "score_cheating")
+        .filter((x) => !isSandbaggingReportType(x.type) || x.type === sandbagging_type);
+
+    // A type the dialog does not offer counts as no selection, whether a caller
+    // preset it or the game data has not arrived yet: it has no option in the
+    // dropdown, and nothing may be filed under it. Once the game data is in, the
+    // stale value is cleared so the dropdown and the state agree.
+    const category = available_categories.find((x) => x.type === report_type);
+
+    React.useEffect(() => {
+        if (report_type && !category && reported_game.state !== "pending") {
+            set_report_type("");
+        }
+    }, [report_type, category, reported_game.state]);
 
     const [attestations, set_attestations] = React.useState<Record<ChecklistItemId, boolean>>({});
 
     // Memoised because useReportChecklist restarts its async evaluation whenever the
     // items array identity changes. A fresh array each render would loop forever.
     const checklist_items = React.useMemo(() => getChecklist(report_type), [report_type]);
-
-    const { fetchGamedata, reported_game } = useReportedGame(game_id);
 
     const checklist = useReportChecklist({
         items: checklist_items,
@@ -406,25 +435,6 @@ export function Report(props: ReportProperties): React.ReactElement {
                 void alert.fire({ text: message });
             });
     }
-
-    const has_moderator_powers = (user.moderator_powers ?? 0) > 0;
-    // A sandbagging complaint is filed as Thrown Game when the accused lost the
-    // finished game and as Sandbagging in every other case. Neither is offered until
-    // the game data has arrived, so a choice cannot be swapped under the reporter.
-    const sandbagging_type =
-        reported_game.state === "pending"
-            ? undefined
-            : sandbaggingReportType(
-                  reported_game.state === "ready" ? reported_game.gamedata : undefined,
-                  reported_user_id,
-              );
-    const available_categories = report_categories
-        .filter((x) => !x.not_reportable)
-        .filter((x) => user.is_moderator || !x.moderator_only)
-        .filter((x) => has_moderator_powers || !x.cm_only)
-        // malicious_report is offered only while viewing a score-cheating report
-        .filter((x) => x.type !== "malicious_report" || source_report_type === "score_cheating")
-        .filter((x) => !isSandbaggingReportType(x.type) || x.type === sandbagging_type);
 
     return (
         <Card className="Report">
