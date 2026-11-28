@@ -19,7 +19,12 @@ import { renderHook, waitFor, act } from "@testing-library/react";
 
 import { get } from "@/lib/requests";
 import { useReportChecklist } from "@/lib/useReportChecklist";
-import type { AsyncDataCheckItem, AttestationItem, ChecklistItem } from "@/lib/report_checklist";
+import type {
+    AsyncDataCheckItem,
+    AttestationItem,
+    ChecklistItem,
+    Gamedata,
+} from "@/lib/report_checklist";
 
 // jest.mock is hoisted above the imports, so `get` is already the mock by the time
 // the module body runs.
@@ -49,14 +54,30 @@ const attestation: AttestationItem = {
 
 const items: ChecklistItem[] = [movesCheck, attestation];
 
+// Stable, like the fetcher useReportedGame hands the dialog. Each call here is a
+// request, so a request count is an evaluation count.
+const fetchGame = (game_id: number) => () =>
+    get(`/termination-api/game/${game_id}`) as Promise<Gamedata>;
+const fetchGame1 = fetchGame(1);
+const fetchers: Record<number, () => Promise<Gamedata>> = { 1: fetchGame1, 2: fetchGame(2) };
+const fetchNothing = () => Promise.reject(new Error("no reported game"));
+
+const GAMEDATA = { outcome: "", winner: 0, phase: "finished", moves: [1, 2, 3] };
+
 beforeEach(() => {
     mockGet.mockReset();
-    mockGet.mockResolvedValue({ outcome: "", winner: 0, phase: "finished", moves: [1, 2, 3] });
+    mockGet.mockResolvedValue(GAMEDATA);
 });
 
 test("reports pending before the fetch resolves, then satisfied", async () => {
     const { result } = renderHook(() =>
-        useReportChecklist({ items, game_id: 1, note: "", attestations: {} }),
+        useReportChecklist({
+            items,
+            game_id: 1,
+            note: "",
+            attestations: {},
+            fetchGamedata: fetchGame1,
+        }),
     );
 
     expect(result.current[0].state).toBe("pending");
@@ -64,10 +85,16 @@ test("reports pending before the fetch resolves, then satisfied", async () => {
     await waitFor(() => expect(result.current[0].state).toBe("satisfied"));
 });
 
-test("ticking an attestation does not refetch game data", async () => {
+test("ticking an attestation does not re-evaluate the checks", async () => {
     const { result, rerender } = renderHook(
         ({ attestations }: { attestations: Record<string, boolean> }) =>
-            useReportChecklist({ items, game_id: 1, note: "", attestations }),
+            useReportChecklist({
+                items,
+                game_id: 1,
+                note: "",
+                attestations,
+                fetchGamedata: fetchGame1,
+            }),
         { initialProps: { attestations: {} as Record<string, boolean> } },
     );
 
@@ -80,10 +107,16 @@ test("ticking an attestation does not refetch game data", async () => {
     expect(mockGet).toHaveBeenCalledTimes(1);
 });
 
-test("typing in the note does not refetch game data", async () => {
+test("typing in the note does not re-evaluate the checks", async () => {
     const { result, rerender } = renderHook(
         ({ note }: { note: string }) =>
-            useReportChecklist({ items, game_id: 1, note, attestations: {} }),
+            useReportChecklist({
+                items,
+                game_id: 1,
+                note,
+                attestations: {},
+                fetchGamedata: fetchGame1,
+            }),
         { initialProps: { note: "" } },
     );
 
@@ -97,49 +130,18 @@ test("typing in the note does not refetch game data", async () => {
     expect(result.current[0].state).toBe("satisfied");
 });
 
-test("does not fetch when there is no game id", async () => {
+test("a fetcher that rejects yields unavailable and does not gate", async () => {
     const { result } = renderHook(() =>
-        useReportChecklist({ items, game_id: undefined, note: "", attestations: {} }),
+        useReportChecklist({
+            items,
+            game_id: undefined,
+            note: "",
+            attestations: {},
+            fetchGamedata: fetchNothing,
+        }),
     );
 
     await waitFor(() => expect(result.current[0].state).toBe("unavailable"));
-    expect(mockGet).not.toHaveBeenCalled();
-});
-
-test("a rejected fetch yields unavailable and does not gate", async () => {
-    mockGet.mockRejectedValue(new Error("network"));
-
-    const { result } = renderHook(() =>
-        useReportChecklist({ items, game_id: 1, note: "", attestations: {} }),
-    );
-
-    await waitFor(() => expect(result.current[0].state).toBe("unavailable"));
-});
-
-test("a rejected fetch is retried, not cached, on the next evaluation", async () => {
-    mockGet.mockRejectedValueOnce(new Error("network"));
-    mockGet.mockResolvedValueOnce({ outcome: "", winner: 0, phase: "finished", moves: [1, 2, 3] });
-
-    const { result, rerender } = renderHook(
-        ({ reported_user_id }: { reported_user_id: number }) =>
-            useReportChecklist({
-                items,
-                game_id: 1,
-                note: "",
-                attestations: {},
-                reported_user_id,
-            }),
-        { initialProps: { reported_user_id: 1 } },
-    );
-
-    await waitFor(() => expect(result.current[0].state).toBe("unavailable"));
-    expect(mockGet).toHaveBeenCalledTimes(1);
-
-    // A later evaluation for the same game must retry, not re-serve the cached rejection.
-    rerender({ reported_user_id: 2 });
-
-    await waitFor(() => expect(result.current[0].state).toBe("satisfied"));
-    expect(mockGet).toHaveBeenCalledTimes(2);
 });
 
 test("a stale response for a previous game is discarded", async () => {
@@ -150,11 +152,17 @@ test("a stale response for a previous game is discarded", async () => {
                 resolveFirst = resolve;
             }),
     );
-    mockGet.mockResolvedValueOnce({ outcome: "", winner: 0, phase: "finished", moves: [1, 2, 3] });
+    mockGet.mockResolvedValueOnce(GAMEDATA);
 
     const { result, rerender } = renderHook(
         ({ game_id }: { game_id: number }) =>
-            useReportChecklist({ items, game_id, note: "", attestations: {} }),
+            useReportChecklist({
+                items,
+                game_id,
+                note: "",
+                attestations: {},
+                fetchGamedata: fetchers[game_id],
+            }),
         { initialProps: { game_id: 1 } },
     );
 
@@ -163,7 +171,7 @@ test("a stale response for a previous game is discarded", async () => {
 
     // The first game's response lands late, carrying a failing outcome.
     await act(async () => {
-        resolveFirst({ outcome: "", winner: 0, phase: "finished", moves: [1] });
+        resolveFirst({ ...GAMEDATA, moves: [1] });
     });
 
     expect(result.current[0].state).toBe("satisfied");

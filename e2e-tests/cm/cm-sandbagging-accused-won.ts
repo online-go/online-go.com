@@ -26,10 +26,10 @@
  * - other user (opponent who loses) - created fresh each run
  * - game between them that ends by opponent resignation
  *
- * Note: When the reporter submits a "sandbagging" report and the accused player
- * WON the game, the backend automatically converts it to a "sandbagging_assessment"
- * report. This type of report is moderator-only - CMs cannot see or handle it.
- * This test verifies that conversion and access control work correctly.
+ * Note: The accused WON the game, so the report dialog offers "Sandbagging"
+ * (sandbagging_assessment) and not "Thrown Game". This type of report is
+ * moderator-only - CMs cannot see or handle it. This test verifies the offered
+ * type and the access control.
  */
 
 import { closeReportAsModerator, expectReportAccessDenied } from "@helpers/report-utils";
@@ -60,7 +60,7 @@ import { expect } from "@playwright/test";
 
 import { withReportCountTracking } from "@helpers/report-utils";
 
-export const cmSandbaggingAssessmentConversionTest = async (
+export const cmSandbaggingAccusedWonTest = async (
     {
         createContext,
     }: { createContext: (options?: CreateContextOptions) => Promise<BrowserContext> },
@@ -97,9 +97,8 @@ export const cmSandbaggingAssessmentConversionTest = async (
     const moves = ["D5", "E5", "D6", "E6", "D7", "E7", "D8", "E8"];
     await playMoves(accusedPage, otherPage, moves, "9x9", 0);
 
-    // The OPPONENT resigns - this means the ACCUSED WON the game.
-    // When reporter submits a "sandbagging" report, the backend will convert
-    // it to "sandbagging_assessment" because the accused won (not thrown_game).
+    // The OPPONENT resigns - this means the ACCUSED WON the game, so the report
+    // dialog will offer "Sandbagging" (sandbagging_assessment), not "Thrown Game".
     await resignActiveGame(otherPage);
 
     // Capture the game URL for the reporter to navigate to
@@ -117,13 +116,14 @@ export const cmSandbaggingAssessmentConversionTest = async (
         // Reporter navigates to the game
         await goToFinishedGameUrl(reporterPage, gameUrl);
 
-        // Reporter submits a "sandbagging" report - but since the accused WON,
-        // the backend will convert this to a "sandbagging_assessment" report
+        // The accused WON, so the dialog offers "Sandbagging" and not "Thrown Game"
         await reportUser(
             reporterPage,
             accusedUsername,
-            "sandbagging",
-            "E2E test reporting sandbagging: suspicious win pattern.", // min chars
+            "sandbagging_assessment",
+            // A sandbagging report must link to another game that shows the pattern
+            "E2E test reporting sandbagging: suspicious win pattern. See https://online-go.com/game/1",
+            { notOffered: ["thrown_game"] },
         );
 
         // Verify reporter's count increased by 1

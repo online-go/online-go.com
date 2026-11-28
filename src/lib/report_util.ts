@@ -32,7 +32,7 @@ export const COMMUNITY_MODERATION_REPORT_TYPES: CommunityModeratorReportTypes = 
     escaping: "escaping",
     thrown_game: "thrown game",
     // AI is not included here because it's a special case
-    // sandbagging is not included because reports are auto-converted to thrown_game or sandbagging_assessment
+    // sandbagging_assessment is not included because full moderators handle it
 };
 
 export function community_mod_has_power(

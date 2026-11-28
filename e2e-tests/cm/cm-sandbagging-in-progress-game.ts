@@ -18,13 +18,11 @@
 // cspell:words SBIP
 
 /*
- * Tests that a sandbagging report filed during an in-progress game is
- * classified as "sandbagging_assessment" (not "thrown_game").
+ * Tests that a sandbagging report filed during an in-progress game is offered
+ * only as "Sandbagging" (sandbagging_assessment), never as "Thrown Game".
  *
- * This is a regression test: because Game.black_lost and Game.white_lost
- * both default to True, the old logic (checking if the accused "lost")
- * would incorrectly classify in-progress game reports as "thrown_game".
- * The fix checks whether the OTHER player won instead.
+ * This guards the rule in sandbagging_report_type.ts: a game nobody has won
+ * yet cannot have been thrown, whatever the payload says about its players.
  *
  * Uses init_e2e data:
  * - E2E_CM_SBES_V1 : CM with sandbagging power (to verify they cannot see the report)
@@ -36,8 +34,9 @@
  *
  * Flow:
  * 1. Accused and other play a 9x9 game (some moves, no resignation)
- * 2. Reporter files a sandbagging report while the game is still in progress
- * 3. Verify the report is classified as "sandbagging_assessment" (not "thrown_game")
+ * 2. Reporter files a "Sandbagging" report while the game is still in progress,
+ *    and the dialog does not offer "Thrown Game"
+ * 3. Verify the report is a "sandbagging_assessment"
  * 4. Moderator closes the report to clean up
  */
 
@@ -122,14 +121,15 @@ export const cmSandbaggingInProgressGameTest = async (
         // render for unfinished games, so opt out of that wait.
         await goToFinishedGameUrl(reporterPage, gameUrl, { aiReviewExpected: false });
 
-        // Reporter submits a "sandbagging" report on the in-progress game.
-        // Because the game is not over (no winner yet), this should become
-        // "sandbagging_assessment", NOT "thrown_game".
+        // The game is not over (no winner yet), so the dialog offers "Sandbagging"
+        // (sandbagging_assessment) and not "Thrown Game".
         await reportUser(
             reporterPage,
             accusedUsername,
-            "sandbagging",
-            "E2E test: sandbagging report on in-progress game",
+            "sandbagging_assessment",
+            // A sandbagging report must link to another game that shows the pattern
+            "E2E test: sandbagging report on in-progress game. See https://online-go.com/game/1",
+            { notOffered: ["thrown_game"] },
         );
 
         await tracker.assertCountIncreasedBy(reporterPage, 1);
@@ -157,9 +157,7 @@ export const cmSandbaggingInProgressGameTest = async (
 
         await navigateToReport(modPage, reportNumber);
 
-        // This is the key assertion: the report must be "Sandbagging Assessment",
-        // not "Thrown Game". Before the fix, both black_lost and white_lost
-        // defaulting to True caused in-progress games to be misclassified.
+        // The report must be "Sandbagging Assessment", not "Thrown Game".
         const modReportTypeSelector = modPage.locator(".report-type-selector");
         await expect(modReportTypeSelector).toContainText("Sandbagging Assessment");
 

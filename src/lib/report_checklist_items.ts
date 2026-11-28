@@ -16,6 +16,7 @@
  */
 
 import { _, interpolate, pgettext } from "@/lib/translate";
+import { accusedLostFinishedGame } from "@/lib/sandbagging_report_type";
 
 import type {
     AsyncDataCheckItem,
@@ -300,6 +301,95 @@ const stallingExplanationItem: SyncDataCheckItem = {
     },
 };
 
+const thrownGameAccusedLost: AsyncDataCheckItem = {
+    kind: "data_check",
+    sync: false,
+    id: "thrown_game.accused_lost",
+    label: pgettext("A report checklist item", "This player lost the finished game"),
+    blocking: true,
+    evaluate: async (ctx) => {
+        if (ctx.reported_user_id === undefined) {
+            return "unavailable";
+        }
+        const gamedata = await ctx.fetchGamedata();
+        if (typeof gamedata.phase !== "string") {
+            return "unavailable";
+        }
+        return accusedLostFinishedGame(gamedata, ctx.reported_user_id)
+            ? { met: true }
+            : {
+                  met: false,
+                  message: pgettext(
+                      "Shown when a thrown-game report is filed on a game the accused did not lose",
+                      `Only the player who lost a finished game can be reported for throwing it.
+
+If this player seems much stronger than their rank, report them for sandbagging instead.`,
+                  ),
+              };
+    },
+};
+
+/**
+ * Matches an OGS game path, with or without its host, so a pasted game link is
+ * caught whether or not the reporter trimmed it. The id is captured so a link to
+ * the reported game itself is not held against them.
+ */
+const GAME_PATH_PATTERN = /\bgame\/(?:view\/)?(\d+)/gi;
+
+/** The ids of the games the note links to, leaving out the reported game itself. */
+function otherGamesLinked(note: string, game_id: number | undefined): number[] {
+    return Array.from(note.matchAll(GAME_PATH_PATTERN))
+        .map((match) => Number(match[1]))
+        .filter((id) => id !== game_id);
+}
+
+/**
+ * A thrown-game report is judged on the reported game alone, so links to other
+ * games are turned away here. Not blocking: a blocker collapses the dialog to its
+ * explanation and hides the note, which would leave the reporter no way to remove
+ * the link.
+ */
+const thrownGameThisGameOnly: SyncDataCheckItem = {
+    kind: "data_check",
+    sync: true,
+    id: "thrown_game.this_game_only",
+    label: pgettext("A report checklist item", "The report is about this game only"),
+    blocking: false,
+    evaluate: (ctx) =>
+        otherGamesLinked(ctx.note, ctx.game_id).length === 0
+            ? { met: true }
+            : {
+                  met: false,
+                  message: pgettext(
+                      "Asks the reporter to remove links to other games from a thrown-game report",
+                      "Please leave out links to other games: a thrown-game report is judged on this game alone. Community Moderators have the player's history available, they can see thrown game patterns.",
+                  ),
+              },
+};
+
+/**
+ * A sandbagging report is a claim about a pattern, so it must point at the games
+ * that show it. The reported game does not count: the moderators already have it.
+ * Not blocking, for the same reason as thrownGameThisGameOnly.
+ */
+const sandbaggingOtherGamesLinked: SyncDataCheckItem = {
+    kind: "data_check",
+    sync: true,
+    id: "sandbagging_assessment.other_games_linked",
+    label: pgettext("A report checklist item", "Link to other games that show the sandbagging"),
+    blocking: false,
+    evaluate: (ctx) =>
+        otherGamesLinked(ctx.note, ctx.game_id).length > 0
+            ? { met: true }
+            : {
+                  met: false,
+                  message: pgettext(
+                      "Asks the reporter to add links to other games to a sandbagging report",
+                      "Please paste a link to at least one other game that shows this player sandbagging, such as a game they resigned while winning. The moderators judge the pattern, not this game alone.",
+                  ),
+              },
+};
+
 /**
  * Per-report-type checklists. Mirrors REPORT_TYPE_VOTABLE_ACTIONS in the backend's
  * moderation.py: the report type is the key, and everything a type requires is
@@ -314,11 +404,15 @@ const stallingExplanationItem: SyncDataCheckItem = {
  *   the game-data fetch from firing at all. Out of order, an async check would run
  *   against a game that does not exist.
  *
- * `thrown_game`, `sandbagging_assessment` and `assess_ai_play` are `not_reportable` in
- * `report_categories` (Report.tsx) — they are produced by server-side conversion or by
- * the AI detector, never chosen from the report dropdown, so these lists are never
- * evaluated today. They are listed anyway so this table stays a complete statement of
- * what each type requires, and so that making one reportable in the future does not
+ * `thrown_game` and `sandbagging_assessment` are the two types a sandbagging complaint
+ * is filed as; the dropdown offers one or the other from the game's outcome
+ * (sandbagging_report_type.ts). The legacy `sandbagging` type has no entry because
+ * nothing files it any more.
+ *
+ * `assess_ai_play` is `not_reportable` in `report_categories` (Report.tsx) — it is
+ * produced by the AI detector, never chosen from the report dropdown, so its list is
+ * never evaluated today. It is listed anyway so this table stays a complete statement
+ * of what each type requires, and so that making it reportable in the future does not
  * silently leave it with no gate.
  *
  * `warning` and `troll` are moderator-only paths with no report-type requirements of
@@ -341,14 +435,13 @@ export const REPORT_CHECKLISTS: Record<string, ChecklistItem[]> = {
         stallingExplanationItem,
     ],
     score_cheating: [gameIdentifiedItem],
-    sandbagging: [gameIdentifiedItem],
     ai_use: [gameIdentifiedItem, descriptionLengthItem(20)],
     inappropriate_content: [descriptionLengthItem(20)],
     harassment: [descriptionLengthItem(20)],
     other: [descriptionLengthItem(20)],
     malicious_report: [descriptionLengthItem(1)],
-    thrown_game: [gameIdentifiedItem],
-    sandbagging_assessment: [gameIdentifiedItem],
+    thrown_game: [gameIdentifiedItem, thrownGameAccusedLost, thrownGameThisGameOnly],
+    sandbagging_assessment: [gameIdentifiedItem, sandbaggingOtherGamesLinked],
     assess_ai_play: [gameIdentifiedItem],
 };
 

@@ -23,6 +23,8 @@ const gamedata = (over: Partial<Gamedata> = {}): Gamedata => ({
     winner: 99,
     phase: "finished",
     moves: [1, 2, 3],
+    black_player_id: 7,
+    white_player_id: 99,
     ...over,
 });
 
@@ -60,16 +62,21 @@ describe("REPORT_CHECKLISTS resolved lists", () => {
             ],
         ],
         ["score_cheating", ["report.game_identified"]],
-        ["sandbagging", ["report.game_identified"]],
         ["ai_use", ["report.game_identified", "report.description_length"]],
         ["inappropriate_content", ["report.description_length"]],
         ["harassment", ["report.description_length"]],
         ["other", ["report.description_length"]],
         ["malicious_report", ["report.description_length"]],
+        [
+            "thrown_game",
+            ["report.game_identified", "thrown_game.accused_lost", "thrown_game.this_game_only"],
+        ],
+        [
+            "sandbagging_assessment",
+            ["report.game_identified", "sandbagging_assessment.other_games_linked"],
+        ],
         // not_reportable in Report.tsx today, but listed so the table stays complete —
         // see the doc comment on REPORT_CHECKLISTS.
-        ["thrown_game", ["report.game_identified"]],
-        ["sandbagging_assessment", ["report.game_identified"]],
         ["assess_ai_play", ["report.game_identified"]],
         // moderator-only, no report-type requirements of their own.
         ["warning", []],
@@ -408,5 +415,73 @@ describe("stalling kind and explanation", () => {
         const results = buildResults(items, ctx({ stalling_kind: "other" }), {}, {});
         expect(results).toHaveLength(2);
         expect(results.map((r) => r.state)).toEqual(["satisfied", "actionable"]);
+    });
+});
+
+describe("thrown_game data checks", () => {
+    const evaluate = async (data: Gamedata, note = "") => {
+        const items = getChecklist("thrown_game");
+        const ctx = ctxFor(data, note);
+        const outcomes = await evaluateAsyncChecks(items, ctx);
+        return buildResults(items, ctx, outcomes, {});
+    };
+
+    test("passes when the accused lost the finished game, with no note at all", async () => {
+        const results = await evaluate(gamedata({ winner: 99 }));
+        const states = Object.fromEntries(results.map((r) => [r.id, r.state]));
+        expect(states["thrown_game.accused_lost"]).toBe("satisfied");
+        expect(states["thrown_game.this_game_only"]).toBe("satisfied");
+    });
+
+    test("blocks when the accused won", async () => {
+        const results = await evaluate(gamedata({ winner: 7 }));
+        expect(results).toHaveLength(1);
+        expect(results[0].id).toBe("thrown_game.accused_lost");
+        expect(results[0].state).toBe("blocked");
+    });
+
+    test("blocks while the game is still in progress", async () => {
+        const results = await evaluate(gamedata({ phase: "play" }));
+        expect(results).toHaveLength(1);
+        expect(results[0].id).toBe("thrown_game.accused_lost");
+    });
+
+    test("asks for links to other games to be removed, without blocking", async () => {
+        const note = "They did the same in https://online-go.com/game/123456 and game/view/777";
+        const results = await evaluate(gamedata(), note);
+        const row = results.find((r) => r.id === "thrown_game.this_game_only");
+        expect(row?.state).toBe("actionable");
+        expect(row?.message).toMatch(/other games/);
+    });
+
+    test("a link to the reported game itself is not another game", async () => {
+        const results = await evaluate(gamedata(), "see https://online-go.com/game/4471 move 40");
+        const row = results.find((r) => r.id === "thrown_game.this_game_only");
+        expect(row?.state).toBe("satisfied");
+    });
+});
+
+describe("sandbagging_assessment data checks", () => {
+    const evaluate = (note: string) => {
+        const items = getChecklist("sandbagging_assessment");
+        const results = buildResults(items, ctxFor(gamedata(), note), {}, {});
+        return results.find((r) => r.id === "sandbagging_assessment.other_games_linked");
+    };
+
+    test("asks for a link to another game, without blocking", () => {
+        const row = evaluate("They always resign when ahead, look at their history.");
+        expect(row?.state).toBe("actionable");
+        expect(row?.message).toMatch(/other game/);
+    });
+
+    test("a link to the reported game alone does not count", () => {
+        expect(evaluate("see https://online-go.com/game/4471")?.state).toBe("actionable");
+    });
+
+    test("satisfied by a link to another game, with or without a host", () => {
+        expect(evaluate("resigned while winning: https://online-go.com/game/123456")?.state).toBe(
+            "satisfied",
+        );
+        expect(evaluate("and again in game/view/777")?.state).toBe("satisfied");
     });
 });

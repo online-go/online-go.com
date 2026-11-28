@@ -24,6 +24,8 @@ export interface Gamedata {
     winner: number;
     phase: string;
     moves: Array<unknown>;
+    black_player_id: number;
+    white_player_id: number;
 }
 
 export interface ChecklistContext {
