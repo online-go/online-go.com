@@ -135,6 +135,26 @@ export function VacationSettings(props: SettingGroupPageProps): React.ReactEleme
                         vacation_left: vacation_string,
                     })}
                 </div>
+
+                <div className="vacation-accrual">
+                    <i>
+                        {pgettext(
+                            "How vacation time is earned",
+                            "Vacation builds up while you have a correspondence game in progress, and is added to your balance each time one of your games ends without you timing out. Timing out forfeits what had built up since your last finished game.",
+                        )}
+                    </i>
+                    <div>
+                        {props.state.profile.vacation_accruing
+                            ? pgettext(
+                                  "Shown when vacation is currently building up",
+                                  "Vacation is building up now.",
+                              )
+                            : pgettext(
+                                  "Shown when vacation is not currently building up",
+                                  "Vacation is not building up now: you have no correspondence game in progress.",
+                              )}
+                    </div>
+                </div>
             </div>
 
             {disable_vacation_games.length > 0 && (

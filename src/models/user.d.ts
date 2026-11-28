@@ -131,6 +131,8 @@ declare namespace rest_api {
             registration_date: string; // ISO Date
             vacation_left: number;
             on_vacation: boolean;
+            /** Whether vacation is accruing now: a correspondence game is in progress and the player is not on vacation. */
+            vacation_accruing: boolean;
             self_reported_account_linkages?: AccountLinks;
             is_watched: boolean;
         };
