@@ -344,7 +344,7 @@ export function Puzzle(): React.ReactElement {
             opts.move_tree_container = moveTreeContainerRef.current;
             gobanOptsRef.current = opts;
 
-            const controller = new GobanController(opts);
+            const controller = new GobanController({ ...opts, allow_3d: true });
             controllerRef.current = controller;
             const goban = controller.goban;
             gobanRef.current = goban;

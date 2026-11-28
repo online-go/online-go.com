@@ -35,6 +35,7 @@ import { useData } from "@/lib/hooks";
 import { MiniGoban } from "@/components/MiniGoban";
 import { GobanEngineConfig, setGobanRenderer } from "goban";
 import { Toggle } from "@/components/Toggle";
+import { board3dLightingOptions, board3dStyleOptions, board3dTiltOptions } from "@/lib/board3d";
 import { GobanThemeImportExport } from "./GobanThemeImportExport";
 import { BoardAlignmentPicker } from "@/components/LayoutSettings/pickers/BoardAlignmentPicker";
 import { ActionButtonsPicker } from "@/components/LayoutSettings/pickers/ActionButtonsPicker";
@@ -186,7 +187,12 @@ export function ThemePreferences(): React.ReactElement | null {
     }
 
     const [canvas_enabled, setCanvasEnabled] = useData("experiments.canvas");
-    //const canvas_enabled = data.get("experiments.canvas");
+    const [board_renderer_3d, setBoardRenderer3d] = usePreference("board-renderer-3d");
+    const [board_style, setBoardStyle] = usePreference("board-renderer-3d-style");
+    const [board_lighting, setBoardLighting] = usePreference("board-renderer-3d-lighting");
+    const [board_room, setBoardRoom] = usePreference("board-renderer-3d-room");
+    const [board_tilt, setBoardTilt] = usePreference("board-renderer-3d-tilt");
+    const [mouse_orbit, setMouseOrbit] = usePreference("board-renderer-3d-mouse-orbit");
     const enable_svg = canvas_enabled !== "enabled";
 
     const sample_goban_key =
@@ -765,11 +771,83 @@ export function ThemePreferences(): React.ReactElement | null {
                 />
             </PreferenceLine>
 
+            <PreferenceLine
+                title={pgettext("Board display setting", "Use a 3D board")}
+                description={pgettext(
+                    "Board display setting",
+                    "Show a perspective board in games, reviews, and puzzles. Uses the SVG board if 3D is unavailable.",
+                )}
+            >
+                <Toggle
+                    id="board-renderer-3d"
+                    checked={board_renderer_3d}
+                    onChange={(enabled) => {
+                        if (enabled && canvas_enabled === "enabled") {
+                            setCanvasEnabled(undefined);
+                            setGobanRenderer("svg");
+                        }
+                        setBoardRenderer3d(enabled);
+                    }}
+                />
+            </PreferenceLine>
+
+            {board_renderer_3d && (
+                <>
+                    <PreferenceLine title={pgettext("Board display setting", "3D board style")}>
+                        <PreferenceDropdown
+                            value={board_style}
+                            options={board3dStyleOptions()}
+                            onChange={setBoardStyle}
+                        />
+                    </PreferenceLine>
+
+                    <PreferenceLine title={pgettext("Board display setting", "3D table and bowls")}>
+                        <Toggle checked={board_room} onChange={setBoardRoom} />
+                    </PreferenceLine>
+
+                    <PreferenceLine title={pgettext("Board display setting", "3D board lighting")}>
+                        <PreferenceDropdown
+                            value={board_lighting}
+                            options={board3dLightingOptions()}
+                            onChange={setBoardLighting}
+                        />
+                    </PreferenceLine>
+
+                    <PreferenceLine
+                        title={pgettext("Board display setting", "3D viewing angle")}
+                        description={pgettext(
+                            "Board display setting",
+                            "Auto uses the angle that suits the board style.",
+                        )}
+                    >
+                        <PreferenceDropdown
+                            value={board_tilt}
+                            options={board3dTiltOptions()}
+                            onChange={setBoardTilt}
+                        />
+                    </PreferenceLine>
+
+                    <PreferenceLine
+                        title={pgettext(
+                            "Board display setting",
+                            "Hold V and drag to turn the board",
+                        )}
+                        description={pgettext(
+                            "Board display setting",
+                            "With a mouse, hold the V key and drag to turn the 3D board. You can also use the camera button on the board.",
+                        )}
+                    >
+                        <Toggle checked={mouse_orbit} onChange={setMouseOrbit} />
+                    </PreferenceLine>
+                </>
+            )}
+
             <PreferenceLine title={_("Use old canvas goban renderer")}>
                 <Toggle
                     checked={canvas_enabled === "enabled"}
                     onChange={(tf) => {
                         if (tf) {
+                            setBoardRenderer3d(false);
                             setGobanRenderer("canvas");
                         } else {
                             setGobanRenderer("svg");

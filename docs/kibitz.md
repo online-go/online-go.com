@@ -42,6 +42,8 @@ Chat displays the saved text if game details are unavailable. The room requests
 details for recent game notices in the background and uses cached details for
 older notices.
 
+In **More actions → Settings**, **Use a 3D board** switches both Kibitz boards to 3D. See [3d-board.md](3d-board.md).
+
 Portrait: GobanView's `portraitSplit` layout — a board stage, a drag handle,
 and one panel area below it. `KibitzLeftAside` is landscape only. Six panes
 share the panel area — Game chat, Kibitz chat, People, Variations, Rooms

@@ -103,7 +103,10 @@ describe("GobanThemePicker theme samples without Element.replaceChildren", () =>
         data.set("user", { anonymous: true, id: 0 } as rest_api.UserConfig);
         data.remove("experiments.svg");
         data.remove("experiments.canvas");
-        jest.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(() => fakeContext);
+        const canvas = HTMLCanvasElement.prototype as {
+            getContext(type: "2d"): CanvasRenderingContext2D | null;
+        };
+        jest.spyOn(canvas, "getContext").mockImplementation(() => fakeContext);
 
         desc = Object.getOwnPropertyDescriptor(Element.prototype, "replaceChildren");
         expect(desc).toBeDefined();

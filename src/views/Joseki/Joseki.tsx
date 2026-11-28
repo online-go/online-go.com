@@ -26,9 +26,10 @@ import queryString from "query-string";
 import * as data from "@/lib/data";
 import * as preferences from "@/lib/preferences";
 import { _, interpolate, pgettext } from "@/lib/translate";
+import { nextBoard3dRotation } from "@/lib/board3d";
 import { get, put, post } from "@/lib/requests";
 import { KBShortcut } from "@/components/KBShortcut";
-import { GobanRenderer, GobanRendererConfig, JGOFMove } from "goban";
+import { GobanRenderer, GobanRendererConfig, JGOFMove, SVGRenderer } from "goban";
 import { Player } from "@/components/Player";
 import { JosekiAdmin } from "@/components/JosekiAdmin";
 import { JosekiFilter, JosekiVariationFilter } from "@/components/JosekiVariationFilter";
@@ -214,6 +215,33 @@ export function Joseki(): React.ReactElement {
         return div;
     }, []);
     const goban_opts_ref = React.useRef<GobanRendererConfig>({} as GobanRendererConfig);
+    // 3D on this page is the plain board only (no table, bowls or room), seen
+    // from straight above, with quarter-turn camera rotation and an optional mirror.
+    const [board_3d, setBoard3d] = preferences.usePreference("board-renderer-3d");
+    const three_view_ref = React.useRef<{ rotation: 0 | 90 | 180 | 270; mirror: boolean }>({
+        rotation: 0,
+        mirror: false,
+    });
+    const setThreeView = (view: Partial<typeof three_view_ref.current>) => {
+        three_view_ref.current = { ...three_view_ref.current, ...view };
+        controller_ref.current?.setThreeView(three_view_ref.current);
+    };
+    const createController = (opts: GobanRendererConfig) =>
+        new GobanController({
+            ...opts,
+            enable_sounds: false,
+            allow_3d: true,
+            three: {
+                room: false,
+                tilt: 0,
+                fixedCoordinates: true,
+                // Flat and cheap: fill the width like the 2D board, and render at full phone resolution.
+                distanceScale: 1,
+                frameLimit: 1,
+                maxPixelRatio: 3,
+                ...three_view_ref.current,
+            },
+        });
     const controller_ref = React.useRef<GobanController | null>(null);
     const goban_ref = React.useRef<GobanRenderer | null>(null);
 
@@ -235,7 +263,7 @@ export function Joseki(): React.ReactElement {
             stone_font_scale: preferences.get("stone-font-scale"),
         };
         goban_opts_ref.current = opts;
-        controller_ref.current = new GobanController({ ...opts, enable_sounds: false });
+        controller_ref.current = createController(opts);
         goban_ref.current = controller_ref.current.goban;
         goban_ref.current.setMode("puzzle");
         goban_ref.current.on("update", () => on_board_update_ref.current());
@@ -782,7 +810,7 @@ export function Joseki(): React.ReactElement {
             (opts as Record<string, unknown>)["moves"] = initial_position;
         }
         goban_opts_ref.current = opts;
-        controller_ref.current = new GobanController({ ...opts, enable_sounds: false });
+        controller_ref.current = createController(opts);
         goban_ref.current = controller_ref.current.goban;
         goban_ref.current.setMode("puzzle");
         goban_ref.current.on("update", () => on_board_update_ref.current());
@@ -1418,6 +1446,8 @@ export function Joseki(): React.ReactElement {
               ? pgettext("Joseki view title: admin mode", "Admin")
               : pgettext("Joseki view title: default explore mode", "Explore Joseki");
 
+    const has_3d_view = board_3d && controller_ref.current?.goban instanceof SVGRenderer;
+
     function openMoreActions(event?: React.MouseEvent<HTMLButtonElement>) {
         if (!event) {
             return;
@@ -1443,6 +1473,19 @@ export function Joseki(): React.ReactElement {
                     onOpenChanges={open("joseki-changes")}
                     onOpenEdit={open("joseki-edit")}
                     onOpenAdmin={open("joseki-admin")}
+                    {...(has_3d_view
+                        ? {
+                              onRotate3d: () =>
+                                  setThreeView({
+                                      rotation: nextBoard3dRotation(
+                                          three_view_ref.current.rotation,
+                                      ),
+                                  }),
+                              onMirror3d: () =>
+                                  setThreeView({ mirror: !three_view_ref.current.mirror }),
+                              mirrored3d: three_view_ref.current.mirror,
+                          }
+                        : {})}
                     onClose={close}
                 />
             ),
@@ -1605,6 +1648,17 @@ export function Joseki(): React.ReactElement {
                 />
             </GobanView.Tab>
 
+            {controller_ref.current?.goban instanceof SVGRenderer && (
+                <GobanView.Tab
+                    id="joseki-3d"
+                    type="action"
+                    align="right"
+                    icon="cube"
+                    title={pgettext("Joseki board display", "3D board")}
+                    active={board_3d}
+                    onClick={() => setBoard3d(!board_3d)}
+                />
+            )}
             <GobanView.Tab
                 id="joseki-more-actions"
                 type="action"

@@ -396,7 +396,7 @@ export function Game(): React.ReactElement | null {
         }
 
         goban_controller.current?.destroy();
-        goban_controller.current = new GobanController(opts);
+        goban_controller.current = new GobanController({ ...opts, allow_3d: true });
         goban = goban_controller.current.goban;
         window.global_goban = goban;
         forceUpdate();

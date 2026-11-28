@@ -20,9 +20,10 @@ import { _, pgettext } from "@/lib/translate";
 import { sfx } from "@/lib/sfx";
 import { usePreference } from "@/lib/preferences";
 import { useData, useIsTouchOnlyDevice } from "@/lib/hooks";
-import type { LabelPosition } from "goban";
+import { SVGRenderer, type LabelPosition } from "goban";
 import { Toggle } from "@/components/Toggle";
 import { GobanThemePicker } from "@/components/GobanThemePicker/GobanThemePicker";
+import { GameBoard3dSettings } from "./GameBoard3dSettings";
 import { openACLModal } from "@/components/ACLModal";
 import { BoardAlignmentPicker } from "@/components/LayoutSettings/pickers/BoardAlignmentPicker";
 import { ActionButtonsPicker } from "@/components/LayoutSettings/pickers/ActionButtonsPicker";
@@ -58,6 +59,7 @@ export function GameSettingsPanel({
     const controller = useGobanControllerOrNull();
     const game_controller = kibitz ? null : controller;
     const goban = game_controller?.goban;
+    const supports_3d = controller?.goban instanceof SVGRenderer;
 
     // Phones and tablets have no keyboard to speak of, so the shortcut
     // list is only offered where a mouse or trackpad suggests one is
@@ -206,6 +208,8 @@ export function GameSettingsPanel({
                         />
                     </div>
                 )}
+
+                {supports_3d && <GameBoard3dSettings />}
 
                 <div className="GameSidebarPanel-labeled-row">
                     <label htmlFor="game-settings-coords">

@@ -23,6 +23,11 @@ import {
     GobanRenderer,
     MoveTree,
     createGoban,
+    enableThreeGoban,
+    preloadThreeGoban,
+    SVGRenderer,
+    type ThreeRenderer,
+    type ThreeRendererOptions,
     decodeMoves,
     encodeMove,
     JGOFClock,
@@ -51,6 +56,17 @@ import { chat_manager, ChatChannelProxy, inGameModChannel } from "@/lib/chat_man
 import { Resizable } from "@/components/Resizable";
 import { PlayerCacheEntry } from "./player_cache";
 import { isLiveGame } from "@/components/TimeControl";
+
+/** Start loading the 3D board code when the user has the 3D board on. */
+export function preloadThreeBoardIfEnabled(): void {
+    if (preferences.get("board-renderer-3d")) {
+        void preloadThreeGoban().catch((error: unknown) =>
+            console.warn("Unable to preload the 3D board", error),
+        );
+    }
+}
+
+preferences.watch("board-renderer-3d", preloadThreeBoardIfEnabled);
 
 interface GobanControllerEvents {
     autoplaying: (autoplaying: boolean) => void;
@@ -111,6 +127,9 @@ export interface PreparedAnalysisSnapshot {
  * chat has no such limit.
  */
 const CHAT_MESSAGE_SIZE_LIMIT = 16384;
+
+/** How long to wait for the first 3D frame before showing the SVG board. */
+const THREE_FIRST_FRAME_TIMEOUT_MS = 3000;
 
 /** The mark types that a user places on a board and that a shared analysis carries. */
 const SHARED_MARK_TYPES = [
@@ -323,9 +342,28 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
     private _stashed_submit_move?: () => void;
     private readonly unregisterMoveTreeBoard: () => void;
 
-    constructor(opts: GobanRendererConfig & { enable_sounds?: boolean }) {
+    /** Per-page 3D settings layered over the user's 3D preferences. */
+    private three_overrides: ThreeRendererOptions = {};
+    private three_renderer?: ThreeRenderer;
+
+    constructor(
+        opts: GobanRendererConfig & {
+            enable_sounds?: boolean;
+            allow_3d?: boolean;
+            /** Fixed 3D settings for this board, e.g. `{ room: false }`. */
+            three?: ThreeRendererOptions;
+        },
+    ) {
         super();
-        this.goban = createGoban(opts);
+        this.three_overrides = { ...opts.three };
+        const wants_3d = opts.allow_3d && opts.board_div && preferences.get("board-renderer-3d");
+        this.goban =
+            wants_3d && !("native_transport" in opts && opts.native_transport)
+                ? new SVGRenderer(opts)
+                : createGoban(opts);
+        if (opts.allow_3d && opts.board_div && this.goban instanceof SVGRenderer) {
+            this.watchThreeRenderer(this.goban, !!wants_3d);
+        }
         this.unregisterMoveTreeBoard = registerMoveTreeBoard(this.goban);
         this.enable_sounds = opts.enable_sounds !== false; // Default to true if not specified
         if (this.enable_sounds) {
@@ -386,6 +424,127 @@ export class GobanController extends EventEmitter<GobanControllerEvents> {
                 console.error(e);
             }
         });
+    }
+
+    private watchThreeRenderer(goban: SVGRenderer, hide_until_ready: boolean): void {
+        const host = hide_until_ready ? goban.config.board_div : undefined;
+        const visibility = host?.style.visibility ?? "";
+        const opacity = host?.style.opacity ?? "";
+        const transition = host?.style.transition ?? "";
+        let revealed = false;
+        if (host) {
+            host.style.visibility = "hidden";
+        }
+        const timer = host
+            ? setTimeout(() => reveal(false), THREE_FIRST_FRAME_TIMEOUT_MS)
+            : undefined;
+
+        function reveal(fade: boolean) {
+            if (!host || revealed) {
+                return;
+            }
+            revealed = true;
+            clearTimeout(timer);
+            if (fade) {
+                host.style.opacity = "0";
+                host.style.visibility = visibility;
+                requestAnimationFrame(() => {
+                    host.style.transition = "opacity 150ms ease-out";
+                    host.style.opacity = opacity;
+                    setTimeout(() => {
+                        host.style.transition = transition;
+                    }, 200);
+                });
+            } else {
+                host.style.visibility = visibility;
+                host.style.opacity = opacity;
+                host.style.transition = transition;
+            }
+        }
+
+        let renderer: ThreeRenderer | undefined;
+        let pending = false;
+        const readOptions = (): ThreeRendererOptions => {
+            const tilt = preferences.get("board-renderer-3d-tilt");
+            return {
+                boardStyle: preferences.get("board-renderer-3d-style"),
+                room: preferences.get("board-renderer-3d-room"),
+                mouseOrbit: preferences.get("board-renderer-3d-mouse-orbit"),
+                rotation: preferences.get("board-renderer-3d-rotation"),
+                tilt: tilt === "auto" ? undefined : tilt,
+                lighting: { preset: preferences.get("board-renderer-3d-lighting") },
+                ...this.three_overrides,
+                onFallback: (error) => {
+                    reveal(false);
+                    console.error("Unable to use the 3D board", error);
+                },
+                onFirstFrame: () => reveal(true),
+            };
+        };
+        const updateOptions = () => renderer?.configure(readOptions());
+        const update = (enabled: boolean) => {
+            if (!enabled) {
+                reveal(false);
+                renderer?.disable();
+                return;
+            }
+            if (renderer) {
+                renderer.enable();
+                return;
+            }
+            if (pending) {
+                return;
+            }
+            pending = true;
+            const options = readOptions();
+            const initialOptions = JSON.stringify(options);
+            void enableThreeGoban(goban, options)
+                .then((handle) => {
+                    if (goban.destroyed || !preferences.get("board-renderer-3d")) {
+                        handle.disable();
+                        reveal(false);
+                    } else if (handle.active) {
+                        renderer = handle;
+                        this.three_renderer = handle;
+                        if (JSON.stringify(readOptions()) !== initialOptions) {
+                            updateOptions();
+                        }
+                    } else {
+                        reveal(false);
+                    }
+                })
+                .catch((error: unknown) => {
+                    reveal(false);
+                    console.error("Unable to enable the 3D board", error);
+                })
+                .finally(() => {
+                    pending = false;
+                });
+        };
+
+        goban.once("destroy", () => {
+            reveal(false);
+            preferences.unwatch("board-renderer-3d", update);
+            preferences.unwatch("board-renderer-3d-style", updateOptions);
+            preferences.unwatch("board-renderer-3d-room", updateOptions);
+            preferences.unwatch("board-renderer-3d-mouse-orbit", updateOptions);
+            preferences.unwatch("board-renderer-3d-rotation", updateOptions);
+            preferences.unwatch("board-renderer-3d-tilt", updateOptions);
+            preferences.unwatch("board-renderer-3d-lighting", updateOptions);
+        });
+        preferences.watch("board-renderer-3d-style", updateOptions);
+        preferences.watch("board-renderer-3d-room", updateOptions);
+        preferences.watch("board-renderer-3d-mouse-orbit", updateOptions);
+        preferences.watch("board-renderer-3d-rotation", updateOptions);
+        preferences.watch("board-renderer-3d-tilt", updateOptions);
+        preferences.watch("board-renderer-3d-lighting", updateOptions);
+        preferences.watch("board-renderer-3d", update);
+    }
+
+    /** Change this board's 3D view, e.g. camera rotation or mirroring. */
+    public setThreeView(view: Pick<ThreeRendererOptions, "rotation" | "mirror">): void {
+        this.three_overrides = { ...this.three_overrides, ...view };
+        this.three_renderer?.configure(this.three_overrides);
     }
 
     public destroy() {

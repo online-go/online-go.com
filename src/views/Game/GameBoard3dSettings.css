@@ -1,0 +1,43 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* The 3D options sit under the 3D toggle, lined up with its label text. */
+.GameBoard3dSettings-group {
+    margin: 0 0 0.25rem 1.1rem;
+    padding-left: 0.5rem;
+    border-left: 2px solid var(--shade4);
+
+    .GameSidebarPanel-labeled-row {
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
+        color: var(--shade1);
+    }
+}
+
+.GameBoard3dSettings-view {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    select {
+        min-width: 0;
+    }
+
+    button {
+        margin: 0;
+    }
+}

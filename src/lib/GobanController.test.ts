@@ -15,12 +15,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { MoveTree } from "goban";
+import {
+    enableThreeGoban,
+    preloadThreeGoban,
+    setGobanRenderer,
+    SVGRenderer,
+    type MoveTree,
+    type ThreeRenderer,
+} from "goban";
 import * as data from "@/lib/data";
+import * as preferences from "@/lib/preferences";
 import { alert } from "@/lib/swal_config";
 import { TEST_USER } from "@/views/Game/test_user";
 import { shared_ip_with_player_map } from "@/views/Game/util";
-import { GobanController, getMoveTreeTrunkTail } from "./GobanController";
+import {
+    GobanController,
+    getMoveTreeTrunkTail,
+    preloadThreeBoardIfEnabled,
+} from "./GobanController";
+
+jest.mock("goban", () => ({
+    ...jest.requireActual("goban"),
+    enableThreeGoban: jest.fn(),
+    preloadThreeGoban: jest.fn().mockResolvedValue(undefined),
+}));
+
+function mockPlainStoneTheme() {
+    const setTheme = SVGRenderer.prototype.setTheme;
+    return jest.spyOn(SVGRenderer.prototype, "setTheme").mockImplementation(function (
+        this: SVGRenderer,
+        themes,
+        dontRedraw,
+    ) {
+        setTheme.call(this, { ...themes, white: "Plain", black: "Plain" }, dontRedraw);
+    });
+}
 
 function makeMoveNode(move_number: number, trunk_next?: MoveTree): MoveTree {
     return {
@@ -30,6 +59,224 @@ function makeMoveNode(move_number: number, trunk_next?: MoveTree): MoveTree {
 }
 
 describe("GobanController", () => {
+    it("can retry 3D after the renderer rejects", async () => {
+        const enable = jest.mocked(enableThreeGoban);
+        const error = new Error("3D chunk unavailable");
+        const log = jest.spyOn(console, "error").mockImplementation(() => undefined);
+        const previous = preferences.get("board-renderer-3d");
+        const theme = mockPlainStoneTheme();
+        let controller: GobanController | undefined;
+        try {
+            preferences.set("board-renderer-3d", true);
+            enable.mockRejectedValueOnce(error);
+            controller = new GobanController({
+                width: 9,
+                height: 9,
+                board_div: document.createElement("div"),
+                allow_3d: true,
+                enable_sounds: false,
+            });
+            expect(enable).toHaveBeenCalledTimes(1);
+            // Let the rejection and the finally handler finish before changing the preference.
+            await Promise.resolve();
+            await Promise.resolve();
+            await Promise.resolve();
+            expect(log).toHaveBeenCalledWith("Unable to enable the 3D board", error);
+            enable.mockResolvedValueOnce({
+                goban: enable.mock.calls[0][0],
+                active: true,
+                enable: jest.fn(),
+                disable: jest.fn(),
+                configure: jest.fn(),
+            });
+            preferences.set("board-renderer-3d", false);
+            preferences.set("board-renderer-3d", true);
+            expect(enable).toHaveBeenCalledTimes(2);
+            await Promise.resolve();
+        } finally {
+            controller?.goban.destroy();
+            preferences.set("board-renderer-3d", previous);
+            theme.mockRestore();
+            enable.mockReset();
+            log.mockRestore();
+        }
+    });
+
+    it.each([false, true])(
+        "configures only changed options after 3D starts (preference changed: %s)",
+        async (changePreference) => {
+            const enable = jest.mocked(enableThreeGoban);
+            const previousEnabled = preferences.get("board-renderer-3d");
+            const previousRoom = preferences.get("board-renderer-3d-room");
+            const theme = mockPlainStoneTheme();
+            const configure = jest.fn();
+            let resolve!: (handle: ThreeRenderer) => void;
+            const promise = new Promise<ThreeRenderer>((resolveHandle) => {
+                resolve = resolveHandle;
+            });
+            let controller: GobanController | undefined;
+            try {
+                preferences.set("board-renderer-3d", true);
+                enable.mockReturnValueOnce(promise);
+                controller = new GobanController({
+                    width: 9,
+                    height: 9,
+                    board_div: document.createElement("div"),
+                    allow_3d: true,
+                    enable_sounds: false,
+                });
+                expect(enable).toHaveBeenCalledWith(
+                    controller.goban,
+                    expect.objectContaining({ room: previousRoom }),
+                );
+                if (changePreference) {
+                    preferences.set("board-renderer-3d-room", !previousRoom);
+                }
+                resolve({
+                    goban: enable.mock.calls[0][0],
+                    active: true,
+                    enable: jest.fn(),
+                    disable: jest.fn(),
+                    configure,
+                });
+                await promise;
+                expect(configure).toHaveBeenCalledTimes(changePreference ? 1 : 0);
+                if (changePreference) {
+                    expect(configure).toHaveBeenCalledWith(
+                        expect.objectContaining({ room: !previousRoom }),
+                    );
+                }
+            } finally {
+                controller?.goban.destroy();
+                preferences.set("board-renderer-3d", previousEnabled);
+                preferences.set("board-renderer-3d-room", previousRoom);
+                theme.mockRestore();
+                enable.mockReset();
+            }
+        },
+    );
+
+    describe("initial 3D board visibility", () => {
+        const enable = jest.mocked(enableThreeGoban);
+        let previousEnabled: boolean;
+        let theme: ReturnType<typeof mockPlainStoneTheme>;
+        let controller: GobanController | undefined;
+        let board_div: HTMLDivElement;
+
+        beforeEach(() => {
+            jest.useFakeTimers();
+            setGobanRenderer("svg");
+            previousEnabled = preferences.get("board-renderer-3d");
+            theme = mockPlainStoneTheme();
+            board_div = document.createElement("div");
+            board_div.style.visibility = "visible";
+            board_div.style.opacity = "0.8";
+            board_div.style.transition = "color 100ms";
+            enable.mockReturnValue(new Promise<ThreeRenderer>(() => undefined));
+        });
+
+        afterEach(() => {
+            controller?.goban.destroy();
+            controller = undefined;
+            preferences.set("board-renderer-3d", previousEnabled);
+            theme.mockRestore();
+            enable.mockReset();
+            setGobanRenderer("canvas");
+            jest.useRealTimers();
+        });
+
+        function createBoard(enabled: boolean) {
+            preferences.set("board-renderer-3d", enabled);
+            controller = new GobanController({
+                width: 9,
+                height: 9,
+                board_div,
+                allow_3d: true,
+                enable_sounds: false,
+            });
+            return controller;
+        }
+
+        it("hides the board until the first 3D frame, then fades it in", () => {
+            createBoard(true);
+            expect(board_div.style.visibility).toBe("hidden");
+
+            enable.mock.calls[0][1]?.onFirstFrame?.();
+            expect(board_div.style.visibility).toBe("visible");
+            expect(board_div.style.opacity).toBe("0");
+
+            jest.advanceTimersByTime(16);
+            expect(board_div.style.opacity).toBe("0.8");
+            expect(board_div.style.transition).toBe("opacity 150ms ease-out");
+            jest.advanceTimersByTime(200);
+            expect(board_div.style.transition).toBe("color 100ms");
+        });
+
+        it("reveals the board when the renderer is inactive", async () => {
+            enable.mockImplementationOnce(async (goban) => ({
+                goban,
+                active: false,
+                enable: jest.fn(),
+                disable: jest.fn(),
+                configure: jest.fn(),
+            }));
+            createBoard(true);
+            expect(board_div.style.visibility).toBe("hidden");
+
+            await enable.mock.results[0].value;
+            expect(board_div.style.visibility).toBe("visible");
+        });
+
+        it("reveals the board after 3 seconds without a 3D frame", () => {
+            createBoard(true);
+            jest.advanceTimersByTime(2999);
+            expect(board_div.style.visibility).toBe("hidden");
+            jest.advanceTimersByTime(1);
+            expect(board_div.style.visibility).toBe("visible");
+            expect(board_div.style.opacity).toBe("0.8");
+        });
+
+        it("keeps the board visible when 3D is enabled after construction", () => {
+            createBoard(false);
+            expect(board_div.style.visibility).toBe("visible");
+            expect(enable).not.toHaveBeenCalled();
+            preferences.set("board-renderer-3d", true);
+            expect(board_div.style.visibility).toBe("visible");
+            enable.mock.calls[0][1]?.onFirstFrame?.();
+            expect(board_div.style.visibility).toBe("visible");
+            expect(board_div.style.opacity).toBe("0.8");
+        });
+
+        it("clears the first-frame timer when the board is destroyed", () => {
+            const board = createBoard(true);
+            expect(board_div.style.visibility).toBe("hidden");
+            board.goban.destroy();
+            controller = undefined;
+            expect(board_div.style.visibility).toBe("visible");
+            expect(jest.getTimerCount()).toBe(0);
+        });
+    });
+
+    it("preloads the 3D board only when the preference is on", () => {
+        const preload = jest.mocked(preloadThreeGoban);
+        const previous = preferences.get("board-renderer-3d");
+        try {
+            preferences.set("board-renderer-3d", false);
+            preload.mockClear();
+            preloadThreeBoardIfEnabled();
+            expect(preload).not.toHaveBeenCalled();
+
+            preferences.set("board-renderer-3d", true);
+            expect(preload).toHaveBeenCalledTimes(1);
+            preload.mockClear();
+            preloadThreeBoardIfEnabled();
+            expect(preload).toHaveBeenCalledTimes(1);
+        } finally {
+            preferences.set("board-renderer-3d", previous);
+            preload.mockClear();
+        }
+    });
+
     it("finds the actual trunk tail even when a variation exists", () => {
         const tail = makeMoveNode(7);
         const trunk = makeMoveNode(6, tail);
